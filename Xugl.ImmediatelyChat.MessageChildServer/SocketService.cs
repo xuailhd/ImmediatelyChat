@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -71,7 +72,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 tempSocket = null;
 
                 //4.begin MCS service
-                StartMCSService();
+                StartMCSServiceAsync();
 
             }
             catch (Exception ex)
@@ -222,6 +223,8 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             }
         }
 
+
+        private SocketAsyncEventArgsPool socketAsyncEventArgsPool;
         /// <summary>
         /// begin MCS service
         /// 1.wait Start Command
@@ -273,21 +276,15 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                             break;
                         }
                     }
+                    mainServiceSocket.Close();
+                    mainServiceSocket = null;
+
 
                     //3.Start MCS service
-                    CommonVariables.LogTool.Log("Start MCS service:" + CommonVariables.MCSIP + ", Port:" + CommonVariables.MCSPort.ToString());
-                    while (IsGoOnRunning)
-                    {
-                        SocketAsyncEventArgs socketAsyncEventArgs = new SocketAsyncEventArgs();
 
-                        socketAsyncEventArgs.Completed+=new EventHandler<SocketAsyncEventArgs>();
-
-                        socketAsyncEventArgs.AcceptSocket
-                        mainServiceSocket.AcceptAsync(new SocketAsyncEventArgs());
-                        mainServiceSocket.AcceptAsync(new AsyncCallback(AcceptCallback));
-                    }
-
-                    mainServiceSocket.Close();
+                    SocketListener socketListener = new SocketListener();
+                    socketListener.BeginService();
+                    
                     CommonVariables.LogTool.Log("stop MCS Server");
                 }
                 catch (SocketException ex)
@@ -305,12 +302,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             {
                 CommonVariables.LogTool.Log(ex.Message);
             }
-        }
-
-
-        private void AcceptCallback(IAsyncResult ar)
-        {
-            return;
         }
 
         /// <summary>

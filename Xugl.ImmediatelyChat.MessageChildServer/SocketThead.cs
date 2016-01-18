@@ -81,7 +81,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         {
             //ClientStatusModel clientStatusModel;
             byte[] bytmsg = new byte[1024];
-            clientSocket.ReceiveAsync()
             int bytes = clientSocket.Receive(bytmsg);
             string strMsg = Encoding.UTF8.GetString(bytmsg, 0, bytes);
 
@@ -129,4 +128,28 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             clientSocket.Close();
         }
     }
+
+
+    //internal class SocketAsync:SocketAsyncEventArgs
+    //{
+
+    //    private Socket clientSocket;
+
+
+    //    void ProcessAccept(SocketAsyncEventArgs e)
+    //    {
+
+    //    }
+
+
+    //    protected override void OnCompleted(SocketAsyncEventArgs e)
+    //    {
+    //        base.OnCompleted(e);
+    //    }
+    //}
+
+
+
+
+   
 }
