@@ -19,14 +19,14 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         const int opsToPreAlloc = 2;
         private SocketAsyncEventArgsPool m_readWritePool;
         private Socket mainServiceSocket;
-        private  BufferManager m_bufferManager;
+        private BufferManager m_bufferManager;
 
         private Semaphore m_maxNumberAcceptedClients;
 
         public SocketListener()
         {
             m_readWritePool = new SocketAsyncEventArgsPool();
-            m_maxConnnections = 100;
+            m_maxConnnections = 10;
             m_maxSize=1024;
 
             m_bufferManager = BufferManager.CreateBufferManager(m_maxConnnections * m_maxSize * opsToPreAlloc, m_maxSize);
@@ -37,7 +37,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 socketAsyncEventArg.UserToken = new AsyncUserToken();
                 socketAsyncEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
                 socketAsyncEventArg.SetBuffer(m_bufferManager.TakeBuffer(m_maxSize), 0, m_maxSize);
-
                 m_readWritePool.Push(socketAsyncEventArg);
             }
 
@@ -116,7 +115,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             {
                 SocketAsyncEventArgs readEventArgs = m_readWritePool.Pop();
                 ((AsyncUserToken)readEventArgs.UserToken).Socket = e.AcceptSocket;
-                //readEventArgs.AcceptSocket = e.AcceptSocket;
 
                 // As soon as the client is connected, post a receive to the connection
                 bool willRaiseEvent = e.AcceptSocket.ReceiveAsync(readEventArgs);
@@ -124,7 +122,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 {
                     ProcessReceive(readEventArgs);
                 }
-
+                CommonVariables.LogTool.Log("Start next accept");
                 // Accept the next connection request
                 StartAccept(e);
             }
@@ -149,20 +147,16 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     //Interlocked.Add(ref m_totalBytesRead, e.BytesTransferred);
                     //Console.WriteLine("The server has read a total of {0} bytes", m_totalBytesRead);
 
-
                     string data = Encoding.UTF8.GetString(e.Buffer, e.Offset, e.BytesTransferred);
-                    Byte[] sendBuffer = null;
-                    if (token != null)
-                    {
-                        sendBuffer = Encoding.UTF8.GetBytes(token.GetReturnData(data));
-                    }
-                    else
-                    {
-                        sendBuffer = Encoding.UTF8.GetBytes("ok");
-                    }
 
-
+                    CommonVariables.LogTool.Log("get client data:" + data);
+                    
+                    Byte[] sendBuffer = Encoding.UTF8.GetBytes(token.GetReturnData(data));
                     //echo the data received back to the client
+                    if (sendBuffer != null && sendBuffer.Length>0)
+                    {
+                        CommonVariables.LogTool.Log("send client:" + sendBuffer[0]);
+                    }
                     e.SetBuffer(sendBuffer, 0, sendBuffer.Length);
 
                     bool willRaiseEvent = token.Socket.SendAsync(e);
@@ -209,7 +203,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     CloseClientSocket(e);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 CommonVariables.LogTool.Log(ex.Message + ex.StackTrace);
             }
@@ -226,14 +220,16 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 token.Socket.Shutdown(SocketShutdown.Send);
             }
             // throws if client process has already closed
-            catch (Exception) { }
+            catch (Exception ex) {
+                CommonVariables.LogTool.Log("close socket error: " + ex.Message);
+            }
             token.Socket.Close();
-
+            CommonVariables.LogTool.Log("close one socket ");
             // decrement the counter keeping track of the total number of clients connected to the server
             //Interlocked.Decrement(ref m_numConnectedSockets);
-            //m_maxNumberAcceptedClients.Release();
+            m_maxNumberAcceptedClients.Release();
             //Console.WriteLine("A client has been disconnected from the server. There are {0} clients connected to the server", m_numConnectedSockets);
-
+            
             // Free the SocketAsyncEventArg so they can be reused by another client
             m_readWritePool.Push(e);
         }
@@ -281,7 +277,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 if (!string.IsNullOrEmpty(clientModel.ObjectID))
                 {
                     CommonVariables.LogTool.Log("Account " + clientModel.ObjectID + " connect");
-                    return "ok";
+                    return "ok\n";
                 }
             }
 
@@ -292,7 +288,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 MsgRecordModel msgModel = CommonVariables.serializer.Deserialize<MsgRecordModel>(tempStr);
                 if (!string.IsNullOrEmpty(msgModel.ObjectID))
                 {
-                    return "ok";
+                    return "ok\n";
                 }
             }
 
@@ -302,7 +298,8 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 ClientStatusModel clientModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(tempStr);
                 if (!string.IsNullOrEmpty(clientModel.ObjectID))
                 {
-                    return "No";
+                    CommonVariables.LogTool.Log("Account " + clientModel.ObjectID + " get message");
+                    return "No\n";
                 }
             }
             return "";
