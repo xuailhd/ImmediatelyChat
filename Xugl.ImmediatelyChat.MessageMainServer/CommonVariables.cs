@@ -117,7 +117,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             {
                 if (Singleton<ICommonLog>.Instance == null)
                 {
-                    Singleton<ICommonLog>.Instance = new CommonLog();
+                    Singleton<ICommonLog>.Instance = Xugl.ImmediatelyChat.Core.DependencyResolution.ObjectContainerFactory.CurrentContainer.Resolver<ICommonLog>();
                 }
                 return Singleton<ICommonLog>.Instance;
             }

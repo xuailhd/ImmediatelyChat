@@ -224,7 +224,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         }
 
 
-        private SocketAsyncEventArgsPool socketAsyncEventArgsPool;
         /// <summary>
         /// begin MCS service
         /// 1.wait Start Command

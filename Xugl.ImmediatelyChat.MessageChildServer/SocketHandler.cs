@@ -6,12 +6,8 @@ using System.Threading.Tasks;
 
 namespace Xugl.ImmediatelyChat.MessageChildServer
 {
-    public interface ICommonLog
+    public abstract class SocketHandler
     {
-        void Log(string msg);
-
-        bool IsRecord { get; set; }
-
-        string LogMsg { get; }
+        
     }
 }

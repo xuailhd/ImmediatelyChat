@@ -46,7 +46,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommonLog.cs" />
     <Compile Include="CommonVariables.cs" />
     <Compile Include="FrmMain.cs">
       <SubType>Form</SubType>
@@ -54,7 +53,6 @@
     <Compile Include="FrmMain.Designer.cs">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="ICommonLog.cs" />
     <Compile Include="InitCommonVariables.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

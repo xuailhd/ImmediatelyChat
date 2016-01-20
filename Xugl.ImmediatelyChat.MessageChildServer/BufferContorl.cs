@@ -19,30 +19,76 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         private int InputCount;
         private int OutPutCount;
 
-        private List<MsgRecordModel> BufferMsgRecordModels = new List<MsgRecordModel>();
-        private List<GetMsgModel> BufferGetMsgModels = new List<GetMsgModel>();
+        private IList<MsgRecordModel> BufferMsgRecordModels = new List<MsgRecordModel>();
+        private IList<GetMsgModel> BufferGetMsgModels = new List<GetMsgModel>();
 
-        private List<MsgRecordModel> PerpareMsgRecordModels = new List<MsgRecordModel>();
-        private List<GetMsgModel> PerpareGetMsgModels = new List<GetMsgModel>();
+        private IList<MsgRecordModel> PerpareMsgRecordModels = new List<MsgRecordModel>();
+        private IList<GetMsgModel> PerpareGetMsgModels = new List<GetMsgModel>();
 
         private Thread mainThread = null;
 
         public bool IsRunning = false;
 
-        public void AddMSgRecordIntoBuffer(MsgRecordModel msgRecordModel)
+        public void AddMSgRecordIntoBuffer(MsgRecordModel _msgRecordModel)
         {
-            if (!ThreadPool.QueueUserWorkItem(new WaitCallback(InputMessageTask), msgRecordModel))
+            //if (!ThreadPool.QueueUserWorkItem(new WaitCallback(InputMessageTask), msgRecordModel))
+            //{
+            //    CommonVariables.LogTool.Log("Insert MsgRecordModel Thread Pool Failure");
+            //}
+            IList<MsgRecordModel> msgRecordModels = GenerateMsgRecordModel(_msgRecordModel);
+
+            foreach (MsgRecordModel msgRecordModel in msgRecordModels)
             {
-                CommonVariables.LogTool.Log("Insert MsgRecordModel Thread Pool Failure");
+                BufferMsgRecordModels.Add(msgRecordModel);
             }
+        }
+
+        private IList<MsgRecordModel> GenerateMsgRecordModel(MsgRecordModel msgRecordModel)
+        {
+            IList<MsgRecordModel> msgRecords = new List<MsgRecordModel>();
+            if (msgRecordModel.SendType == 1)
+            {
+                IContactGroupService contactGroupService = ObjectContainerFactory.CurrentContainer.Resolver<IContactGroupService>();
+                IList<ContactPerson> ContactPersons = contactGroupService.GetContactPersonIDListByGroupID(msgRecordModel.RecivedGroupID);
+
+                foreach (ContactPerson contactPerson in ContactPersons)
+                {
+                    MsgRecordModel _msgRecordModel = new MsgRecordModel();
+                    _msgRecordModel.Content = msgRecordModel.Content;
+                    _msgRecordModel.MsgType = msgRecordModel.MsgType;
+                    _msgRecordModel.ObjectID = msgRecordModel.ObjectID;
+                    _msgRecordModel.ObjectName = msgRecordModel.ObjectName;
+                    _msgRecordModel.RecivedGroupID = msgRecordModel.RecivedGroupID;
+                    _msgRecordModel.RecivedObjectID = msgRecordModel.RecivedObjectID;
+                    _msgRecordModel.RecivedObjectID2 = msgRecordModel.RecivedObjectID2;
+                    _msgRecordModel.SendType = msgRecordModel.SendType;
+
+                    foreach (string mds_id in CommonVariables.GetMDSs.Keys)
+                    {
+                        if (CommonVariables.GetMDSs[mds_id].ArrangeChars.Contains(_msgRecordModel.RecivedObjectID.Substring(0, 1)))
+                        {
+                            _msgRecordModel.MDS_IP = CommonVariables.GetMDSs[mds_id].MDS_IP;
+                            _msgRecordModel.MDS_Port = CommonVariables.GetMDSs[mds_id].MDS_Port;
+                            break;
+                        }
+                    }
+                }
+
+            }
+            else
+            {
+                msgRecords.Add(msgRecordModel);
+            }
+            return msgRecords;
         }
 
         public void AddGetMsgIntoBuffer(GetMsgModel getMsgModel)
         {
-            if (!ThreadPool.QueueUserWorkItem(new WaitCallback(GetMessageTask), getMsgModel))
-            {
-                CommonVariables.LogTool.Log("Insert GetMsgModel Thread Pool Failure");
-            }
+            //if (!ThreadPool.QueueUserWorkItem(new WaitCallback(GetMessageTask), getMsgModel))
+            //{
+            //    CommonVariables.LogTool.Log("Insert GetMsgModel Thread Pool Failure");
+            //}
+            BufferGetMsgModels.Add(getMsgModel);
         }
 
         //public void BufferContorlStart()
@@ -64,38 +110,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             }
         }
 
-        private IList<MsgRecordModel> GenerateMsgRecordModel(MsgRecordModel msgRecordModel)
-        {
-            IContactGroupService contactGroupService = ObjectContainerFactory.CurrentContainer.Resolver<IContactGroupService>();
-            IList<ContactPerson> ContactPersons = contactGroupService.GetContactPersonIDListByGroupID(msgRecordModel.RecivedGroupID);
-
-            IList<MsgRecordModel> msgRecords = new List<MsgRecordModel>();
-
-            foreach (ContactPerson contactPerson in ContactPersons)
-            {
-                MsgRecordModel _msgRecordModel = new MsgRecordModel();
-                _msgRecordModel.Content = msgRecordModel.Content;
-                _msgRecordModel.MsgType = msgRecordModel.MsgType;
-                _msgRecordModel.ObjectID = msgRecordModel.ObjectID;
-                _msgRecordModel.ObjectName = msgRecordModel.ObjectName;
-                _msgRecordModel.RecivedGroupID = msgRecordModel.RecivedGroupID;
-                _msgRecordModel.RecivedObjectID = msgRecordModel.RecivedObjectID;
-                _msgRecordModel.RecivedObjectID2 = msgRecordModel.RecivedObjectID2;
-                _msgRecordModel.SendType = msgRecordModel.SendType;
-
-                foreach (string mds_id in CommonVariables.GetMDSs.Keys)
-                {
-                    if (CommonVariables.GetMDSs[mds_id].ArrangeChars.Contains(_msgRecordModel.RecivedObjectID.Substring(0, 1)))
-                    {
-                        _msgRecordModel.MDS_IP = CommonVariables.GetMDSs[mds_id].MDS_IP;
-                        _msgRecordModel.MDS_Port = CommonVariables.GetMDSs[mds_id].MDS_Port;
-                        break;
-                    }
-                }
-            }
-
-            return msgRecords;
-        }
+        
 
         private void GetMessageTask(object _getMsgModel)
         {

@@ -57,9 +57,11 @@
     <Compile Include="CacheManage\CacheManage.cs" />
     <Compile Include="CacheManage\ICacheManage.cs" />
     <Compile Include="CommonFlag.cs" />
+    <Compile Include="CommonLog.cs" />
     <Compile Include="DependencyResolution\IObjectContainer.cs" />
     <Compile Include="DependencyResolution\ObjectContainerFactory.cs" />
     <Compile Include="DependencyResolution\StructureMapContainer.cs" />
+    <Compile Include="ICommonLog.cs" />
     <Compile Include="IDbContext.cs" />
     <Compile Include="IRepository.cs" />
     <Compile Include="Models.cs" />

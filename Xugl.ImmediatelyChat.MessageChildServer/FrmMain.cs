@@ -14,6 +14,8 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
     public partial class FrmMain : Form
     {
         SocketService socketService;
+        private int logLength = 0;
+
 
         public FrmMain()
         {
@@ -32,10 +34,10 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (!CommonVariables.LogTool.IsRecord)
+            if (logLength != CommonVariables.LogTool.GetLogMsg.Length)
             {
-                txt_Log.Text = Singleton<ICommonLog>.Instance.LogMsg;
-                Singleton<ICommonLog>.Instance.IsRecord = true;
+                txt_Log.Text = CommonVariables.LogTool.GetLogMsg;
+                logLength = txt_Log.Text.Length;
             }
         }
     }

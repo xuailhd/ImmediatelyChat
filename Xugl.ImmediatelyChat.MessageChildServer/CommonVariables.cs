@@ -96,13 +96,13 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         #region Log tool
 
-        public static ICommonLog LogTool
+        public static  ICommonLog LogTool
         {
             get
             {
                 if (Singleton<ICommonLog>.Instance == null)
                 {
-                    Singleton<ICommonLog>.Instance = new CommonLog();
+                    Singleton<ICommonLog>.Instance = Xugl.ImmediatelyChat.Core.DependencyResolution.ObjectContainerFactory.CurrentContainer.Resolver<ICommonLog>();
                 }
                 return Singleton<ICommonLog>.Instance;
             }
