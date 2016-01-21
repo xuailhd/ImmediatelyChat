@@ -39,6 +39,8 @@ namespace Xugl.ImmediatelyChat.Core
 
     public class MsgRecordModel
     {
+        public string MessageID { get; set; }
+
         public string ObjectID { get; set; }
 
         public string ObjectName { get; set; }
@@ -66,6 +68,7 @@ namespace Xugl.ImmediatelyChat.Core
         //public bool IsGetMessage { get; set; }
         public string MDS_IP { get; set; }
         public int MDS_Port { get; set; }
+        public string MDS_ID { get; set; }
     }
 
     public class GetMsgModel
@@ -80,6 +83,7 @@ namespace Xugl.ImmediatelyChat.Core
 
         public string MDS_IP { get; set; }
         public int MDS_Port { get; set; }
+        public string MDS_ID { get; set; }
     }
 
 }

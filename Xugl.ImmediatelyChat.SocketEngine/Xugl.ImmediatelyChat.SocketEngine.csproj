@@ -40,9 +40,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncSocketClient.cs" />
     <Compile Include="AsyncUserToken.cs" />
     <Compile Include="SocketAsyncEventArgsPool.cs" />
-    <Compile Include="SocketListener.cs" />
+    <Compile Include="AsyncSocketListener.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

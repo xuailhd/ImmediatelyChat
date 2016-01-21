@@ -12,7 +12,7 @@ using Xugl.ImmediatelyChat.Core;
 namespace Xugl.ImmediatelyChat.MessageChildServer
 {
 
-    internal class SocketListener:Xugl.ImmediatelyChat.SocketEngine.SocketListener
+    internal class SocketListener:Xugl.ImmediatelyChat.SocketEngine.AsyncSocketListener
     {
         public SocketListener()
             : base(1024, 2, CommonVariables.LogTool)

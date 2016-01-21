@@ -11,7 +11,7 @@ using Xugl.ImmediatelyChat.Core;
 
 namespace Xugl.ImmediatelyChat.SocketEngine
 {
-    public abstract class SocketListener
+    public abstract class AsyncSocketListener
     {
         private int m_maxConnnections;
         private int m_maxSize;
@@ -23,7 +23,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
         private Semaphore m_maxNumberAcceptedClients;
         private ICommonLog LogTool;
 
-        public SocketListener(int _maxSize, int _maxConnnections, ICommonLog _logTool)
+        public AsyncSocketListener(int _maxSize, int _maxConnnections, ICommonLog _logTool)
         {
             m_readWritePool = new SocketAsyncEventArgsPool();
             m_maxConnnections = _maxConnnections;
