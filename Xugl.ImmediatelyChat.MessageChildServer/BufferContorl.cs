@@ -12,6 +12,7 @@ using Xugl.ImmediatelyChat.Core;
 using Xugl.ImmediatelyChat.Core.DependencyResolution;
 using Xugl.ImmediatelyChat.IServices;
 using Xugl.ImmediatelyChat.Model;
+using Xugl.ImmediatelyChat.SocketEngine;
 
 namespace Xugl.ImmediatelyChat.MessageChildServer
 {
@@ -32,9 +33,10 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         private const int messagePriority = 3;
         private const int getMessagePriority = 2;
 
-        private int _maxSize = 1024;
+        private AsyncSocketClient asyncSocketClient;
 
-        private BufferManager _bufferManager=null;
+        private int _maxSize = 1024;
+        private int _maxConnnections = 10;
 
         public bool IsRunning = false;
 
@@ -139,8 +141,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 CommonVariables.LogTool.Log("Insert Thread Pool Failure");
             }
         }
-
-        
 
         private void GetMessageTask(object _getMsgModel)
         {
@@ -353,11 +353,12 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             }
         }
 
-        private void MainConnectMDSThreadAsync()
+        private void MainConnectMDSThreadAsync(int threadcount)
         {
             Socket tempSocket = null;
             int tempMessagePriority = messagePriority;
             int tempGetMessageProority = getMessagePriority;
+            asyncSocketClient=new AsyncSocketClient(_maxSize,_maxConnnections,CommonVariables.LogTool);
             while (IsRunning)
             {
 
@@ -384,49 +385,9 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                         MsgRecordModel msgRecordModel = PerpareMsgRecordModels[0];
                         try
                         {
+                            string messageStr = "MCSMessage" + CommonVariables.serializer.Serialize(msgRecordModel);
 
-                            IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(msgRecordModel.MDS_IP), msgRecordModel.MDS_Port);
-                            tempSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                            tempSocket.Connect(ipe);
-
-                            var msgQuery = from aa in PerpareMsgRecordModels
-                                           where aa.MDS_ID == msgRecordModel.MDS_ID
-                                           select aa;
-
-                            IList<MsgRecordModel> toMDSList = msgQuery.ToList();
-
-
-                            string messageStr = "MCSMessage" + CommonVariables.serializer.Serialize(toMDSList);
-
-                            byte[] buffer = new byte[_maxSize];
-                            int bytesCount = Encoding.UTF8.GetBytes(messageStr, 0, messageStr.Length, buffer, 0);
-
-                            tempSocket.BeginReceive()
-
-
-
-                            tempSocket.Send(buffer, bytesCount, 0);
-
-
-
-                            bytesCount = tempSocket.Receive(buffer);
-
-                            messageStr = Encoding.UTF8.GetString(buffer, 0, bytesCount);
-                            IList<string> retrunStrs = CommonVariables.serializer.Deserialize<IList<string>>(messageStr);
-
-                            if (retrunStrs != null && retrunStrs.Count > 0)
-                            {
-                                msgQuery = from aa in PerpareMsgRecordModels
-                                           join bb in retrunStrs on aa.MessageID equals bb
-                                           select aa;
-
-                                toMDSList = null;
-                                toMDSList = msgQuery.ToList();
-                                foreach (MsgRecordModel _msgRecordModel in toMDSList)
-                                {
-                                    PerpareMsgRecordModels.Remove(_msgRecordModel);
-                                }
-                            }
+                            asyncSocketClient.SendMsg(msgRecordModel.MDS_IP,msgRecordModel.MDS_Port, messageStr, HandlerMsgReturnData);
                         }
                         catch (Exception ex)
                         {
@@ -471,14 +432,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                             tempSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                             tempSocket.Connect(ipe);
 
-                            var msgQuery = from aa in PerpareGetMsgModels
-                                           where aa.MDS_ID == getMsgModel.MDS_ID
-                                           select aa;
-
-                            IList<GetMsgModel> toMDSList = msgQuery.ToList();
-
-
-                            string messageStr = "MCSMessage" + CommonVariables.serializer.Serialize(toMDSList);
+                            string messageStr = "MCSMessage" + CommonVariables.serializer.Serialize(getMsgModel);
 
                             byte[] buffer = new byte[_maxSize];
                             int bytesCount = Encoding.UTF8.GetBytes(messageStr, 0, messageStr.Length, buffer, 0);
@@ -514,8 +468,31 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 }
             }
         }
-    }
 
+
+        private void HandlerMsgReturnData(string returnData)
+        {
+            IList<string> retrunStrs = CommonVariables.serializer.Deserialize<IList<string>>(returnData);
+
+            if (retrunStrs != null && retrunStrs.Count > 0)
+            {
+                var msgQuery = from aa in PerpareMsgRecordModels
+                           join bb in retrunStrs on aa.MessageID equals bb
+                           select aa;
+                IList<MsgRecordModel> toMDSList = msgQuery.ToList();
+                foreach (MsgRecordModel _msgRecordModel in toMDSList)
+                {
+                    PerpareMsgRecordModels.Remove(_msgRecordModel);
+                }
+            }
+        }
+
+
+        private void HandlerGetMsgReturnData(string returnData)
+        {
+
+        }
+    }
 
 }
 

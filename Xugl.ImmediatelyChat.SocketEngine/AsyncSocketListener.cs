@@ -16,7 +16,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
         private int m_maxConnnections;
         private int m_maxSize;
         const int opsToPreAlloc = 2;
-        private SocketAsyncEventArgsPool m_readWritePool;
+        private SocketAsyncEventArgsPool<SocketAsyncEventArgs> m_readWritePool;
         private Socket mainServiceSocket;
         private BufferManager m_bufferManager;
 
@@ -25,12 +25,13 @@ namespace Xugl.ImmediatelyChat.SocketEngine
 
         public AsyncSocketListener(int _maxSize, int _maxConnnections, ICommonLog _logTool)
         {
-            m_readWritePool = new SocketAsyncEventArgsPool();
+            m_readWritePool = new SocketAsyncEventArgsPool<SocketAsyncEventArgs>();
             m_maxConnnections = _maxConnnections;
             m_maxSize = _maxSize;
             LogTool = _logTool;
 
-            m_bufferManager = BufferManager.CreateBufferManager(m_maxConnnections * m_maxSize * opsToPreAlloc, m_maxSize);
+            //m_bufferManager = BufferManager.CreateBufferManager(m_maxConnnections * m_maxSize * opsToPreAlloc, m_maxSize);
+            m_bufferManager = BufferManager.CreateBufferManager(m_maxConnnections*m_maxSize,m_maxSize);
 
             for (int i = 0; i < m_maxConnnections; i++)
             {
@@ -86,7 +87,6 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             {
                 acceptEventArg.AcceptSocket = null;
             }
-
             m_maxNumberAcceptedClients.WaitOne();
             bool willRaiseEvent = mainServiceSocket.AcceptAsync(acceptEventArg);
             if (!willRaiseEvent)
@@ -116,6 +116,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                 ((AsyncUserToken)readEventArgs.UserToken).Socket = e.AcceptSocket;
 
                 // As soon as the client is connected, post a receive to the connection
+                readEventArgs.SetBuffer(0, m_maxSize);
                 bool willRaiseEvent = e.AcceptSocket.ReceiveAsync(readEventArgs);
                 if (!willRaiseEvent)
                 {
@@ -147,14 +148,13 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                     //Console.WriteLine("The server has read a total of {0} bytes", m_totalBytesRead);
 
                     string data = Encoding.UTF8.GetString(e.Buffer, e.Offset, e.BytesTransferred);
-                    m_bufferManager.ReturnBuffer(e.Buffer);
 
                     string returndata = HandlerRecivedMessage(data);
 
-                    int bytecount = Encoding.UTF8.GetBytes(returndata, 0, returndata.Length, e.Buffer, 0);
-                    //echo the data back to the client
-                    e.SetBuffer(0, bytecount);
+                    int bytecount = Encoding.UTF8.GetBytes(returndata, 0, returndata.Length, e.Buffer,0);
 
+                    e.SetBuffer(0,bytecount);
+                    LogTool.Log("after: " + bytecount.ToString()+ " &&" + e.Buffer.Length.ToString() + "&&" + e.BytesTransferred);
                     bool willRaiseEvent = token.Socket.SendAsync(e);
                     if (!willRaiseEvent)
                     {
@@ -186,7 +186,6 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                 {
                     // done echoing data back to the client
                     AsyncUserToken token = (AsyncUserToken)e.UserToken;
-                    e.SetBuffer(m_bufferManager.TakeBuffer(m_maxSize), 0, m_maxSize);
                     // read the next block of data send from the client
                     bool willRaiseEvent = token.Socket.ReceiveAsync(e);
                     if (!willRaiseEvent)
@@ -221,7 +220,6 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                 LogTool.Log("close socket error: " + ex.Message);
             }
             token.Socket.Close();
-            LogTool.Log("close one socket ");
             // decrement the counter keeping track of the total number of clients connected to the server
             //Interlocked.Decrement(ref m_numConnectedSockets);
             m_maxNumberAcceptedClients.Release();

@@ -36,7 +36,9 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 if (!string.IsNullOrEmpty(clientModel.ObjectID))
                 {
                     CommonVariables.LogTool.Log("Account " + clientModel.ObjectID + " connect");
-                    return "ok\n";
+
+                    return "ok";
+                    //return Convert.ToBase64String(Encoding.UTF8.GetBytes("ok"));
                 }
             }
 
@@ -47,7 +49,8 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 MsgRecordModel msgModel = CommonVariables.serializer.Deserialize<MsgRecordModel>(tempStr);
                 if (!string.IsNullOrEmpty(msgModel.ObjectID))
                 {
-                    return "ok\n";
+                    return "ok";
+                    //return Convert.ToBase64String(Encoding.UTF8.GetBytes("ok"));
                 }
             }
 
@@ -58,7 +61,8 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 if (!string.IsNullOrEmpty(clientModel.ObjectID))
                 {
                     CommonVariables.LogTool.Log("Account " + clientModel.ObjectID + " get message");
-                    return "No\n";
+                    return "ok";
+                    //return Convert.ToBase64String(Encoding.UTF8.GetBytes("No"));
                 }
             }
             return "";

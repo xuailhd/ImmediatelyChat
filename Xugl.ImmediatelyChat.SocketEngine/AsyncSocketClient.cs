@@ -11,317 +11,136 @@ using Xugl.ImmediatelyChat.Core;
 
 namespace Xugl.ImmediatelyChat.SocketEngine
 {
-    public abstract class AsyncSocketClient
+    public delegate void HandlerReturnData(string returnData);
+
+    public class AsyncSocketClient
     {
         //public static ManualResetEvent allDone = new ManualResetEvent(false);
         private int m_maxConnnections;
         private int m_maxSize;
-        const int opsToPreAlloc = 2;
-        private SocketAsyncEventArgsPool m_readWritePool;
-        private Socket mainServiceSocket;
+        private SocketAsyncEventArgsPool<AsyncClientToken> m_readWritePool;
         private BufferManager m_bufferManager;
 
         private Semaphore m_maxNumberAcceptedClients;
         private ICommonLog LogTool;
 
+
         public AsyncSocketClient(int _maxSize, int _maxConnnections, ICommonLog _logTool)
         {
-            m_readWritePool = new SocketAsyncEventArgsPool();
+            m_readWritePool = new SocketAsyncEventArgsPool<AsyncClientToken>();
             m_maxConnnections = _maxConnnections;
             m_maxSize = _maxSize;
             LogTool = _logTool;
+            m_bufferManager = BufferManager.CreateBufferManager(m_maxConnnections * m_maxSize, m_maxSize);
 
-            m_bufferManager = BufferManager.CreateBufferManager(m_maxConnnections * m_maxSize * opsToPreAlloc, m_maxSize);
-
-            for (int i = 0; i < m_maxConnnections; i++)
+            for (int i = 0; i < _maxConnnections; i++)
             {
-                SocketAsyncEventArgs socketAsyncEventArg = new SocketAsyncEventArgs();
-                socketAsyncEventArg.UserToken = new AsyncUserToken();
-                socketAsyncEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-                socketAsyncEventArg.SetBuffer(m_bufferManager.TakeBuffer(m_maxSize), 0, m_maxSize);
-                m_readWritePool.Push(socketAsyncEventArg);
+                AsyncClientToken asyncClientToken = new AsyncClientToken();
+                asyncClientToken.Buffer = m_bufferManager.TakeBuffer(m_maxSize);
             }
 
             m_maxNumberAcceptedClients = new Semaphore(m_maxConnnections, m_maxConnnections);
         }
 
-        private void IO_Completed(object sender, SocketAsyncEventArgs e)
-        {
-            // determine which type of operation just completed and call the associated handler
-            switch (e.LastOperation)
-            {
-                case SocketAsyncOperation.Connect:
-
-                case SocketAsyncOperation.Receive:
-                    ProcessReceive(e);
-                    break;
-                case SocketAsyncOperation.Send:
-                    ProcessSend(e);
-                    break;
-                default:
-                    throw new ArgumentException("The last operation completed on the socket was not a receive or send");
-            }
-
-        }
-
-
-        protected void SendMsg(string ipaddress,int port)
+        public void SendMsg(string ipaddress, int port, string sendData, HandlerReturnData handlerReturnData)
         {
             IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(ipaddress), port);
             Socket clientSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            clientSocket.BeginConnect(ipe, new AsyncCallback(ConnectCallback), new AsyncUserToken().Socket=clientSocket);
 
-            //clientSocket.ConnectAsync(m_readWritePool.PopOrNew());
+            AsyncClientToken asyncClientToken = m_readWritePool.PopOrNew();
+            asyncClientToken.HandlerReturnData = handlerReturnData;
+            asyncClientToken.Socket = clientSocket;
+
+            int sendcount = Encoding.UTF8.GetBytes(sendData, 0, sendData.Length, asyncClientToken.Buffer, 0);
+            asyncClientToken.Datasize = sendcount;
+
+            m_maxNumberAcceptedClients.WaitOne();
+
+            clientSocket.BeginConnect(ipe, new AsyncCallback(ConnectCallback), asyncClientToken);
         }
-
 
         private void ConnectCallback(IAsyncResult ar)
         {
-            AsyncUserToken token = (AsyncUserToken)ar.AsyncState;
-            byte[] sendbuffer = null;
+            AsyncClientToken token = (AsyncClientToken)ar.AsyncState;
             try
             {
                 token.Socket.EndConnect(ar);
-                string sendData = HandlerSendData();
-                sendbuffer = m_bufferManager.TakeBuffer(m_maxSize);
 
-                int sendcount = Encoding.UTF8.GetBytes(sendData, 0, sendData.Length, sendbuffer, 0);
-
-                token.Socket.BeginSend(sendbuffer, 0, sendcount, SocketFlags.None, new AsyncCallback(SendCallback), token);
-
-                m_bufferManager.ReturnBuffer(sendbuffer);
+                token.Socket.BeginSend(token.Buffer, 0, token.Datasize, SocketFlags.None, new AsyncCallback(SendCallback), token);
             }
             catch(Exception ex)
             {
-                if (token.Socket!=null)
-                { 
-                    token.Socket.Close();
-                    token.Socket = null;
-                }
-
-                if (sendbuffer != null)
-                {
-                    m_bufferManager.ReturnBuffer(sendbuffer);
-                }
+                CloseOneInstance(token);
                 LogTool.Log(ex.Message + ex.StackTrace);
             }
-
-            
         }
 
 
         private void SendCallback(IAsyncResult ar)
         {
-            AsyncUserToken token = (AsyncUserToken)ar.AsyncState;
-            byte[] recivebuffer=null;
+            AsyncClientToken token = (AsyncClientToken)ar.AsyncState;
             try
             {
                 token.Socket.EndSend(ar);
 
-                recivebuffer = m_bufferManager.TakeBuffer(m_maxSize);
-
-                token.Socket.BeginReceive(recivebuffer, 0, m_maxSize, SocketFlags.None, new AsyncCallback(ReciveCallback), token);
-
-                m_bufferManager.ReturnBuffer(recivebuffer);
-
+                token.Socket.BeginReceive(token.Buffer, 0, m_maxSize, SocketFlags.None, new AsyncCallback(ReciveCallback), token);
             }
             catch(Exception ex)
             {
-                if (token.Socket != null)
-                {
-                    token.Socket.Close();
-                    token.Socket = null;
-                }
-
-                if (recivebuffer!=null)
-                {
-                    m_bufferManager.ReturnBuffer(recivebuffer);
-                }
-
+                CloseOneInstance(token);
                 LogTool.Log(ex.Message + ex.StackTrace);
             }
         }
 
         private void ReciveCallback(IAsyncResult ar)
         {
-            AsyncUserToken token = (AsyncUserToken)ar.AsyncState;
+            AsyncClientToken token = (AsyncClientToken)ar.AsyncState;
             try
             {
-                token.Socket.EndReceive(ar);
-
-                ar.
-
-            }
-            catch (Exception ex)
-            {
-                token.Socket.Close();
-                token.Socket = null;
-
-
-                LogTool.Log(ex.Message + ex.StackTrace);
-            }
-        }
-
-        private abstract string HandlerSendData();
-
-        private abstract void HandlerReturnData(string returnData);
-
-
-
-        private void StartAccept(SocketAsyncEventArgs acceptEventArg)
-        {
-            if (acceptEventArg == null)
-            {
-                acceptEventArg = new SocketAsyncEventArgs();
-                acceptEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(AcceptEventArg_Completed);
-            }
-            else
-            {
-                acceptEventArg.AcceptSocket = null;
-            }
-
-            m_maxNumberAcceptedClients.WaitOne();
-            bool willRaiseEvent = mainServiceSocket.AcceptAsync(acceptEventArg);
-            if (!willRaiseEvent)
-            {
-                ProcessAccept(acceptEventArg);
-            }
-        }
-
-
-        private void AcceptEventArg_Completed(object sender, SocketAsyncEventArgs e)
-        {
-            ProcessAccept(e);
-        }
-
-
-        private void ProcessAccept(SocketAsyncEventArgs e)
-        {
-            //Interlocked.Increment(ref m_numConnectedSockets);
-            //Console.WriteLine("Client connection accepted. There are {0} clients connected to the server",
-            //    m_numConnectedSockets);
-
-            // Get the socket for the accepted client connection and put it into the 
-            //ReadEventArg object user token
-            try
-            {
-                SocketAsyncEventArgs readEventArgs = m_readWritePool.Pop();
-                ((AsyncUserToken)readEventArgs.UserToken).Socket = e.AcceptSocket;
-
-                // As soon as the client is connected, post a receive to the connection
-                bool willRaiseEvent = e.AcceptSocket.ReceiveAsync(readEventArgs);
-                if (!willRaiseEvent)
+                int recivecount= token.Socket.EndReceive(ar);
+                if (recivecount>0)
                 {
-                    ProcessReceive(readEventArgs);
-                }
-                // Accept the next connection request
-                StartAccept(e);
-            }
-            catch (Exception ex)
-            {
-                LogTool.Log(ex.Message + ex.StackTrace);
-            }
-        }
-
-        protected abstract string HandlerRecivedMessage(string inputMessage);
-        
-
-
-        private void ProcessReceive(SocketAsyncEventArgs e)
-        {
-            try
-            {
-                // check if the remote host closed the connection
-                AsyncUserToken token = (AsyncUserToken)e.UserToken;
-                if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
-                {
-                    //increment the count of the total bytes receive by the server
-                    //Interlocked.Add(ref m_totalBytesRead, e.BytesTransferred);
-                    //Console.WriteLine("The server has read a total of {0} bytes", m_totalBytesRead);
-
-                    string data = Encoding.UTF8.GetString(e.Buffer, e.Offset, e.BytesTransferred);
-                    m_bufferManager.ReturnBuffer(e.Buffer);
-
-                    string returndata = HandlerRecivedMessage(data);
-
-                    int bytecount = Encoding.UTF8.GetBytes(returndata, 0, returndata.Length, e.Buffer, 0);
-                    //echo the data back to the client
-                    e.SetBuffer(0, bytecount);
-
-                    bool willRaiseEvent = token.Socket.SendAsync(e);
-                    if (!willRaiseEvent)
-                    {
-                        ProcessSend(e);
-                    }
+                    token.HandlerReturnData(Encoding.UTF8.GetString(token.Buffer, 0, recivecount));
+                    token.Socket.BeginReceive(token.Buffer, 0, m_maxSize, SocketFlags.None, new AsyncCallback(ReciveCallback), token);
                 }
                 else
                 {
-                    CloseClientSocket(e);
+                    CloseOneInstance(token);
                 }
+                
+                
             }
             catch (Exception ex)
             {
+                CloseOneInstance(token);
                 LogTool.Log(ex.Message + ex.StackTrace);
             }
         }
 
-
-        // This method is invoked when an asynchronous send operation completes.  
-        // The method issues another receive on the socket to read any additional 
-        // data sent from the client
-        //
-        // <param name="e"></param>
-        private void ProcessSend(SocketAsyncEventArgs e)
+        private void CloseOneInstance(AsyncClientToken token)
         {
-            try
+            if (token!=null)
             {
-                if (e.SocketError == SocketError.Success)
+                if(token.Socket!=null)
                 {
-                    // done echoing data back to the client
-                    AsyncUserToken token = (AsyncUserToken)e.UserToken;
-                    e.SetBuffer(m_bufferManager.TakeBuffer(m_maxSize), 0, m_maxSize);
-                    // read the next block of data send from the client
-                    bool willRaiseEvent = token.Socket.ReceiveAsync(e);
-                    if (!willRaiseEvent)
-                    {
-                        ProcessReceive(e);
-                    }
+                    token.Socket.Close();
+                    token.Socket = null;
                 }
-                else
-                {
-                    CloseClientSocket(e);
-                }
+                m_readWritePool.Push(token);
             }
-            catch (Exception ex)
-            {
-                LogTool.Log(ex.Message + ex.StackTrace);
-            }
-        }
-
-
-        private void CloseClientSocket(SocketAsyncEventArgs e)
-        {
-            AsyncUserToken token = e.UserToken as AsyncUserToken;
-
-            // close the socket associated with the client
-            try
-            {
-                token.Socket.Shutdown(SocketShutdown.Send);
-            }
-            // throws if client process has already closed
-            catch (Exception ex)
-            {
-                LogTool.Log("close socket error: " + ex.Message);
-            }
-            token.Socket.Close();
-            LogTool.Log("close one socket ");
-            // decrement the counter keeping track of the total number of clients connected to the server
-            //Interlocked.Decrement(ref m_numConnectedSockets);
             m_maxNumberAcceptedClients.Release();
-            //Console.WriteLine("A client has been disconnected from the server. There are {0} clients connected to the server", m_numConnectedSockets);
-
-            // Free the SocketAsyncEventArg so they can be reused by another client
-            m_readWritePool.Push(e);
         }
+    }
+
+
+    internal class AsyncClientToken:AsyncUserToken
+    {
+        public byte[] Buffer { get; set; }
+
+        public int Datasize { get; set; }
+
+        public int IsWhole { get; set; }
+
+        public HandlerReturnData HandlerReturnData { get; set; }
     }
 }

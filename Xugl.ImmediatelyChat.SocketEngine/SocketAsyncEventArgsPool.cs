@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace Xugl.ImmediatelyChat.SocketEngine
 {
-    internal class SocketAsyncEventArgsPool
+    internal class SocketAsyncEventArgsPool<T> where T:IDisposable,new ()
     {
-        Stack<SocketAsyncEventArgs> _Pool;
+        Stack<T> _Pool;
 
         public SocketAsyncEventArgsPool()
         {
 
-            _Pool = new Stack<SocketAsyncEventArgs>();
+            _Pool = new Stack<T>();
 
         }
 
-        public void Push(SocketAsyncEventArgs item)
+        public void Push(T item)
         {
 
             if (item == null) return;
@@ -32,18 +32,18 @@ namespace Xugl.ImmediatelyChat.SocketEngine
 
         }
 
-        public SocketAsyncEventArgs PopOrNew()
+        public T PopOrNew()
         {
 
             if (Count == 0)
 
-                return new SocketAsyncEventArgs();
+                return new T();
 
             return Pop();
 
         }
 
-        public SocketAsyncEventArgs Pop()
+        public T Pop()
         {
 
             lock (_Pool)

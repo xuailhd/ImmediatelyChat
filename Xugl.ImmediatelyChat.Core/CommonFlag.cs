@@ -64,5 +64,18 @@ namespace Xugl.ImmediatelyChat.Core
         public static string F_RecivedObjectID { get { return f_RecivedObjectID; } }
 
         public static string F_RecivedObjectID2 { get { return f_RecivedObjectID2; } }
+
+
+        private static string f_MMSCallMCSStart = "MCS start";
+        private static string f_MMSCallMDSStart = "MDS start";
+        private static string f_MMSVerifyMCS = "MCS";
+        private static string f_MMSVerifyMDS = "MDS";
+        private static string f_MMSReciveStopMCS = "stopMCS";
+        private static string f_MDSReciveStopMDS = "stopMDS";
+        private static string f_MMSVerifyUA = "Verify";
+        private static string f_MCSVerifyUA = "VerifyAccount";
+        private static string f_MCSVerifyUAMSG = "VerifyMSG";
+        private static string f
+
     }
 }
