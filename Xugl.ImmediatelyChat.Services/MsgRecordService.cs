@@ -24,13 +24,48 @@ namespace Xugl.ImmediatelyChat.Services
 
         public IList<MsgRecord> LoadMsgRecord(MsgRecordQuery query)
         {
-            throw new NotImplementedException();
+            var tablequery = msgRecordRepository.Table;
+
+            if(query.MsgRecordtime!=null)
+            {
+                tablequery = tablequery.Where(t => DateTime.Compare(t.SendTime, query.MsgRecordtime) > 0);
+            }
+
+            if(string.IsNullOrEmpty(query.MsgRecipientObjectID))
+            {
+                tablequery=tablequery.Where(t=>t.MsgRecipientObjectID==query.MsgRecipientObjectID);
+            }
+
+            return tablequery.ToList();
         }
 
         public int BatchSave(IList<MsgRecord> msgRecords)
         {
-            //msgRecordRepository.
-            return 1;
+
+            #region prevent duplicate data
+            IList<string> msgids=new List<string>();
+
+            for(int i=0;i<msgRecords.Count;i++)
+            {
+                msgids.Add(msgRecords[i].MsgID);
+            }
+
+            var query = from aa in msgRecordRepository.Table
+                        join bb in msgids on aa.MsgID equals bb
+                        select aa.MsgID;
+            IList<string> tempids = query.ToList();
+            #endregion
+
+
+            for (int i = msgRecords.Count-1; i >= 0; i--)
+            {
+                if(tempids.Contains(msgRecords[i].MsgID))
+                {
+                    msgRecords.RemoveAt(i);
+                }
+            }
+
+            return msgRecordRepository.BatchInsert(msgRecords);
         }
 
 

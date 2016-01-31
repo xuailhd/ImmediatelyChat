@@ -42,7 +42,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                     return;
                 }
 
-                if (strMsg.StartsWith("MCS"))
+                if (strMsg.StartsWith(CommonFlag.F_MMSVerifyMCS))
                 {
                     //tempMCSModel = UnboxMCSMsg(strMsg);
                     
@@ -53,7 +53,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                     CommonVariables.LogTool.Log("Message Child Server " + tempMCSModel.MCS_ID + " connect");
                 }
 
-                if (strMsg.StartsWith("MDS"))
+                if (strMsg.StartsWith(CommonFlag.F_MMSVerifyMDS))
                 {
                     //tempMDSModel = UnboxMDSMsg(strMsg);
 
@@ -64,20 +64,20 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                     CommonVariables.LogTool.Log("Message Data Server " + tempMDSModel.MDS_ID + " connect");
                 }
 
-                if (strMsg.StartsWith("stopMCS"))
+                if (strMsg.StartsWith(CommonFlag.F_MMSReciveStopMCS))
                 {
                     CommonVariables.RemoveMCS(strMsg.Replace("stopMCS", ""));
                     CommonVariables.LogTool.Log("Message Child Server " + strMsg.Replace("stopMCS", "") + " disconnect");
                 }
 
-                if (strMsg.StartsWith("stopMDS"))
+                if (strMsg.StartsWith(CommonFlag.F_MMSReciveStopMDS))
                 {
                     CommonVariables.RemoveMCS(strMsg.Replace("stopMDS", ""));
                     CommonVariables.LogTool.Log("Message Data Server " + strMsg.Replace("stopMDS", "") + " disconnect");
                 }
 
                 //UA
-                if (strMsg.StartsWith("Verify"))
+                if (strMsg.StartsWith(CommonFlag.F_MMSVerifyUA))
                 {
                     ClientStatusModel clientStatusModel = serializer.Deserialize<ClientStatusModel>(strMsg.Remove(0, 6));
                     //Find MCS

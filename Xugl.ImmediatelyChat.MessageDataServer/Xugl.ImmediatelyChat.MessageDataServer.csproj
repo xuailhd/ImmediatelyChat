@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BufferContorl.cs" />
     <Compile Include="CommonVariables.cs" />
     <Compile Include="FrmMain.cs">
       <SubType>Form</SubType>
@@ -56,6 +57,7 @@
     <Compile Include="InitCommonVariables.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SocketListener.cs" />
     <Compile Include="SocketService.cs" />
     <Compile Include="SocketThead.cs" />
     <EmbeddedResource Include="FrmMain.resx">
@@ -87,6 +89,18 @@
     <ProjectReference Include="..\Xugl.ImmediatelyChat.Core\Xugl.ImmediatelyChat.Core.csproj">
       <Project>{f01a79cb-296c-41a2-8dbd-8dd78f1c4227}</Project>
       <Name>Xugl.ImmediatelyChat.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xugl.ImmediatelyChat.Domain\Xugl.ImmediatelyChat.Domain.csproj">
+      <Project>{0e1fdc46-9e8c-4fd8-a73c-ce9a7aad622d}</Project>
+      <Name>Xugl.ImmediatelyChat.Domain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xugl.ImmediatelyChat.IServices\Xugl.ImmediatelyChat.IServices.csproj">
+      <Project>{b1deb2ad-fd05-4444-b8d7-ef41af547d5a}</Project>
+      <Name>Xugl.ImmediatelyChat.IServices</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xugl.ImmediatelyChat.SocketEngine\Xugl.ImmediatelyChat.SocketEngine.csproj">
+      <Project>{b21950b9-74b0-4443-9c3c-7d76d4bce73d}</Project>
+      <Name>Xugl.ImmediatelyChat.SocketEngine</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

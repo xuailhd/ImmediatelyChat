@@ -149,79 +149,79 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         /// 2.analysis command, save MDSs inforamtion
         /// 3.Start MCS service
         /// </summary>
-        private void StartMCSService()
-        {
-            try
-            {
-                byte[] bytesRevice=new byte[1024];;
+        //private void StartMCSService()
+        //{
+        //    try
+        //    {
+        //        byte[] bytesRevice=new byte[1024];;
 
-                //1.wait Start Command
-                CommonVariables.LogTool.Log("Wait Start Command");
-                CommonVariables.LogTool.Log("IP:" + CommonVariables.MCSIP + "    Port:" + CommonVariables.MCSPort.ToString());
-                IPAddress ip = IPAddress.Parse(CommonVariables.MCSIP);
-                IPEndPoint ipe = new IPEndPoint(ip, CommonVariables.MCSPort);
+        //        //1.wait Start Command
+        //        CommonVariables.LogTool.Log("Wait Start Command");
+        //        CommonVariables.LogTool.Log("IP:" + CommonVariables.MCSIP + "    Port:" + CommonVariables.MCSPort.ToString());
+        //        IPAddress ip = IPAddress.Parse(CommonVariables.MCSIP);
+        //        IPEndPoint ipe = new IPEndPoint(ip, CommonVariables.MCSPort);
 
-                mainServiceSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                mainServiceSocket.Bind(ipe);
-                mainServiceSocket.Listen(0);
+        //        mainServiceSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        //        mainServiceSocket.Bind(ipe);
+        //        mainServiceSocket.Listen(0);
 
-                IsGoOnListenMMS = true;
-                IsGoOnRunning = true;
+        //        IsGoOnListenMMS = true;
+        //        IsGoOnRunning = true;
 
-                try
-                {
-                    string strMsg="";
-                    while (IsGoOnListenMMS)
-                    {
-                        Socket clientSocket = mainServiceSocket.Accept();
-                        int bytes = clientSocket.Receive(bytesRevice);
-                        strMsg = "";
-                        strMsg = Encoding.UTF8.GetString(bytesRevice, 0, bytes);
+        //        try
+        //        {
+        //            string strMsg="";
+        //            while (IsGoOnListenMMS)
+        //            {
+        //                Socket clientSocket = mainServiceSocket.Accept();
+        //                int bytes = clientSocket.Receive(bytesRevice);
+        //                strMsg = "";
+        //                strMsg = Encoding.UTF8.GetString(bytesRevice, 0, bytes);
 
-                        if (strMsg.StartsWith("stop"))
-                        {
-                            clientSocket.Close();
-                            mainServiceSocket.Close();
-                            clientSocket = null;
-                            mainServiceSocket = null;
-                            return;
-                        }
+        //                if (strMsg.StartsWith("stop"))
+        //                {
+        //                    clientSocket.Close();
+        //                    mainServiceSocket.Close();
+        //                    clientSocket = null;
+        //                    mainServiceSocket = null;
+        //                    return;
+        //                }
 
-                        if (strMsg.StartsWith("MCS start"))
-                        {
-                            //2.analysis command, save MDSs inforamtion
-                            SaveMDSs(strMsg);
-                            break;
-                        }
-                    }
+        //                if (strMsg.StartsWith(CommonFlag.F_MMSCallMCSStart))
+        //                {
+        //                    //2.analysis command, save MDSs inforamtion
+        //                    SaveMDSs(strMsg);
+        //                    break;
+        //                }
+        //            }
 
-                    //3.Start MCS service
-                    CommonVariables.LogTool.Log("Start MCS service:" + CommonVariables.MCSIP + ", Port:" + CommonVariables.MCSPort.ToString());
-                    while (IsGoOnRunning)
-                    {
-                        Socket clientSocket = mainServiceSocket.Accept();
-                        SocketThead socketThead = new SocketThead(clientSocket);
-                    }
+        //            //3.Start MCS service
+        //            CommonVariables.LogTool.Log("Start MCS service:" + CommonVariables.MCSIP + ", Port:" + CommonVariables.MCSPort.ToString());
+        //            while (IsGoOnRunning)
+        //            {
+        //                Socket clientSocket = mainServiceSocket.Accept();
+        //                SocketThead socketThead = new SocketThead(clientSocket);
+        //            }
 
-                    mainServiceSocket.Close();
-                    CommonVariables.LogTool.Log("stop MCS Server");
-                }
-                catch (SocketException ex)
-                {
-                    CommonVariables.LogTool.Log("MCS Server Stoped:" + ex.Message);
-                }
-                catch (ObjectDisposedException ex)
-                {
-                    CommonVariables.LogTool.Log("MCS Server Stoped:" + ex.Message);
-                }
+        //            mainServiceSocket.Close();
+        //            CommonVariables.LogTool.Log("stop MCS Server");
+        //        }
+        //        catch (SocketException ex)
+        //        {
+        //            CommonVariables.LogTool.Log("MCS Server Stoped:" + ex.Message);
+        //        }
+        //        catch (ObjectDisposedException ex)
+        //        {
+        //            CommonVariables.LogTool.Log("MCS Server Stoped:" + ex.Message);
+        //        }
 
-                //CommonVariables.
-            }
-            catch (Exception ex)
-            {
-                CommonVariables.LogTool.Log(ex.Message);
-            }
-        }
+        //        //CommonVariables.
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        CommonVariables.LogTool.Log(ex.Message);
+        //    }
+        //}
 
 
         /// <summary>
@@ -268,7 +268,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                             return;
                         }
 
-                        if (strMsg.StartsWith("MCS start"))
+                        if (strMsg.StartsWith(CommonFlag.F_MMSCallMCSStart))
                         {
                             //2.analysis command, save MDSs inforamtion
                             SaveMDSs(strMsg);

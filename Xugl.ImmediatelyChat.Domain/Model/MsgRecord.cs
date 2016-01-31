@@ -12,6 +12,8 @@ namespace Xugl.ImmediatelyChat.Model
 
         public string MsgSenderObjectID { get; set; }
 
+        public string MsgSenderName { get; set; }
+
         public string MsgContent { get; set; }
 
         public string MsgRecipientObjectID { get; set; }

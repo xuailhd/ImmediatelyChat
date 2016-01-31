@@ -55,7 +55,23 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         public static string ArrangeChars { get; set; }
 
-        public static JavaScriptSerializer serializer { get; set; }
+
+        #region JavaScriptSerializer
+
+        public static JavaScriptSerializer serializer
+        {
+            get
+            {
+                if(Singleton<JavaScriptSerializer>.Instance==null)
+                {
+                    Singleton<JavaScriptSerializer>.Instance = new JavaScriptSerializer();
+                }
+
+                return Singleton<JavaScriptSerializer>.Instance;
+            }
+        }
+
+        #endregion
 
         #region manage MDSs
 
@@ -108,6 +124,32 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             }
         }
 
+        #endregion
+
+
+        #region BufferContorl
+        public static BufferContorl MessageContorl
+        {
+            get
+            {
+                if (Singleton<BufferContorl>.Instance == null)
+                {
+                    Singleton<BufferContorl>.Instance = new BufferContorl();
+                }
+                return Singleton<BufferContorl>.Instance;
+            }
+        }
+        #endregion
+
+
+        #region InRunningUAList
+        public static IList<string> InRunningUAList
+        {
+            get
+            {
+                return SingletonList<string>.Instance;
+            }
+        }
         #endregion
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Script.Serialization;
 using Xugl.ImmediatelyChat.Core;
 
 namespace Xugl.ImmediatelyChat.MessageDataServer
@@ -54,6 +55,22 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
 
         public static string ArrangeChars { get; set; }
 
+        #region JavaScriptSerializer
+
+        public static JavaScriptSerializer serializer
+        {
+            get
+            {
+                if (Singleton<JavaScriptSerializer>.Instance == null)
+                {
+                    Singleton<JavaScriptSerializer>.Instance = new JavaScriptSerializer();
+                }
+
+                return Singleton<JavaScriptSerializer>.Instance;
+            }
+        }
+        #endregion
+
         #region Log tool
 
         public static ICommonLog LogTool
@@ -68,6 +85,20 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             }
         }
 
+        #endregion
+
+        #region BufferContorl
+        public static BufferContorl MessageContorl
+        {
+            get
+            {
+                if (Singleton<BufferContorl>.Instance == null)
+                {
+                    Singleton<BufferContorl>.Instance = new BufferContorl();
+                }
+                return Singleton<BufferContorl>.Instance;
+            }
+        }
         #endregion
     }
 }

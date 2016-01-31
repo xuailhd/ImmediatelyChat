@@ -37,9 +37,9 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 return;
             }
 
-            if (strMsg.StartsWith("VerifyAccount"))
+            if (strMsg.StartsWith(CommonFlag.F_MCSVerifyUA))
             {
-                string tempStr = strMsg.Remove(0, 13);
+                string tempStr = strMsg.Remove(0, CommonFlag.F_MCSVerifyUA.Length);
                 ClientStatusModel clientModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(tempStr);
                 if (!string.IsNullOrEmpty(clientModel.ObjectID))
                 {
@@ -50,9 +50,9 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             }
 
 
-            if (strMsg.StartsWith("VerifyMSG"))
+            if (strMsg.StartsWith(CommonFlag.F_MCSVerifyUAMSG))
             {
-                string tempStr = strMsg.Remove(0, 9);
+                string tempStr = strMsg.Remove(0, CommonFlag.F_MCSVerifyUAMSG.Length);
                 MsgRecordModel msgModel = CommonVariables.serializer.Deserialize<MsgRecordModel>(tempStr);
                 if (!string.IsNullOrEmpty(msgModel.ObjectID))
                 {
@@ -62,9 +62,9 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 }
             }
 
-            if (strMsg.StartsWith("VerifyGetMSG"))
+            if (strMsg.StartsWith(CommonFlag.F_MCSVerifyUAGetMSG))
             {
-                string tempStr = strMsg.Remove(0, 12);
+                string tempStr = strMsg.Remove(0, CommonFlag.F_MCSVerifyUAGetMSG.Length);
                 ClientStatusModel clientModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(tempStr);
                 if (!string.IsNullOrEmpty(clientModel.ObjectID))
                 {

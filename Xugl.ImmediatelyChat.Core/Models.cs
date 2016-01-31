@@ -65,25 +65,32 @@ namespace Xugl.ImmediatelyChat.Core
 
         public DateTime SendTime { get; set; }
 
-        //public bool IsGetMessage { get; set; }
         public string MDS_IP { get; set; }
         public int MDS_Port { get; set; }
         public string MDS_ID { get; set; }
+
+        /// <summary>
+        /// 0:normal  1:success  2:error
+        /// </summary>
+        //public int Status { get; set; }
     }
 
     public class GetMsgModel
     {
+        public string MessageID { get; set; }
         public string ObjectID { get; set; }
 
         public IList<string> GroupIDs { get; set; }
-
-        public DateTime EndTime { get; set; }
-
-        public DateTime StartTime { get; set; }
+        public DateTime LatestTime { get; set; }
 
         public string MDS_IP { get; set; }
         public int MDS_Port { get; set; }
         public string MDS_ID { get; set; }
+
+        /// <summary>
+        /// 0:normal  1:success  2:error
+        /// </summary>
+        //public int Status { get; set; }
     }
 
 }

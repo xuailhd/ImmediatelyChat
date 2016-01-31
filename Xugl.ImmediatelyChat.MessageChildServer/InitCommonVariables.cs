@@ -19,9 +19,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             CommonVariables.MCSIP = ConfigurationManager.AppSettings["MCSIP"];
             CommonVariables.MCSPort = Convert.ToInt32(ConfigurationManager.AppSettings["MCSPort"]);
             CommonVariables.MCS_ID = ConfigurationManager.AppSettings["MCS_ID"];
-
-
-            CommonVariables.serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
         }
     }
 }

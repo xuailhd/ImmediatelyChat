@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +10,7 @@ using Xugl.ImmediatelyChat.Core;
 using Xugl.ImmediatelyChat.Model;
 using Xugl.ImmediatelyChat.SocketEngine;
 
-namespace Xugl.ImmediatelyChat.MessageChildServer
+namespace Xugl.ImmediatelyChat.MessageDataServer
 {
 
     internal class SocketListener:Xugl.ImmediatelyChat.SocketEngine.AsyncSocketListener
@@ -26,11 +25,8 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         {
             if (token.Models != null && token.Models.Count > 0)
             {
-                CommonVariables.MessageContorl.ReturnMsg(token.Models);
-                CommonVariables.InRunningUAList.Remove(token.UAObjectID);
                 token.Models.Clear();
                 token.Models = null;
-                token.UAObjectID = string.Empty;
             }
         }
 
@@ -49,9 +45,9 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             }
 
             //handle UA feedback
-            if (data.StartsWith(CommonFlag.F_MCSReciveUAMSGFB))
+            if (data.StartsWith(CommonFlag.F_MDSReciveMCSMSGFB))
             {
-                string tempStr = data.Remove(0, CommonFlag.F_MCSReciveUAMSGFB.Length);
+                string tempStr = data.Remove(0, CommonFlag.F_MDSReciveMCSMSGFB.Length);
                 if (token.Models != null && token.Models.Count > 0)
                 {
                     if (token.Models[0].MsgID == tempStr)
@@ -82,57 +78,33 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
             }
 
-            if (data.StartsWith(CommonFlag.F_MCSVerifyUA))
-            {
-                string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUA.Length);
-                ClientStatusModel clientModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(tempStr);
-                if (clientModel != null)
-                {
-                    if (!string.IsNullOrEmpty(clientModel.ObjectID))
-                    {
-                        CommonVariables.LogTool.Log("Account " + clientModel.ObjectID + " connect");
-                        return "ok";
-                    }
-                }
-            }
 
-
-            if (data.StartsWith(CommonFlag.F_MCSVerifyUAMSG))
+            if (data.StartsWith(CommonFlag.F_MDSVerifyMCSMSG))
             {
-                string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUAMSG.Length);
+                string tempStr = data.Remove(0, CommonFlag.F_MDSVerifyMCSMSG.Length);
                 MsgRecordModel msgModel = CommonVariables.serializer.Deserialize<MsgRecordModel>(tempStr);
                 if (msgModel != null)
                 {
                     if (!string.IsNullOrEmpty(msgModel.ObjectID))
                     {
                         CommonVariables.MessageContorl.AddMSgRecordIntoBuffer(msgModel);
-                        return "ok";
+                        return msgModel.MessageID;
                     }
                 }
             }
 
-            if (data.StartsWith(CommonFlag.F_MCSVerifyUAGetMSG))
+            if (data.StartsWith(CommonFlag.F_MDSVerifyMCSGetMSG))
             {
-                string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUAGetMSG.Length);
+                string tempStr = data.Remove(0, CommonFlag.F_MDSVerifyMCSGetMSG.Length);
                 GetMsgModel getMsgModel = CommonVariables.serializer.Deserialize<GetMsgModel>(tempStr);
                 if (getMsgModel != null)
                 {
                     if (!string.IsNullOrEmpty(getMsgModel.ObjectID))
                     {
-                        if (!CommonVariables.InRunningUAList.Contains(getMsgModel.ObjectID))
+                        token.Models = CommonVariables.MessageContorl.GetMSG(getMsgModel);
+                        if (token.Models != null && token.Models.Count > 0)
                         {
-                            CommonVariables.InRunningUAList.Add(getMsgModel.ObjectID);
-                            CommonVariables.MessageContorl.AddGetMsgIntoBuffer(getMsgModel);
-                            token.Models = CommonVariables.MessageContorl.GetMSG(getMsgModel);
-                            if (token.Models != null && token.Models.Count > 0)
-                            {
-                                token.UAObjectID = getMsgModel.ObjectID;
-                                return CommonVariables.serializer.Serialize(token.Models[0]);
-                            }
-                            else
-                            {
-                                CommonVariables.InRunningUAList.Remove(getMsgModel.ObjectID);
-                            }
+                            return CommonFlag.F_MCSVerfiyMDSMSG + CommonVariables.serializer.Serialize(token.Models[0]);
                         }
                     }
                 }
@@ -148,7 +120,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             //        if (!string.IsNullOrEmpty(msgRecord.MsgRecipientObjectID))
             //        {
             //            CommonVariables.MessageContorl.AddMsgIntoOutBuffer(msgRecord);
-            //            return CommonFlag.F_MDSReciveMCSMSGFB + msgRecord.MsgID;
+            //            return msgRecord.MsgID;
             //        }
             //    }
             //}
@@ -159,7 +131,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         public void BeginService()
         {
-            base.BeginService(CommonVariables.MCSIP,CommonVariables.MCSPort);
+            base.BeginService(CommonVariables.MDSIP,CommonVariables.MDSPort);
         }
     }
 

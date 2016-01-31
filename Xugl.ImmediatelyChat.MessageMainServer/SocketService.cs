@@ -125,7 +125,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
             foreach (string mcs_id in CommonVariables.GetMCSs.Keys)
             {
-                bytesSent = Encoding.UTF8.GetBytes("MCS start" + mdssStr);
+                bytesSent = Encoding.UTF8.GetBytes(CommonFlag.F_MMSCallMCSStart + mdssStr);
                 IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(CommonVariables.GetMCSs[mcs_id].MCS_IP), CommonVariables.GetMCSs[mcs_id].MCS_Port);
                 Socket tempSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
@@ -136,7 +136,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
             foreach (string mds_id in CommonVariables.GetMDSs.Keys)
             {
-                cmdOrder = "MDS start";
+                cmdOrder = CommonFlag.F_MMSCallMDSStart;
                 cmdOrder = cmdOrder + CommonFlag.F_ArrangeChars;
                 cmdOrder = cmdOrder + CommonVariables.GetMDSs[mds_id].ArrangeChars;
                 cmdOrder = cmdOrder + ";";
@@ -154,8 +154,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
         private void ArrangeChar()
         {
-            char[] chars ={'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s',
-                             't','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9'};
+            char[] chars ={'a','b','c','d','e','f','0','1','2','3','4','5','6','7','8','9'};
 
             int mcsCount = CommonVariables.GetMCSs.Count;
             int mdsCount = CommonVariables.GetMDSs.Count;

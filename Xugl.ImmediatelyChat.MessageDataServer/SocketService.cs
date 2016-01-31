@@ -122,28 +122,6 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             }
         }
 
-        //private string BoxMDSMsg()
-        //{
-        //    string msg = "MDS" + CommonFlag.F_IP + CommonVariables.MDSIP + ";" + CommonFlag.F_Port + CommonVariables.MDSPort.ToString() +
-        //        ";" + CommonFlag.F_ID + CommonVariables.MDS_ID + ";" + CommonFlag.F_ArrangeChars + CommonVariables.ArrangeChars + ";";
-        //    return msg;
-        //}
-
-        //private void UnBoxMMSMsg(string msg)
-        //{
-        //    string tempMsg = msg;
-        //    if (tempMsg.IndexOf(CommonFlag.F_IP) >= 0)
-        //    {
-        //        CommonVariables.MMSIP = tempMsg.Substring(tempMsg.IndexOf(CommonFlag.F_IP) + CommonFlag.F_IP.Length, tempMsg.IndexOf(";", tempMsg.IndexOf(CommonFlag.F_IP)) - tempMsg.IndexOf(CommonFlag.F_IP) - CommonFlag.F_IP.Length);
-        //        tempMsg = tempMsg.Replace(CommonFlag.F_IP + CommonVariables.MMSIP + ";", "");
-        //    }
-
-        //    if (tempMsg.IndexOf(CommonFlag.F_Port) >= 0)
-        //    {
-        //        CommonVariables.MMSPort = Convert.ToInt32(tempMsg.Substring(tempMsg.IndexOf(CommonFlag.F_Port) + CommonFlag.F_Port.Length, tempMsg.IndexOf(";", tempMsg.IndexOf(CommonFlag.F_Port)) - tempMsg.IndexOf(CommonFlag.F_Port) - CommonFlag.F_Port.Length));
-        //        tempMsg = tempMsg.Replace(CommonFlag.F_Port + CommonVariables.MMSPort.ToString() + ";", "");
-        //    }
-        //}
 
         /// <summary>
         /// begin MCS service
@@ -188,7 +166,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
                             return;
                         }
 
-                        if (strMsg.StartsWith("MDS start"))
+                        if (strMsg.StartsWith(CommonFlag.F_MMSCallMDSStart))
                         {
                             //2.analysis command, save MDSs inforamtion
                             SaveArrangeChars(strMsg);

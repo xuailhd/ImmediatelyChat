@@ -51,6 +51,10 @@
       <Project>{f01a79cb-296c-41a2-8dbd-8dd78f1c4227}</Project>
       <Name>Xugl.ImmediatelyChat.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Xugl.ImmediatelyChat.Domain\Xugl.ImmediatelyChat.Domain.csproj">
+      <Project>{0e1fdc46-9e8c-4fd8-a73c-ce9a7aad622d}</Project>
+      <Name>Xugl.ImmediatelyChat.Domain</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

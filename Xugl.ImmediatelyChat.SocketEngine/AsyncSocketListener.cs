@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xugl.ImmediatelyChat.Core;
+using Xugl.ImmediatelyChat.Model;
 
 namespace Xugl.ImmediatelyChat.SocketEngine
 {
@@ -36,7 +37,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             for (int i = 0; i < m_maxConnnections; i++)
             {
                 SocketAsyncEventArgs socketAsyncEventArg = new SocketAsyncEventArgs();
-                socketAsyncEventArg.UserToken = new AsyncUserToken();
+                socketAsyncEventArg.UserToken = new ListenerToken();
                 socketAsyncEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
                 socketAsyncEventArg.SetBuffer(m_bufferManager.TakeBuffer(m_maxSize), 0, m_maxSize);
                 m_readWritePool.Push(socketAsyncEventArg);
@@ -113,7 +114,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             try
             {
                 SocketAsyncEventArgs readEventArgs = m_readWritePool.Pop();
-                ((AsyncUserToken)readEventArgs.UserToken).Socket = e.AcceptSocket;
+                ((ListenerToken)readEventArgs.UserToken).Socket = e.AcceptSocket;
 
                 // As soon as the client is connected, post a receive to the connection
                 readEventArgs.SetBuffer(0, m_maxSize);
@@ -128,19 +129,20 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             catch (Exception ex)
             {
                 LogTool.Log(ex.Message + ex.StackTrace);
+                CloseClientSocket(e);
             }
         }
 
-        protected abstract string HandlerRecivedMessage(string inputMessage);
-        
+        protected abstract string HandleRecivedMessage(string inputMessage, ListenerToken token);
 
+        protected abstract void HandleError(ListenerToken token);
 
         private void ProcessReceive(SocketAsyncEventArgs e)
         {
+            ListenerToken token = (ListenerToken)e.UserToken;
             try
             {
                 // check if the remote host closed the connection
-                AsyncUserToken token = (AsyncUserToken)e.UserToken;
                 if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
                 {
                     //increment the count of the total bytes receive by the server
@@ -149,12 +151,11 @@ namespace Xugl.ImmediatelyChat.SocketEngine
 
                     string data = Encoding.UTF8.GetString(e.Buffer, e.Offset, e.BytesTransferred);
 
-                    string returndata = HandlerRecivedMessage(data);
+                    string returndata = HandleRecivedMessage(data, token);
 
                     int bytecount = Encoding.UTF8.GetBytes(returndata, 0, returndata.Length, e.Buffer,0);
 
                     e.SetBuffer(0,bytecount);
-                    LogTool.Log("after: " + bytecount.ToString()+ " &&" + e.Buffer.Length.ToString() + "&&" + e.BytesTransferred);
                     bool willRaiseEvent = token.Socket.SendAsync(e);
                     if (!willRaiseEvent)
                     {
@@ -163,12 +164,15 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                 }
                 else
                 {
+                    HandleError(token);
                     CloseClientSocket(e);
                 }
             }
             catch (Exception ex)
             {
                 LogTool.Log(ex.Message + ex.StackTrace);
+                HandleError(token);
+                CloseClientSocket(e);
             }
         }
 
@@ -180,13 +184,12 @@ namespace Xugl.ImmediatelyChat.SocketEngine
         // <param name="e"></param>
         private void ProcessSend(SocketAsyncEventArgs e)
         {
+            ListenerToken token = (ListenerToken)e.UserToken;
             try
             {
                 if (e.SocketError == SocketError.Success)
                 {
-                    // done echoing data back to the client
-                    AsyncUserToken token = (AsyncUserToken)e.UserToken;
-                    // read the next block of data send from the client
+                    e.SetBuffer(0, m_maxSize);
                     bool willRaiseEvent = token.Socket.ReceiveAsync(e);
                     if (!willRaiseEvent)
                     {
@@ -195,12 +198,15 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                 }
                 else
                 {
+                    HandleError(token);
                     CloseClientSocket(e);
                 }
             }
             catch (Exception ex)
             {
                 LogTool.Log(ex.Message + ex.StackTrace);
+                HandleError(token);
+                CloseClientSocket(e);
             }
         }
 
@@ -220,6 +226,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                 LogTool.Log("close socket error: " + ex.Message);
             }
             token.Socket.Close();
+
             // decrement the counter keeping track of the total number of clients connected to the server
             //Interlocked.Decrement(ref m_numConnectedSockets);
             m_maxNumberAcceptedClients.Release();
@@ -228,5 +235,13 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             // Free the SocketAsyncEventArg so they can be reused by another client
             m_readWritePool.Push(e);
         }
+    }
+
+
+    public class ListenerToken:AsyncUserToken
+    {
+        public IList<MsgRecord> Models { get; set; }
+
+        public string UAObjectID { get; set; }
     }
 }

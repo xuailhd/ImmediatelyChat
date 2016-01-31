@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Xugl.ImmediatelyChat.SocketEngine
 {
-    internal class AsyncUserToken:IDisposable
+    public class AsyncUserToken:IDisposable
     {
         private Socket m_Socket;
         SafeHandle handle = new SafeFileHandle(IntPtr.Zero, true);

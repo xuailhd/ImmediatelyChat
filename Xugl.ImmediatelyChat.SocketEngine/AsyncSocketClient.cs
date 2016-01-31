@@ -11,7 +11,7 @@ using Xugl.ImmediatelyChat.Core;
 
 namespace Xugl.ImmediatelyChat.SocketEngine
 {
-    public delegate void HandlerReturnData(string returnData);
+    public delegate string HandlerReturnData(string returnData,bool isError);
 
     public class AsyncSocketClient
     {
@@ -42,7 +42,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             m_maxNumberAcceptedClients = new Semaphore(m_maxConnnections, m_maxConnnections);
         }
 
-        public void SendMsg(string ipaddress, int port, string sendData, HandlerReturnData handlerReturnData)
+        public void SendMsg(string ipaddress, int port, string sendData, string messageID, HandlerReturnData handlerReturnData)
         {
             IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(ipaddress), port);
             Socket clientSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
@@ -50,7 +50,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             AsyncClientToken asyncClientToken = m_readWritePool.PopOrNew();
             asyncClientToken.HandlerReturnData = handlerReturnData;
             asyncClientToken.Socket = clientSocket;
-
+            asyncClientToken.MessageID = messageID;
             int sendcount = Encoding.UTF8.GetBytes(sendData, 0, sendData.Length, asyncClientToken.Buffer, 0);
             asyncClientToken.Datasize = sendcount;
 
@@ -70,6 +70,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             }
             catch(Exception ex)
             {
+                token.HandlerReturnData(token.MessageID, true);
                 CloseOneInstance(token);
                 LogTool.Log(ex.Message + ex.StackTrace);
             }
@@ -87,6 +88,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             }
             catch(Exception ex)
             {
+                token.HandlerReturnData(token.MessageID, true);
                 CloseOneInstance(token);
                 LogTool.Log(ex.Message + ex.StackTrace);
             }
@@ -100,24 +102,32 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                 int recivecount= token.Socket.EndReceive(ar);
                 if (recivecount>0)
                 {
-                    token.HandlerReturnData(Encoding.UTF8.GetString(token.Buffer, 0, recivecount));
-                    token.Socket.BeginReceive(token.Buffer, 0, m_maxSize, SocketFlags.None, new AsyncCallback(ReciveCallback), token);
+                    if(token.MessageID== Encoding.UTF8.GetString(token.Buffer, 0, recivecount))
+                    {
+                        string sendData = token.HandlerReturnData(token.MessageID, false);
+                        if (!string.IsNullOrEmpty(sendData))
+                        {
+                            token.Datasize = Encoding.UTF8.GetBytes(sendData, 0, sendData.Length, token.Buffer, 0);
+                            token.Socket.BeginSend(token.Buffer, 0, token.Datasize, SocketFlags.None, new AsyncCallback(SendCallback), token);
+                            return;
+                        }
+
+                        CloseOneInstance(token);
+                        return;
+                    }
                 }
-                else
-                {
-                    CloseOneInstance(token);
-                }
-                
-                
+                token.HandlerReturnData(token.MessageID,true);
+                CloseOneInstance(token);
             }
             catch (Exception ex)
             {
+                token.HandlerReturnData(token.MessageID, true);
                 CloseOneInstance(token);
                 LogTool.Log(ex.Message + ex.StackTrace);
             }
         }
 
-        private void CloseOneInstance(AsyncClientToken token)
+        private void CloseOneInstance(AsyncClientToken token,bool IsError=true)
         {
             if (token!=null)
             {
@@ -142,5 +152,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
         public int IsWhole { get; set; }
 
         public HandlerReturnData HandlerReturnData { get; set; }
+
+        public string MessageID { get; set; }
     }
 }
