@@ -4,12 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xugl.ImmediatelyChat.Core
+namespace Xugl.ImmediatelyChat.Common
 {
     public class CommonFlag
     {
         private static string f_ArrangeChars = "ArrangeChars";
         public static string F_ArrangeChars { get { return f_ArrangeChars; } }
+
+
+        private static string f_PSCallMMSStart = "PSCallMMSStart";
+        private static string f_PSCallMCSStart = "PSCallMCSStart";
+        private static string f_PSCallMDSStart = "PSCallMDSStart";
+        private static string f_PSSendMMSUser = "PSSendMMSUser";
+        public static string F_PSCallMMSStart { get { return f_PSCallMMSStart; } }
+        public static string F_PSCallMCSStart { get { return f_PSCallMCSStart; } }
+        public static string F_PSCallMDSStart { get { return f_PSCallMDSStart; } }
+        public static string F_PSSendMMSUser { get { return f_PSSendMMSUser; } }
 
         private static string f_MMSVerifyMCS = "MCS";
         private static string f_MMSVerifyMDS = "MDS";

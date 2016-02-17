@@ -15,5 +15,7 @@ namespace Xugl.ImmediatelyChat.Model
         public string ImageSrc { get; set; }
 
         public string ContactName { get; set; }
+
+        public DateTime? LatestTime { get; set; }
     }
 }

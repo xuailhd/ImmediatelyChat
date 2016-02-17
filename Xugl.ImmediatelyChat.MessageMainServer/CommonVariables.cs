@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Script.Serialization;
+using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
 
 namespace Xugl.ImmediatelyChat.MessageMainServer
@@ -33,7 +35,24 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             set;
         }
 
-        public static bool IsBeginMessageService { get; set; } 
+        public static bool IsBeginMessageService { get; set; }
+
+        #region JavaScriptSerializer
+
+        public static JavaScriptSerializer serializer
+        {
+            get
+            {
+                if (Singleton<JavaScriptSerializer>.Instance == null)
+                {
+                    Singleton<JavaScriptSerializer>.Instance = new JavaScriptSerializer();
+                }
+
+                return Singleton<JavaScriptSerializer>.Instance;
+            }
+        }
+        #endregion
+
 
         #region manage MCSs
 

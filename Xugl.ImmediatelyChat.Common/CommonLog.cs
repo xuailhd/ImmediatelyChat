@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xugl.ImmediatelyChat.Core
+namespace Xugl.ImmediatelyChat.Common
 {
     public class CommonLog:ICommonLog
     {
@@ -48,6 +48,10 @@ namespace Xugl.ImmediatelyChat.Core
 
         public void Log(string msg)
         {
+            if (_LogMsgs.Length>5000)
+            {
+                _LogMsgs.Clear();
+            }
             _LogMsgs.Append("\r\n" + msg);
         }
     }

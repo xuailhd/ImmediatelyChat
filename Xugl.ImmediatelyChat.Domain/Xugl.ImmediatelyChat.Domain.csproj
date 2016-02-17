@@ -44,6 +44,7 @@
     <Compile Include="Model\ContactGroupSub.cs" />
     <Compile Include="Model\ContactPerson.cs" />
     <Compile Include="Model\ContactPersonList.cs" />
+    <Compile Include="Model\Servers.cs" />
     <Compile Include="Model\MsgRecord.cs" />
     <Compile Include="Model\Warehouse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

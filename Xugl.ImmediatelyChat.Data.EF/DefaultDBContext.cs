@@ -12,15 +12,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Xugl.ImmediatelyChat.Core;
 using Xugl.ImmediatelyChat.Data.EF.Mapping;
+using Xugl.ImmediatelyChat.Model;
 
 namespace Xugl.ImmediatelyChat.Data.EF
 {
     public class DefaultDBContext:DbContext,IDbContext
     {
-        public DefaultDBContext():base("IBM.Woox.DBContext")
+        public DefaultDBContext()
+            : base("Xugl.ImmediatelyChat.DBContext")
         {
             this.Configuration.ProxyCreationEnabled = false;
-            //System.Data.Entity.Database.SetInitializer(new DropCreateDatabaseIfModelChanges<DefaultDBContext>());
+            Database.SetInitializer(new DropCreateDatabaseIfModelChanges<DefaultDBContext>());
         }
 
         public new IDbSet<TEntity> Set<TEntity>() where TEntity : class
@@ -34,6 +36,11 @@ namespace Xugl.ImmediatelyChat.Data.EF
 
             var mappings = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(type => type.BaseType != null && type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == typeof(EntityTypeConfiguration<>));
+
+            if(!string.IsNullOrEmpty(System.Configuration.ConfigurationManager.AppSettings["ModelMapping"].ToString()))
+            {
+                mappings = mappings.Where(type => type.Namespace == System.Configuration.ConfigurationManager.AppSettings["ModelMapping"].ToString());
+            }
 
             foreach(var mapping in mappings)
             {
@@ -122,6 +129,21 @@ namespace Xugl.ImmediatelyChat.Data.EF
             }
         }
 
-       
     }
+
+
+    //public class  USMDBInitializer : DropCreateDatabaseIfModelChanges<DefaultDBContext>
+    //{
+    //    protected override void Seed(DefaultDBContext context)
+    //    {
+    //        ContactGroup contactGroup = new ContactGroup();
+    //        contactGroup.GroupName = "Group1";
+    //        contactGroup.GroupObjectID = "Group1";
+
+    //        context.Set<ContactGroup>().Add(contactGroup);
+    //        context.SaveChanges();
+
+    //        //base.Seed(context);
+    //    }
+    //}
 }

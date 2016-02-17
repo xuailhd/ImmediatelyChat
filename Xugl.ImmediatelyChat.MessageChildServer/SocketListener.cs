@@ -7,6 +7,7 @@ using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
 using Xugl.ImmediatelyChat.Model;
 using Xugl.ImmediatelyChat.SocketEngine;
@@ -17,7 +18,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
     internal class SocketListener:Xugl.ImmediatelyChat.SocketEngine.AsyncSocketListener
     {
         public SocketListener()
-            : base(1024, 2, CommonVariables.LogTool)
+            : base(1024, 100, CommonVariables.LogTool)
         {
             
         }
@@ -90,7 +91,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 {
                     if (!string.IsNullOrEmpty(clientModel.ObjectID))
                     {
-                        CommonVariables.LogTool.Log("Account " + clientModel.ObjectID + " connect");
+                        //CommonVariables.LogTool.Log("Account " + clientModel.ObjectID + " connect");
                         return "ok";
                     }
                 }
@@ -101,6 +102,8 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             {
                 string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUAMSG.Length);
                 MsgRecordModel msgModel = CommonVariables.serializer.Deserialize<MsgRecordModel>(tempStr);
+                CommonVariables.LogTool.Log("get msg " + msgModel.ObjectID + " " + msgModel.ObjectName + " " + msgModel.Content + " " + msgModel.RecivedGroupID);
+
                 if (msgModel != null)
                 {
                     if (!string.IsNullOrEmpty(msgModel.ObjectID))
@@ -115,6 +118,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             {
                 string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUAGetMSG.Length);
                 GetMsgModel getMsgModel = CommonVariables.serializer.Deserialize<GetMsgModel>(tempStr);
+                //CommonVariables.LogTool.Log("get msg " + getMsgModel.ObjectID.ToString() + " && " + getMsgModel.GroupIDs.Count.ToString() + "&&" + getMsgModel.LatestTime.ToString());
                 if (getMsgModel != null)
                 {
                     if (!string.IsNullOrEmpty(getMsgModel.ObjectID))
@@ -124,6 +128,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                             CommonVariables.InRunningUAList.Add(getMsgModel.ObjectID);
                             CommonVariables.MessageContorl.AddGetMsgIntoBuffer(getMsgModel);
                             token.Models = CommonVariables.MessageContorl.GetMSG(getMsgModel);
+                            //CommonVariables.LogTool.Log("get msg account " + token.Models.Count.ToString());
                             if (token.Models != null && token.Models.Count > 0)
                             {
                                 token.UAObjectID = getMsgModel.ObjectID;
@@ -159,6 +164,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         public void BeginService()
         {
+            CommonVariables.MessageContorl.StartMainThread();
             base.BeginService(CommonVariables.MCSIP,CommonVariables.MCSPort);
         }
     }

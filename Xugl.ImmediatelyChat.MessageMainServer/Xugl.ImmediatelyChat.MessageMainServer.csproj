@@ -32,6 +32,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -56,6 +63,7 @@
     <Compile Include="InitCommonVariables.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SocketListener.cs" />
     <Compile Include="SocketService.cs" />
     <Compile Include="SocketThead.cs" />
     <EmbeddedResource Include="FrmMain.resx">
@@ -84,9 +92,33 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Xugl.ImmediatelyChat.Common\Xugl.ImmediatelyChat.Common.csproj">
+      <Project>{fcc73dc4-496f-40e5-afc5-081c3b3c6add}</Project>
+      <Name>Xugl.ImmediatelyChat.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xugl.ImmediatelyChat.Core\Xugl.ImmediatelyChat.Core.csproj">
       <Project>{f01a79cb-296c-41a2-8dbd-8dd78f1c4227}</Project>
       <Name>Xugl.ImmediatelyChat.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xugl.ImmediatelyChat.Data.EF\Xugl.Immediatelychat.Data.EF.csproj">
+      <Project>{c6192ae3-3026-4b7b-af6f-30d2a17288a9}</Project>
+      <Name>Xugl.Immediatelychat.Data.EF</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xugl.ImmediatelyChat.Domain\Xugl.ImmediatelyChat.Domain.csproj">
+      <Project>{0e1fdc46-9e8c-4fd8-a73c-ce9a7aad622d}</Project>
+      <Name>Xugl.ImmediatelyChat.Domain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xugl.ImmediatelyChat.IServices\Xugl.ImmediatelyChat.IServices.csproj">
+      <Project>{b1deb2ad-fd05-4444-b8d7-ef41af547d5a}</Project>
+      <Name>Xugl.ImmediatelyChat.IServices</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xugl.ImmediatelyChat.Services\Xugl.ImmediatelyChat.Services.csproj">
+      <Project>{9a9df9f3-cecb-4550-8af7-d118c75a41ad}</Project>
+      <Name>Xugl.ImmediatelyChat.Services</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xugl.ImmediatelyChat.SocketEngine\Xugl.ImmediatelyChat.SocketEngine.csproj">
+      <Project>{b21950b9-74b0-4443-9c3c-7d76d4bce73d}</Project>
+      <Name>Xugl.ImmediatelyChat.SocketEngine</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

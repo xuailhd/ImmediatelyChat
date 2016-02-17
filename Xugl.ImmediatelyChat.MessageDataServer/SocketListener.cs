@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
 using Xugl.ImmediatelyChat.Model;
 using Xugl.ImmediatelyChat.SocketEngine;
@@ -16,7 +17,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
     internal class SocketListener:Xugl.ImmediatelyChat.SocketEngine.AsyncSocketListener
     {
         public SocketListener()
-            : base(1024, 2, CommonVariables.LogTool)
+            : base(1024, 50, CommonVariables.LogTool)
         {
             
         }
@@ -85,6 +86,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
                 MsgRecordModel msgModel = CommonVariables.serializer.Deserialize<MsgRecordModel>(tempStr);
                 if (msgModel != null)
                 {
+                    CommonVariables.LogTool.Log("get mcs msg " + msgModel.Content + " " + msgModel.RecivedGroupID);
                     if (!string.IsNullOrEmpty(msgModel.ObjectID))
                     {
                         CommonVariables.MessageContorl.AddMSgRecordIntoBuffer(msgModel);
@@ -96,7 +98,12 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             if (data.StartsWith(CommonFlag.F_MDSVerifyMCSGetMSG))
             {
                 string tempStr = data.Remove(0, CommonFlag.F_MDSVerifyMCSGetMSG.Length);
+                //CommonVariables.LogTool.Log("recive mcs get msg:" + tempStr);
+
                 GetMsgModel getMsgModel = CommonVariables.serializer.Deserialize<GetMsgModel>(tempStr);
+
+
+                //CommonVariables.LogTool.Log("recive mcs get msg:" + getMsgModel.ObjectID + " " + getMsgModel.GroupIDs[0] + "  " + string.Format(getMsgModel.LatestTime.ToString(),"yyyy-MM-dd HH:mm:ss:SSS"));
                 if (getMsgModel != null)
                 {
                     if (!string.IsNullOrEmpty(getMsgModel.ObjectID))
@@ -131,6 +138,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
 
         public void BeginService()
         {
+            CommonVariables.MessageContorl.StartMainThread();
             base.BeginService(CommonVariables.MDSIP,CommonVariables.MDSPort);
         }
     }

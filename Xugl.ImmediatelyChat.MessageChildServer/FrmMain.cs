@@ -25,6 +25,8 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
             timer1.Interval = 100;
             timer1.Enabled = true;
+
+            this.Text = this.Text + " " + CommonVariables.MCS_ID;
         }
 
         private void btn_ConnectMainServer_Click(object sender, EventArgs e)
@@ -36,8 +38,15 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         {
             if (logLength != CommonVariables.LogTool.GetLogMsg.Length)
             {
-                txt_Log.Text = CommonVariables.LogTool.GetLogMsg;
-                logLength = txt_Log.Text.Length;
+                try {
+                    txt_Log.Text = CommonVariables.LogTool.GetLogMsg;
+                    logLength = txt_Log.Text.Length;
+                }
+                catch(Exception ex)
+                {
+                    txt_Log.Text = ex.Message + ex.StackTrace;
+                }
+                
             }
         }
     }

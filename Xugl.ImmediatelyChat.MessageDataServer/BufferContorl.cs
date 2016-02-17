@@ -96,13 +96,21 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
 
         public void StartMainThread()
         {
+            IsRunning = true;
             ThreadStart threadStart = new ThreadStart(MainSaveRecordThread);
             Thread thread = new Thread(threadStart);
             thread.Start();
         }
 
+        public void StopMainThread()
+        {
+            IsRunning = false;
+        }
+
         private void MainSaveRecordThread()
         {
+            CommonVariables.LogTool.Log("begin buffer contorl");
+
             while(IsRunning)
             {
                 if (GetUsingBufferContainer.Count >= maxBufferRecordCount)
@@ -115,7 +123,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
 
                     GetUnUsingBufferContainer.Clear();
                 }
-                Thread.Sleep(100);
+                Thread.Sleep(1000);
             }
         }
 

@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Globalization;
 using System.Web.Security;
+using Xugl.ImmediatelyChat.Model;
 
 namespace Xugl.ImmediatelyChat.Site.Models
 {
@@ -13,11 +14,17 @@ namespace Xugl.ImmediatelyChat.Site.Models
         public string ObjectID { get; set; }
         public string IP { get; set; }
         public int Port { get; set; }
-        public string CilentIP { get; set; }
         /// <summary>
-        /// 0/1/   normal/account or password incorrect
+        /// 0/1/2   normal/account or password incorrect/MMS server have not start
         /// </summary>
         public int Status { get; set; }
+    }
+
+    public class ServersModel
+    {
+        public IList<MMSServer> MMSServers { get; set; }
+        public IList<MCSServer> MCSServers { get; set; }
+        public IList<MDSServer> MDSServers { get; set; }
     }
     
 }

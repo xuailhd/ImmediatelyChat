@@ -7,6 +7,7 @@ using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
 
 namespace Xugl.ImmediatelyChat.SocketEngine
@@ -37,6 +38,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             {
                 AsyncClientToken asyncClientToken = new AsyncClientToken();
                 asyncClientToken.Buffer = m_bufferManager.TakeBuffer(m_maxSize);
+                m_readWritePool.Push(asyncClientToken);
             }
 
             m_maxNumberAcceptedClients = new Semaphore(m_maxConnnections, m_maxConnnections);
@@ -44,6 +46,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
 
         public void SendMsg(string ipaddress, int port, string sendData, string messageID, HandlerReturnData handlerReturnData)
         {
+            
             IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(ipaddress), port);
             Socket clientSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
@@ -55,8 +58,18 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             asyncClientToken.Datasize = sendcount;
 
             m_maxNumberAcceptedClients.WaitOne();
-
-            clientSocket.BeginConnect(ipe, new AsyncCallback(ConnectCallback), asyncClientToken);
+            try
+            {
+                clientSocket.BeginConnect(ipe, new AsyncCallback(ConnectCallback), asyncClientToken);
+            }
+            catch(Exception ex)
+            {
+                CloseOneInstance(asyncClientToken);
+                if (LogTool != null)
+                {
+                    LogTool.Log(ex.Message + ex.StackTrace);
+                }
+            }
         }
 
         private void ConnectCallback(IAsyncResult ar)
@@ -72,7 +85,10 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             {
                 token.HandlerReturnData(token.MessageID, true);
                 CloseOneInstance(token);
-                LogTool.Log(ex.Message + ex.StackTrace);
+                if (LogTool != null)
+                {
+                    LogTool.Log(ex.Message + ex.StackTrace);
+                }
             }
         }
 
@@ -90,7 +106,10 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             {
                 token.HandlerReturnData(token.MessageID, true);
                 CloseOneInstance(token);
-                LogTool.Log(ex.Message + ex.StackTrace);
+                if (LogTool != null)
+                {
+                    LogTool.Log(ex.Message + ex.StackTrace);
+                }
             }
         }
 
@@ -123,7 +142,10 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             {
                 token.HandlerReturnData(token.MessageID, true);
                 CloseOneInstance(token);
-                LogTool.Log(ex.Message + ex.StackTrace);
+                if (LogTool != null)
+                {
+                    LogTool.Log(ex.Message + ex.StackTrace);
+                }
             }
         }
 

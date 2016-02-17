@@ -1,21 +1,13 @@
-﻿using Xugl.ImmediatelyChat.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Xugl.ImmediatelyChat.Model;
 
-namespace Xugl.ImmediatelyChat.Data.EF.Mapping
+namespace Xugl.ImmediatelyChat.Data.EF.Mapping.MCS
 {
-    //public class WarehouseMapping: EntityTypeConfiguration<Warehouse>
-    //{
-    //    public WarehouseMapping()
-    //    {
-    //        this.HasKey(t => t.WarehouseID);
-    //    }
-    //}
-
     public class ContactGroupMapping : EntityTypeConfiguration<ContactGroup>
     {
         public ContactGroupMapping()
@@ -48,14 +40,6 @@ namespace Xugl.ImmediatelyChat.Data.EF.Mapping
         {
             this.HasKey(t => t.objectID);
             this.HasKey(t => t.DestinationObjectID);
-        }
-    }
-
-    public class MsgRecordMapping : EntityTypeConfiguration<MsgRecord>
-    {
-        public MsgRecordMapping()
-        {
-            this.HasKey(t => t.MsgID);
         }
     }
 }

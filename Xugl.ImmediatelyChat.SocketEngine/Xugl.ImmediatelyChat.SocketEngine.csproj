@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SyncSocketClient.cs" />
     <Compile Include="AsyncSocketClient.cs" />
     <Compile Include="AsyncUserToken.cs" />
     <Compile Include="SocketAsyncEventArgsPool.cs" />
@@ -47,6 +48,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Xugl.ImmediatelyChat.Common\Xugl.ImmediatelyChat.Common.csproj">
+      <Project>{fcc73dc4-496f-40e5-afc5-081c3b3c6add}</Project>
+      <Name>Xugl.ImmediatelyChat.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xugl.ImmediatelyChat.Core\Xugl.ImmediatelyChat.Core.csproj">
       <Project>{f01a79cb-296c-41a2-8dbd-8dd78f1c4227}</Project>
       <Name>Xugl.ImmediatelyChat.Core</Name>

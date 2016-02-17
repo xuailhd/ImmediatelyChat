@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xugl.ImmediatelyChat.Core
+namespace Xugl.ImmediatelyChat.Common
 {
     public interface ICommonLog
     {

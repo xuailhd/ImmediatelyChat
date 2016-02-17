@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
 
 
@@ -77,23 +78,23 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 }
 
                 //UA
-                if (strMsg.StartsWith(CommonFlag.F_MMSVerifyUA))
-                {
-                    ClientStatusModel clientStatusModel = serializer.Deserialize<ClientStatusModel>(strMsg.Remove(0, 6));
-                    //Find MCS
-                    foreach(string mcs_id in CommonVariables.GetMCSs.Keys)
-                    {
-                        if (CommonVariables.GetMCSs[mcs_id].ArrangeChars.Contains(clientStatusModel.ObjectID.Substring(0,1)))
-                        {
-                            clientStatusModel.MCS_IP = CommonVariables.GetMCSs[mcs_id].MCS_IP;
-                            clientStatusModel.MCS_Port = CommonVariables.GetMCSs[mcs_id].MCS_Port;
-                        }
-                    }
+                //if (strMsg.StartsWith(CommonFlag.F_MMSVerifyUA))
+                //{
+                //    ClientStatusModel clientStatusModel = serializer.Deserialize<ClientStatusModel>(strMsg.Remove(0, 6));
+                //    //Find MCS
+                //    foreach(string mcs_id in CommonVariables.GetMCSs.Keys)
+                //    {
+                //        if (CommonVariables.GetMCSs[mcs_id].ArrangeChars.Contains(clientStatusModel.ObjectID.Substring(0,1)))
+                //        {
+                //            clientStatusModel.MCS_IP = CommonVariables.GetMCSs[mcs_id].MCS_IP;
+                //            clientStatusModel.MCS_Port = CommonVariables.GetMCSs[mcs_id].MCS_Port;
+                //        }
+                //    }
 
-                    //Send MCS
-                    byte[] bytesSent = Encoding.UTF8.GetBytes(serializer.Serialize(clientStatusModel));
-                    clientSocket.Send(bytesSent, bytesSent.Length, 0);
-                }
+                //    //Send MCS
+                //    byte[] bytesSent = Encoding.UTF8.GetBytes(serializer.Serialize(clientStatusModel));
+                //    clientSocket.Send(bytesSent, bytesSent.Length, 0);
+                //}
 
                 clientSocket.Close();
                 clientSocket = null;

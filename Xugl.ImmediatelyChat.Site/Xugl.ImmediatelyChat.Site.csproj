@@ -304,15 +304,21 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Web.config" />
     <Content Include="Views\Warehouse\Index.cshtml" />
-    <Content Include="Views\AppServer\Index.cshtml" />
+    <Content Include="Views\AppServer\FinishStart.cshtml" />
+    <Content Include="Views\AppServer\StartFailed.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\ContactPerson\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Xugl.ImmediatelyChat.Common\Xugl.ImmediatelyChat.Common.csproj">
+      <Project>{fcc73dc4-496f-40e5-afc5-081c3b3c6add}</Project>
+      <Name>Xugl.ImmediatelyChat.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xugl.ImmediatelyChat.IServices\Xugl.ImmediatelyChat.IServices.csproj">
       <Project>{b1deb2ad-fd05-4444-b8d7-ef41af547d5a}</Project>
       <Name>Xugl.ImmediatelyChat.IServices</Name>
@@ -332,6 +338,10 @@
     <ProjectReference Include="..\Xugl.ImmediatelyChat.Data.EF\Xugl.Immediatelychat.Data.EF.csproj">
       <Project>{c6192ae3-3026-4b7b-af6f-30d2a17288a9}</Project>
       <Name>Xugl.Immediatelychat.Data.EF</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xugl.ImmediatelyChat.SocketEngine\Xugl.ImmediatelyChat.SocketEngine.csproj">
+      <Project>{b21950b9-74b0-4443-9c3c-7d76d4bce73d}</Project>
+      <Name>Xugl.ImmediatelyChat.SocketEngine</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

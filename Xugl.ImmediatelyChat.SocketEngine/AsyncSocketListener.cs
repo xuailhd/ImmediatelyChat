@@ -7,6 +7,7 @@ using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
 using Xugl.ImmediatelyChat.Model;
 
@@ -152,6 +153,12 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                     string data = Encoding.UTF8.GetString(e.Buffer, e.Offset, e.BytesTransferred);
 
                     string returndata = HandleRecivedMessage(data, token);
+
+                    if (string.IsNullOrEmpty(returndata))
+                    {
+                        CloseClientSocket(e);
+                        return;
+                    }
 
                     int bytecount = Encoding.UTF8.GetBytes(returndata, 0, returndata.Length, e.Buffer,0);
 

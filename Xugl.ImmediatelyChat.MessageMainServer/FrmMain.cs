@@ -43,8 +43,19 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
         {
             if(logLength!=CommonVariables.LogTool.GetLogMsg.Length)
             {
-                txt_Log.Text=CommonVariables.LogTool.GetLogMsg;
-                logLength=txt_Log.Text.Length;
+                if (logLength != CommonVariables.LogTool.GetLogMsg.Length)
+                {
+                    try
+                    {
+                        txt_Log.Text = CommonVariables.LogTool.GetLogMsg;
+                        logLength = txt_Log.Text.Length;
+                    }
+                    catch (Exception ex)
+                    {
+                        txt_Log.Text = ex.Message + ex.StackTrace;
+                    }
+
+                }
             }
         }
     }

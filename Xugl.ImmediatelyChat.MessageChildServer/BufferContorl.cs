@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
 using Xugl.ImmediatelyChat.Core.DependencyResolution;
 using Xugl.ImmediatelyChat.IServices;
@@ -21,22 +22,21 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         private int InputCount;
         private int OutPutCount;
 
-        private IList<MsgRecordModel> BufferMsgRecordModels = new List<MsgRecordModel>();
-        private IList<GetMsgModel> BufferGetMsgModels = new List<GetMsgModel>();
+        private IList<MsgRecordModel> BufferMsgRecordModels1 = new List<MsgRecordModel>();
+        private IList<GetMsgModel> BufferGetMsgModels1 = new List<GetMsgModel>();
 
-        private IList<MsgRecordModel> PerpareMsgRecordModels = new List<MsgRecordModel>();
-        private IList<GetMsgModel> PerpareGetMsgModels = new List<GetMsgModel>();
+        private IList<MsgRecordModel> BufferMsgRecordModels2 = new List<MsgRecordModel>();
+        private IList<GetMsgModel> BufferGetMsgModels2 = new List<GetMsgModel>();
+
+
+        private bool UsingTagForMsgRecord = false;
+        private bool UsingTagForGetMsg = false;
 
         //for prevent async data error
         private IList<MsgRecordModel> ExeingMsgRecordModels = new List<MsgRecordModel>();
         //private IList<GetMsgModel> ExeingGetMsgModels = new List<GetMsgModel>();
 
         private IList<MsgRecord> OutMsgRecords = new List<MsgRecord>();
-
-        private Thread mainThread = null;
-        private const int messagePriority = 3;
-        private const int getMessagePriority = 2;
-
         private AsyncSocketClient asyncSocketClient;
 
         private int _maxSize = 1024;
@@ -50,9 +50,74 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
             foreach (MsgRecordModel msgRecordModel in msgRecordModels)
             {
-                BufferMsgRecordModels.Add(msgRecordModel);
+                GetUsingMsgRecordBuffer.Add(msgRecordModel);
             }
         }
+
+
+        #region using unusing buffer manage
+
+        private IList<MsgRecordModel> GetUsingMsgRecordBuffer
+        {
+            get { 
+                if(UsingTagForMsgRecord)
+                {
+                    return BufferMsgRecordModels1;
+                }
+                else
+                {
+                    return BufferMsgRecordModels2;
+                }
+            }
+        }
+
+        private IList<MsgRecordModel> GetUnUsingMsgRecordBuffer
+        {
+            get
+            {
+                if (!UsingTagForMsgRecord)
+                {
+                    return BufferMsgRecordModels1;
+                }
+                else
+                {
+                    return BufferMsgRecordModels2;
+                }
+            }
+        }
+
+
+        private IList<GetMsgModel> GetUsingGetMsgBuffer
+        {
+            get
+            {
+                if (UsingTagForGetMsg)
+                {
+                    return BufferGetMsgModels1;
+                }
+                else
+                {
+                    return BufferGetMsgModels2;
+                }
+            }
+        }
+
+        private IList<GetMsgModel> GetUnUsingGetMsgBuffer
+        {
+            get
+            {
+                if (!UsingTagForGetMsg)
+                {
+                    return BufferGetMsgModels1;
+                }
+                else
+                {
+                    return BufferGetMsgModels2;
+                }
+            }
+        }
+
+        #endregion
 
         private IList<MsgRecordModel> GenerateMsgRecordModel(MsgRecordModel msgRecordModel)
         {
@@ -115,10 +180,12 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     getMsgModel.MDS_IP = CommonVariables.GetMDSs[mds_id].MDS_IP;
                     getMsgModel.MDS_Port = CommonVariables.GetMDSs[mds_id].MDS_Port;
                     getMsgModel.MDS_ID = CommonVariables.GetMDSs[mds_id].MDS_ID;
+
+                    //CommonVariables.LogTool.Log("getMsgModel " + getMsgModel.MDS_IP + ":" + getMsgModel.MDS_Port.ToString());
                     break;
                 }
             }
-            BufferGetMsgModels.Add(getMsgModel);
+            GetUsingGetMsgBuffer.Add(getMsgModel);
         }
 
         public void AddMsgIntoOutBuffer(MsgRecord msgRecord)
@@ -164,151 +231,163 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         //    //mainThread.Start();
         //}
 
-        private void HandlerInputTask(MsgRecordModel msgRecordModel)
-        {
-            if (!ThreadPool.QueueUserWorkItem(new WaitCallback(InputMessageTask), msgRecordModel))
-            {
-                CommonVariables.LogTool.Log("Insert Thread Pool Failure");
-            }
-        }
+        //private void HandlerInputTask(MsgRecordModel msgRecordModel)
+        //{
+        //    if (!ThreadPool.QueueUserWorkItem(new WaitCallback(InputMessageTask), msgRecordModel))
+        //    {
+        //        CommonVariables.LogTool.Log("Insert Thread Pool Failure");
+        //    }
+        //}
 
-        private void GetMessageTask(object _getMsgModel)
-        {
-            GetMsgModel getMsgModel = (GetMsgModel)_getMsgModel;
+        //private void GetMessageTask(object _getMsgModel)
+        //{
+        //    GetMsgModel getMsgModel = (GetMsgModel)_getMsgModel;
 
-            foreach (string mds_id in CommonVariables.GetMDSs.Keys)
-            {
-                if (CommonVariables.GetMDSs[mds_id].ArrangeChars.Contains(getMsgModel.ObjectID.Substring(0, 1)))
-                {
-                    getMsgModel.MDS_IP = CommonVariables.GetMDSs[mds_id].MDS_IP;
-                    getMsgModel.MDS_Port = CommonVariables.GetMDSs[mds_id].MDS_Port;
-                    break;
-                }
-            }
+        //    foreach (string mds_id in CommonVariables.GetMDSs.Keys)
+        //    {
+        //        if (CommonVariables.GetMDSs[mds_id].ArrangeChars.Contains(getMsgModel.ObjectID.Substring(0, 1)))
+        //        {
+        //            getMsgModel.MDS_IP = CommonVariables.GetMDSs[mds_id].MDS_IP;
+        //            getMsgModel.MDS_Port = CommonVariables.GetMDSs[mds_id].MDS_Port;
+        //            break;
+        //        }
+        //    }
 
-            BufferGetMsgModels.Add(getMsgModel);
+        //    BufferGetMsgModels.Add(getMsgModel);
 
-        }
+        //}
 
-        private void InputMessageTask(object _msgRecordModel)
-        {
+        //private void InputMessageTask(object _msgRecordModel)
+        //{
 
-            MsgRecordModel msgRecordModel = (MsgRecordModel)_msgRecordModel;
+        //    MsgRecordModel msgRecordModel = (MsgRecordModel)_msgRecordModel;
 
-            IList<MsgRecordModel> msgRecordModels = null;
+        //    IList<MsgRecordModel> msgRecordModels = null;
 
-            if (msgRecordModel.SendType == 1)
-            {
-                msgRecordModels = GenerateMsgRecordModel(msgRecordModel);
-                foreach (MsgRecordModel tempmsgRecordModel in msgRecordModels)
-                {
-                    BufferMsgRecordModels.Add(tempmsgRecordModel);
-                }
-            }
-            else
-            {
+        //    if (msgRecordModel.SendType == 1)
+        //    {
+        //        msgRecordModels = GenerateMsgRecordModel(msgRecordModel);
+        //        foreach (MsgRecordModel tempmsgRecordModel in msgRecordModels)
+        //        {
+        //            BufferMsgRecordModels.Add(tempmsgRecordModel);
+        //        }
+        //    }
+        //    else
+        //    {
 
-                foreach (string mds_id in CommonVariables.GetMDSs.Keys)
-                {
-                    if (CommonVariables.GetMDSs[mds_id].ArrangeChars.Contains(msgRecordModel.RecivedObjectID.Substring(0, 1)))
-                    {
-                        msgRecordModel.MDS_IP = CommonVariables.GetMDSs[mds_id].MDS_IP;
-                        msgRecordModel.MDS_Port = CommonVariables.GetMDSs[mds_id].MDS_Port;
-                        break;
-                    }
-                }
-                BufferMsgRecordModels.Add(msgRecordModel);
-            }
-        }
+        //        foreach (string mds_id in CommonVariables.GetMDSs.Keys)
+        //        {
+        //            if (CommonVariables.GetMDSs[mds_id].ArrangeChars.Contains(msgRecordModel.RecivedObjectID.Substring(0, 1)))
+        //            {
+        //                msgRecordModel.MDS_IP = CommonVariables.GetMDSs[mds_id].MDS_IP;
+        //                msgRecordModel.MDS_Port = CommonVariables.GetMDSs[mds_id].MDS_Port;
+        //                break;
+        //            }
+        //        }
+        //        BufferMsgRecordModels.Add(msgRecordModel);
+        //    }
+        //}
 
         public void StartMainThread()
         {
+            IsRunning = true;
             ThreadStart threadStart = new ThreadStart(MainConnectMDSThreadAsync);
             Thread thread = new Thread(threadStart);
             thread.Start();
         }
 
+
+        public void StopMainThread()
+        {
+            IsRunning = false;
+        }
+
         private void MainConnectMDSThreadAsync()
         {
-            int tempMessagePriority = messagePriority;
-            int tempGetMessageProority = getMessagePriority;
+            bool tag = true;
+
             asyncSocketClient = new AsyncSocketClient(_maxSize, _maxConnnections, CommonVariables.LogTool);
-            while (IsRunning)
+
+            CommonVariables.LogTool.Log("begin buffer contorl");
+
+            try
             {
 
-                if (tempMessagePriority >= tempGetMessageProority)
+                while (IsRunning)
                 {
-                    //handler new message
-                    #region get data from buffer
-                    if (PerpareMsgRecordModels.Count == 0 && BufferMsgRecordModels.Count > 0)
+                    if (tag)
                     {
-                        for (int i = 0; i < BufferMsgRecordModels.Count; i++)
+                        //handler new message
+
+                        #region handler new message data
+                        CommonVariables.LogTool.Log("GetUsingMsgRecordBuffer count  " + GetUsingMsgRecordBuffer.Count.ToString());
+                        if (GetUsingMsgRecordBuffer.Count > 0)
                         {
-                            PerpareMsgRecordModels.Add(BufferMsgRecordModels[i]);
+                            UsingTagForMsgRecord = !UsingTagForMsgRecord;
+                            CommonVariables.LogTool.Log("GetUnUsingMsgRecordBuffer count  " + GetUnUsingMsgRecordBuffer.Count.ToString());
+                            while (GetUnUsingMsgRecordBuffer.Count > 0)
+                            {
+                                MsgRecordModel msgRecordModel = GetUnUsingMsgRecordBuffer[0];
+                                try
+                                {
+                                    string messageStr = CommonFlag.F_MDSVerifyMCSMSG + CommonVariables.serializer.Serialize(msgRecordModel);
+                                    CommonVariables.LogTool.Log("begin send mds " + msgRecordModel.MDS_IP + " port:" + msgRecordModel.MDS_Port + messageStr);
+                                    asyncSocketClient.SendMsg(msgRecordModel.MDS_IP, msgRecordModel.MDS_Port, messageStr, msgRecordModel.MessageID, HandlerMsgReturnData);
+
+                                    ExeingMsgRecordModels.Add(msgRecordModel);
+                                }
+                                catch (Exception ex)
+                                {
+                                    GetUsingMsgRecordBuffer.Add(msgRecordModel);
+                                    CommonVariables.LogTool.Log(msgRecordModel.MessageID + ex.Message + ex.StackTrace);
+                                }
+                                GetUnUsingMsgRecordBuffer.RemoveAt(0);
+                            }
                         }
+
+                        #endregion
+
+                        tag = !tag;
                     }
-                    #endregion
-
-                    #region handler perpare area data
-
-                    if (PerpareMsgRecordModels.Count > 0)
+                    else
                     {
-                        MsgRecordModel msgRecordModel = PerpareMsgRecordModels[0];
-                        try
+                        //CommonVariables.LogTool.Log("GetUsingGetMsgBuffer count  " + GetUsingGetMsgBuffer.Count.ToString());
+                        #region handler get message
+                        if (GetUsingGetMsgBuffer.Count > 0)
                         {
-                            string messageStr = CommonFlag.F_MDSVerifyMCSMSG + CommonVariables.serializer.Serialize(msgRecordModel);
-                            asyncSocketClient.SendMsg(msgRecordModel.MDS_IP, msgRecordModel.MDS_Port, messageStr, msgRecordModel.MessageID, HandlerMsgReturnData);
+                            UsingTagForGetMsg = !UsingTagForGetMsg;
+                            //CommonVariables.LogTool.Log("GetUnUsingGetMsgBuffer count  " + GetUnUsingGetMsgBuffer.Count.ToString());
+                            while (GetUnUsingGetMsgBuffer.Count > 0)
+                            {
+                                GetMsgModel getMsgModel = GetUnUsingGetMsgBuffer[0];
+                                try
+                                {
+                                    string messageStr = CommonFlag.F_MDSVerifyMCSGetMSG + CommonVariables.serializer.Serialize(getMsgModel);
+                                    //CommonVariables.LogTool.Log("begin send mds " + getMsgModel.MDS_IP + " port:" + getMsgModel.MDS_Port + messageStr);
+                                    asyncSocketClient.SendMsg(getMsgModel.MDS_IP, getMsgModel.MDS_Port, messageStr, getMsgModel.MessageID, HandlerGetMsgReturnData);
+                                    //ExeingGetMsgModels.Add(getMsgModel);                        
+                                }
+                                catch (Exception ex)
+                                {
+                                    CommonVariables.LogTool.Log(ex.Message + ex.StackTrace);
+                                }
+                                GetUnUsingGetMsgBuffer.RemoveAt(0);
+                            }
+                        }
+                        #endregion
 
-                            ExeingMsgRecordModels.Add(msgRecordModel);
-                            PerpareMsgRecordModels.RemoveAt(0);
-                        }
-                        catch (Exception ex)
-                        {
-                            CommonVariables.LogTool.Log(ex.Message + ex.StackTrace);
-                        }
+                        tag = !tag;
                     }
 
-                    #endregion
-
-                    tempMessagePriority--;
-                }
-                else
-                {
-                    //handler get message
-                    #region get data from buffer
-                    if (PerpareGetMsgModels.Count == 0 && BufferGetMsgModels.Count > 0)
-                    {
-                        for (int i = 0; i < BufferGetMsgModels.Count;i++ )
-                        {
-                            PerpareGetMsgModels.Add(BufferGetMsgModels[i]);
-                        }
-                    }
-                    #endregion
-
-                    #region handler perpare area data
-                    if (PerpareMsgRecordModels.Count > 0)
-                    {
-                        GetMsgModel getMsgModel = PerpareGetMsgModels[0];
-                        try
-                        {
-                            string messageStr = CommonFlag.F_MDSVerifyMCSGetMSG + CommonVariables.serializer.Serialize(getMsgModel);
-                            asyncSocketClient.SendMsg(getMsgModel.MDS_IP, getMsgModel.MDS_Port, messageStr, getMsgModel.MessageID, HandlerGetMsgReturnData);
-
-                            //ExeingGetMsgModels.Add(getMsgModel);
-                            PerpareGetMsgModels.RemoveAt(0);
-                        }
-                        catch (Exception ex)
-                        {
-                            CommonVariables.LogTool.Log(ex.Message + ex.StackTrace);
-                        }
-
-                    }
-                    #endregion
-
-                    tempMessagePriority--;
+                    Thread.Sleep(2000);
                 }
             }
+            catch(Exception ex)
+            {
+                CommonVariables.LogTool.Log(ex.Message + ex.StackTrace);
+            }
         }
+        
 
 
         private string HandlerMsgReturnData(string returnData,bool IsError)
@@ -318,7 +397,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 MsgRecordModel tempmodel=ExeingMsgRecordModels.Single(t => t.MessageID == returnData);
                 if (IsError)
                 {
-                    PerpareMsgRecordModels.Add(tempmodel);
+                    GetUsingMsgRecordBuffer.Add(tempmodel);
                 }
                 ExeingMsgRecordModels.Remove(ExeingMsgRecordModels.Single(t => t.MessageID == returnData));
             }
@@ -329,10 +408,13 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         private string HandlerGetMsgReturnData(string returnData, bool IsError)
         {
+            //CommonVariables.LogTool.Log("recive mds return data:" + returnData);
             if(IsError)
             {
                 return string.Empty;
             }
+
+           
 
             if (!string.IsNullOrEmpty(returnData))
             {

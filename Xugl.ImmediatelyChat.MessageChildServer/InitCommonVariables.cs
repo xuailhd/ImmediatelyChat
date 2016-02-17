@@ -13,8 +13,8 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         {
             CommonVariables.PSIP = ConfigurationManager.AppSettings["PSIP"].ToString();
             CommonVariables.PSPort = Convert.ToInt32(ConfigurationManager.AppSettings["PSPort"].ToString());
-            CommonVariables.MMSIP = ConfigurationManager.AppSettings["MMSIP"].ToString();
-            CommonVariables.MMSPort = Convert.ToInt32(ConfigurationManager.AppSettings["MMSPort"]);
+            //CommonVariables.MMSIP = ConfigurationManager.AppSettings["MMSIP"].ToString();
+            //CommonVariables.MMSPort = Convert.ToInt32(ConfigurationManager.AppSettings["MMSPort"]);
 
             CommonVariables.MCSIP = ConfigurationManager.AppSettings["MCSIP"];
             CommonVariables.MCSPort = Convert.ToInt32(ConfigurationManager.AppSettings["MCSPort"]);

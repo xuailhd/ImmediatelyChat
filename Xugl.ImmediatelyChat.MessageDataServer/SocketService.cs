@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
 
 namespace Xugl.ImmediatelyChat.MessageDataServer
@@ -173,17 +174,14 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
                             break;
                         }
                     }
-
+                    mainServiceSocket.Close();
                     //3.Start MCS service
                     CommonVariables.LogTool.Log("Start MDS service:" + CommonVariables.MDSIP + ", Port:" + CommonVariables.MDSPort.ToString());
-                    while (IsGoOnRunning)
-                    {
-                        Socket clientSocket = mainServiceSocket.Accept();
-                        SocketThead socketThead = new SocketThead(clientSocket);
-                    }
+                    SocketListener socketListener = new SocketListener();
+                    socketListener.BeginService();
 
-                    mainServiceSocket.Close();
-                    CommonVariables.LogTool.Log("stop MDS Server");
+                    
+                    //CommonVariables.LogTool.Log("stop MDS Server");
                 }
                 catch (SocketException ex)
                 {
@@ -218,7 +216,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
 
         public void StopMDSService()
         {
-
+            CommonVariables.MessageContorl.StopMainThread();
             if (IsGoOnRunning == true)
             {
                 IsGoOnRunning = false;

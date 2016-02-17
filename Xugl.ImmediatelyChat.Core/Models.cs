@@ -13,6 +13,8 @@ namespace Xugl.ImmediatelyChat.Core
         public string MCS_IP { get; set; }
 
         public int MCS_Port { get; set; }
+
+        public DateTime LatestTime { get; set; }
     }
 
     public class MMSModel

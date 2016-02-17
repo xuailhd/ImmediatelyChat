@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
 
 namespace Xugl.ImmediatelyChat.MessageMainServer
@@ -16,6 +17,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
     {
         private Socket mainServiceSocket;
         private bool IsConnectGoOnRuning;
+        SocketListener socketListener;
 
         public void StartMMSService()
         {
@@ -39,22 +41,24 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             try
             {
 
-                IPAddress ip = IPAddress.Parse(CommonVariables.MMSIP);
-                IPEndPoint ipe = new IPEndPoint(ip, CommonVariables.MMSPort);
+                //IPAddress ip = IPAddress.Parse(CommonVariables.MMSIP);
+                //IPEndPoint ipe = new IPEndPoint(ip, CommonVariables.MMSPort);
 
-                mainServiceSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                mainServiceSocket.Bind(ipe);
-                mainServiceSocket.Listen(0);
+                //mainServiceSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                //mainServiceSocket.Bind(ipe);
+                //mainServiceSocket.Listen(0);
                 CommonVariables.LogTool.Log("Start Message Main Server:" + CommonVariables.MMSIP + ", Port:" + CommonVariables.MMSPort.ToString());
 
+                socketListener = new SocketListener();
+                socketListener.BeginService();
             
-                while (IsConnectGoOnRuning)
-                {
-                    Socket clientSocket = mainServiceSocket.Accept();
-                    SocketThead socketThead = new SocketThead(clientSocket);
-                }
-                mainServiceSocket.Close();
-                CommonVariables.LogTool.Log("Stop Message Main Server");
+                //while (IsConnectGoOnRuning)
+                //{
+                //    Socket clientSocket = mainServiceSocket.Accept();
+                //    SocketThead socketThead = new SocketThead(clientSocket);
+                //}
+                //mainServiceSocket.Close();
+                //CommonVariables.LogTool.Log("Stop Message Main Server");
             }
             catch (SocketException ex)
             {
@@ -108,10 +112,14 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
         {
             ArrangeChar();
             SendStartCommand();
+            //StopMMSService();
 
             CommonVariables.IsBeginMessageService = true;
 
             CommonVariables.LogTool.Log("Begin accept messages");
+            //Thread.Sleep(500);
+            //SocketListener socketListener = new SocketListener();
+            //socketListener.BeginService();
         }
 
         private void SendStartCommand()
@@ -274,7 +282,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 {
                     foreach (char availableChar in availableChars)
                     {
-                        CommonVariables.GetMDSs[mds_id].ArrangeChars = CommonVariables.GetMDSs[mds_id].ArrangeChars + availableChars[0].ToString();
+                        CommonVariables.GetMDSs[mds_id].ArrangeChars = CommonVariables.GetMDSs[mds_id].ArrangeChars + availableChar;
                     }
                 }
             }
@@ -283,25 +291,27 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
         public void StopMMSService()
         {
 
-            if (IsConnectGoOnRuning == true)
-            {
-                IsConnectGoOnRuning = false;
-                try
-                {
-                    byte[] bytesSent;
-                    bytesSent = Encoding.UTF8.GetBytes("stop");
-                    IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(CommonVariables.MMSIP), CommonVariables.MMSPort);
-                    Socket tempSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
-                    tempSocket.Connect(ipe);
-                    tempSocket.Send(bytesSent, bytesSent.Length, 0);
-                    tempSocket.Close();
-                }
-                catch (Exception ex)
-                {
 
-                }
-            }
+            //if (IsConnectGoOnRuning == true)
+            //{
+            //    IsConnectGoOnRuning = false;
+            //    try
+            //    {
+            //        byte[] bytesSent;
+            //        bytesSent = Encoding.UTF8.GetBytes("stop");
+            //        IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(CommonVariables.MMSIP), CommonVariables.MMSPort);
+            //        Socket tempSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+            //        tempSocket.Connect(ipe);
+            //        tempSocket.Send(bytesSent, bytesSent.Length, 0);
+            //        tempSocket.Close();
+            //    }
+            //    catch (Exception ex)
+            //    {
+
+            //    }
+            //}
         }
     }
 }
