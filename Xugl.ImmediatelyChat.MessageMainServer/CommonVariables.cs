@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
+using Xugl.ImmediatelyChat.IServices;
+using Xugl.ImmediatelyChat.Model;
 
 namespace Xugl.ImmediatelyChat.MessageMainServer
 {
@@ -37,6 +39,8 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
         public static bool IsBeginMessageService { get; set; }
 
+        public static string ArrangeStr { get; set; }
+
         #region JavaScriptSerializer
 
         public static JavaScriptSerializer serializer
@@ -53,76 +57,13 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
         }
         #endregion
 
+        #region MCSServers
 
-        #region manage MCSs
-
-        public static IDictionary<string, MCSModel> GetMCSs
+        public static IList<MCSServer> MCSServers
         {
             get
             {
-                if(Singleton<IDictionary<string,MCSModel>>.Instance==null)
-                {
-                    Singleton<IDictionary<string,MCSModel>>.Instance = new Dictionary<string,MCSModel>();
-                }
-                return Singleton<IDictionary<string,MCSModel>>.Instance;
-            }
-        }
-
-        public static void AddMCS(MCSModel mcsModel)
-        {
-            if(Singleton<IDictionary<string,MCSModel>>.Instance==null)
-            {
-                Singleton<IDictionary<string,MCSModel>>.Instance = new Dictionary<string,MCSModel>();
-            }
-
-            lock (Singleton<IDictionary<string,MCSModel>>.Instance)
-            { 
-                Singleton<IDictionary<string,MCSModel>>.Instance.Add(mcsModel.MCS_ID, mcsModel);
-            }
-        }
-
-        public static void RemoveMCS(string mcs_ID)
-        {
-            lock (Singleton<IDictionary<string, MCSModel>>.Instance)
-            {
-                Singleton<IDictionary<string, MCSModel>>.Instance.Remove(mcs_ID);
-            }
-        }
-
-        #endregion
-
-        #region manage MDSs
-
-        public static IDictionary<string, MDSModel> GetMDSs
-        {
-            get
-            {
-                if (Singleton<IDictionary<string, MDSModel>>.Instance == null)
-                {
-                    Singleton<IDictionary<string, MDSModel>>.Instance = new Dictionary<string, MDSModel>();
-                }
-                return Singleton<IDictionary<string, MDSModel>>.Instance;
-            }
-        }
-
-        public static void AddMDS(MDSModel mdsModel)
-        {
-            if (Singleton<IDictionary<string, MDSModel>>.Instance == null)
-            {
-                Singleton<IDictionary<string, MDSModel>>.Instance = new Dictionary<string, MDSModel>();
-            }
-
-            lock (Singleton<IDictionary<string, MDSModel>>.Instance)
-            {
-                Singleton<IDictionary<string, MDSModel>>.Instance.Add(mdsModel.MDS_ID, mdsModel);
-            }
-        }
-
-        public static void RemoveMDS(string mds_ID)
-        {
-            lock (Singleton<IDictionary<string, MDSModel>>.Instance)
-            {
-                Singleton<IDictionary<string, MDSModel>>.Instance.Remove(mds_ID);
+                return SingletonList<MCSServer>.Instance;
             }
         }
 
@@ -143,5 +84,47 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
         }
 
         #endregion
+
+
+        public static IContactPersonService ContactPersonService
+        {
+            get
+            {
+                if (Singleton<IContactPersonService>.Instance == null)
+                {
+                    Singleton<IContactPersonService>.Instance = Xugl.ImmediatelyChat.Core.DependencyResolution.ObjectContainerFactory.CurrentContainer.Resolver<IContactPersonService>();
+                }
+                return Singleton<IContactPersonService>.Instance;
+            }
+        }
+
+        #region  OperateFile
+        public static IOperateFile OperateFile
+        {
+            get
+            {
+                if (Singleton<IOperateFile>.Instance == null)
+                {
+                    Singleton<IOperateFile>.Instance = Xugl.ImmediatelyChat.Core.DependencyResolution.ObjectContainerFactory.CurrentContainer.Resolver<IOperateFile>();
+                }
+                return Singleton<IOperateFile>.Instance;
+            }
+        }
+
+
+        private static string m_ConfigFilePath;
+        public static string ConfigFilePath
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(m_ConfigFilePath))
+                {
+                    m_ConfigFilePath = AppDomain.CurrentDomain.BaseDirectory + "config.txt";
+                }
+                return m_ConfigFilePath;
+            }
+        }
+        #endregion
+
     }
 }

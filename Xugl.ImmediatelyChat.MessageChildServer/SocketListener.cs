@@ -49,101 +49,120 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 return string.Empty;
             }
 
-            //handle UA feedback
-            if (data.StartsWith(CommonFlag.F_MCSReciveUAMSGFB))
+            if(data.StartsWith(CommonFlag.F_PSCallMCSStart))
             {
-                string tempStr = data.Remove(0, CommonFlag.F_MCSReciveUAMSGFB.Length);
-                if (token.Models != null && token.Models.Count > 0)
+                IList<MDSServer> mdsServers = CommonVariables.serializer.Deserialize<IList<MDSServer>>(data.Remove(0, CommonFlag.F_PSCallMCSStart.Length));
+                if (mdsServers != null && mdsServers.Count > 0)
                 {
-                    if (token.Models[0].MsgID == tempStr)
+                    CommonVariables.LogTool.Log("MDS count:" + mdsServers.Count);
+                    foreach (MDSServer mdsServer in mdsServers)
                     {
-                        token.Models.RemoveAt(0);
+                        CommonVariables.MDSServers.Add(mdsServer);
+                        CommonVariables.LogTool.Log("IP:" + mdsServer.MDS_IP + " Port:" + mdsServer.MDS_Port + "  ArrangeStr:" + mdsServer.ArrangeStr);
                     }
-                    else
-                    {
-                        for (int i = 1; i < token.Models.Count; i++)
-                        {
-                            if (token.Models[i].MsgID == tempStr)
-                            {
-                                token.Models.RemoveAt(i);
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (token.Models != null && token.Models.Count > 0)
-                {
-                    return CommonVariables.serializer.Serialize(token.Models[0]);
-                }
-                else
-                {
-                    return string.Empty;
-                }
-
-            }
-
-            if (data.StartsWith(CommonFlag.F_MCSVerifyUA))
-            {
-                string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUA.Length);
-                ClientStatusModel clientModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(tempStr);
-                if (clientModel != null)
-                {
-                    if (!string.IsNullOrEmpty(clientModel.ObjectID))
-                    {
-                        //CommonVariables.LogTool.Log("Account " + clientModel.ObjectID + " connect");
-                        return "ok";
-                    }
-                }
-            }
-
-
-            if (data.StartsWith(CommonFlag.F_MCSVerifyUAMSG))
-            {
-                string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUAMSG.Length);
-                MsgRecordModel msgModel = CommonVariables.serializer.Deserialize<MsgRecordModel>(tempStr);
-                CommonVariables.LogTool.Log("get msg " + msgModel.ObjectID + " " + msgModel.ObjectName + " " + msgModel.Content + " " + msgModel.RecivedGroupID);
-
-                if (msgModel != null)
-                {
-                    if (!string.IsNullOrEmpty(msgModel.ObjectID))
-                    {
-                        CommonVariables.MessageContorl.AddMSgRecordIntoBuffer(msgModel);
-                        return "ok";
-                    }
-                }
-            }
-
-            if (data.StartsWith(CommonFlag.F_MCSVerifyUAGetMSG))
-            {
-                string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUAGetMSG.Length);
-                GetMsgModel getMsgModel = CommonVariables.serializer.Deserialize<GetMsgModel>(tempStr);
-                //CommonVariables.LogTool.Log("get msg " + getMsgModel.ObjectID.ToString() + " && " + getMsgModel.GroupIDs.Count.ToString() + "&&" + getMsgModel.LatestTime.ToString());
-                if (getMsgModel != null)
-                {
-                    if (!string.IsNullOrEmpty(getMsgModel.ObjectID))
-                    {
-                        if (!CommonVariables.InRunningUAList.Contains(getMsgModel.ObjectID))
-                        {
-                            CommonVariables.InRunningUAList.Add(getMsgModel.ObjectID);
-                            CommonVariables.MessageContorl.AddGetMsgIntoBuffer(getMsgModel);
-                            token.Models = CommonVariables.MessageContorl.GetMSG(getMsgModel);
-                            //CommonVariables.LogTool.Log("get msg account " + token.Models.Count.ToString());
-                            if (token.Models != null && token.Models.Count > 0)
-                            {
-                                token.UAObjectID = getMsgModel.ObjectID;
-                                return CommonVariables.serializer.Serialize(token.Models[0]);
-                            }
-                            else
-                            {
-                                CommonVariables.InRunningUAList.Remove(getMsgModel.ObjectID);
-                            }
-                        }
-                    }
+                    CommonVariables.LogTool.Log("Start MCS service:" + CommonVariables.MCSIP + ", Port:" + CommonVariables.MCSPort.ToString());
+                    CommonVariables.IsBeginMessageService = true;
                 }
                 return string.Empty;
             }
 
+            if (CommonVariables.IsBeginMessageService)
+            {
+                //handle UA feedback
+                if (data.StartsWith(CommonFlag.F_MCSReciveUAMSGFB))
+                {
+                    string tempStr = data.Remove(0, CommonFlag.F_MCSReciveUAMSGFB.Length);
+                    if (token.Models != null && token.Models.Count > 0)
+                    {
+                        if (token.Models[0].MsgID == tempStr)
+                        {
+                            token.Models.RemoveAt(0);
+                        }
+                        else
+                        {
+                            for (int i = 1; i < token.Models.Count; i++)
+                            {
+                                if (token.Models[i].MsgID == tempStr)
+                                {
+                                    token.Models.RemoveAt(i);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (token.Models != null && token.Models.Count > 0)
+                    {
+                        return CommonVariables.serializer.Serialize(token.Models[0]);
+                    }
+                    else
+                    {
+                        return string.Empty;
+                    }
+
+                }
+
+                if (data.StartsWith(CommonFlag.F_MCSVerifyUA))
+                {
+                    string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUA.Length);
+                    ClientStatusModel clientModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(tempStr);
+                    if (clientModel != null)
+                    {
+                        if (!string.IsNullOrEmpty(clientModel.ObjectID))
+                        {
+                            //CommonVariables.LogTool.Log("Account " + clientModel.ObjectID + " connect");
+                            return "ok";
+                        }
+                    }
+                }
+
+
+                if (data.StartsWith(CommonFlag.F_MCSVerifyUAMSG))
+                {
+                    string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUAMSG.Length);
+                    MsgRecordModel msgModel = CommonVariables.serializer.Deserialize<MsgRecordModel>(tempStr);
+                    CommonVariables.LogTool.Log("get msg " + msgModel.ObjectID + " " + msgModel.ObjectName + " " + msgModel.Content + " " + msgModel.RecivedGroupID);
+
+                    if (msgModel != null)
+                    {
+                        if (!string.IsNullOrEmpty(msgModel.ObjectID))
+                        {
+                            CommonVariables.MessageContorl.AddMSgRecordIntoBuffer(msgModel);
+                            return "ok";
+                        }
+                    }
+                }
+
+                if (data.StartsWith(CommonFlag.F_MCSVerifyUAGetMSG))
+                {
+                    string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUAGetMSG.Length);
+                    GetMsgModel getMsgModel = CommonVariables.serializer.Deserialize<GetMsgModel>(tempStr);
+                    //CommonVariables.LogTool.Log("get msg " + getMsgModel.ObjectID.ToString() + " && " + getMsgModel.GroupIDs.Count.ToString() + "&&" + getMsgModel.LatestTime.ToString());
+                    if (getMsgModel != null)
+                    {
+                        if (!string.IsNullOrEmpty(getMsgModel.ObjectID))
+                        {
+                            if (!CommonVariables.InRunningUAList.Contains(getMsgModel.ObjectID))
+                            {
+                                CommonVariables.InRunningUAList.Add(getMsgModel.ObjectID);
+                                CommonVariables.MessageContorl.AddGetMsgIntoBuffer(getMsgModel);
+                                token.Models = CommonVariables.MessageContorl.GetMSG(getMsgModel);
+                                //CommonVariables.LogTool.Log("get msg account " + token.Models.Count.ToString());
+                                if (token.Models != null && token.Models.Count > 0)
+                                {
+                                    token.UAObjectID = getMsgModel.ObjectID;
+                                    return CommonVariables.serializer.Serialize(token.Models[0]);
+                                }
+                                else
+                                {
+                                    CommonVariables.InRunningUAList.Remove(getMsgModel.ObjectID);
+                                }
+                            }
+                        }
+                    }
+                    return string.Empty;
+                }
+            }
             //if (data.StartsWith(CommonFlag.F_MCSVerfiyMDSMSG))
             //{
             //    string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUAGetMSG.Length);

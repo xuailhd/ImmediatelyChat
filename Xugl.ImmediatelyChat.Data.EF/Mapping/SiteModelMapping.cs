@@ -5,6 +5,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Xugl.ImmediatelyChat.Data.EF.Mapping.Site
 {
@@ -14,6 +15,8 @@ namespace Xugl.ImmediatelyChat.Data.EF.Mapping.Site
         {
             this.HasKey(t => t.MMS_IP);
             this.HasKey(t => t.MMS_Port);
+
+            this.Property(t => t.MMS_Port).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
         }
     }
 

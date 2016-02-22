@@ -34,11 +34,6 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             socketService.StartMMSService();
         }
 
-        private void btn_StartMessageServer_Click(object sender, EventArgs e)
-        {
-            socketService.StartService();
-        }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
             if(logLength!=CommonVariables.LogTool.GetLogMsg.Length)
@@ -57,6 +52,11 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
                 }
             }
+        }
+
+        private void FrmMain_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

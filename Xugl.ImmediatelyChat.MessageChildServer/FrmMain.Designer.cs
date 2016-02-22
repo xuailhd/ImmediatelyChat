@@ -44,9 +44,9 @@
             // 
             this.btn_ConnectMainServer.Location = new System.Drawing.Point(28, 13);
             this.btn_ConnectMainServer.Name = "btn_ConnectMainServer";
-            this.btn_ConnectMainServer.Size = new System.Drawing.Size(123, 23);
+            this.btn_ConnectMainServer.Size = new System.Drawing.Size(125, 23);
             this.btn_ConnectMainServer.TabIndex = 0;
-            this.btn_ConnectMainServer.Text = "Connect Main Server";
+            this.btn_ConnectMainServer.Text = "Connect Portal Server";
             this.btn_ConnectMainServer.UseVisualStyleBackColor = true;
             this.btn_ConnectMainServer.Click += new System.EventHandler(this.btn_ConnectMainServer_Click);
             // 

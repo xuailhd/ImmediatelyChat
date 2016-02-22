@@ -154,5 +154,7 @@ namespace Xugl.ImmediatelyChat.Data.EF
             return resultCount;
         }
 
+
+      
     }
 }

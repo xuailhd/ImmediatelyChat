@@ -33,11 +33,10 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 token.Models = null;
             }
         }
-
         protected override string HandleRecivedMessage(string inputMessage, ListenerToken token)
         {
-            MCSModel tempMCSModel = null;
-            MDSModel tempMDSModel = null;
+            //MCSModel tempMCSModel = null;
+            //MDSModel tempMDSModel = null;
             ContactPerson tempContactPerson = null;
 
             if (string.IsNullOrEmpty(inputMessage))
@@ -52,6 +51,39 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 return string.Empty;
             }
 
+
+            if (data.StartsWith(CommonFlag.F_PSSendMMSUser))
+            {
+                ContactPerson contactPerson = CommonVariables.serializer.Deserialize<ContactPerson>(data.Remove(0, CommonFlag.F_PSSendMMSUser.Length));
+                if (contactPerson != null && !string.IsNullOrEmpty(contactPerson.ObjectID))
+                {
+                    if (CommonVariables.ContactPersonService.InsertNewPerson(contactPerson) > 0)
+                    {
+                        if (CommonVariables.ContactPersonService.InsertDefaultGroup(contactPerson.ObjectID) > 0)
+                        {
+                            return contactPerson.ObjectID;
+                        }
+                    }
+                }
+                return "failed";
+            }
+
+
+            if (data.StartsWith(CommonFlag.F_PSCallMMSStart))
+            {
+                IList<MCSServer> mcsServers = CommonVariables.serializer.Deserialize<IList<MCSServer>>(data.Remove(0, CommonFlag.F_PSCallMMSStart.Length));
+                CommonVariables.LogTool.Log("MCS count:" + mcsServers.Count);
+                foreach (MCSServer mcsServer in mcsServers)
+                {
+                    CommonVariables.MCSServers.Add(mcsServer);
+                    CommonVariables.LogTool.Log("IP:" + mcsServer.MCS_IP + " Port:" + mcsServer.MCS_Port + "  ArrangeStr:" + mcsServer.ArrangeStr);
+                }
+
+                CommonVariables.LogTool.Log("Start Message Main Server:" + CommonVariables.MMSIP + ", Port:" + CommonVariables.MMSPort.ToString());
+                CommonVariables.IsBeginMessageService = true;
+                return string.Empty;
+            }
+
             if (CommonVariables.IsBeginMessageService)
             {
                 //UA
@@ -61,20 +93,17 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
                     CommonVariables.LogTool.Log(clientStatusModel.LatestTime.ToString());
                     //Find MCS
-                    foreach (string mcs_id in CommonVariables.GetMCSs.Keys)
+                    for (int i = 0; i < CommonVariables.MCSServers.Count;i++ )
                     {
-                        if (CommonVariables.GetMCSs[mcs_id].ArrangeChars.Contains(clientStatusModel.ObjectID.Substring(0, 1)))
+                        if (CommonVariables.MCSServers[i].ArrangeStr.Contains(clientStatusModel.ObjectID.Substring(0, 1)))
                         {
-                            clientStatusModel.MCS_IP = CommonVariables.GetMCSs[mcs_id].MCS_IP;
-                            clientStatusModel.MCS_Port = CommonVariables.GetMCSs[mcs_id].MCS_Port;
+                            clientStatusModel.MCS_IP = CommonVariables.MCSServers[i].MCS_IP;
+                            clientStatusModel.MCS_Port = CommonVariables.MCSServers[i].MCS_Port;
 
                             tempContactPerson = contactPersonRepository.Table.Where(t => t.ObjectID == clientStatusModel.ObjectID).FirstOrDefault();
-                            if (tempContactPerson==null)
+                            if (tempContactPerson == null)
                             {
-                                tempContactPerson = new ContactPerson();
-                                tempContactPerson.ObjectID = clientStatusModel.ObjectID;
-                                tempContactPerson.LatestTime = DateTime.Now;
-                                contactPersonRepository.Insert(tempContactPerson);
+                                return string.Empty;
                             }
 
                             if (DateTime.Compare(clientStatusModel.LatestTime, tempContactPerson.LatestTime.GetValueOrDefault()) <= 0)
@@ -97,38 +126,38 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             }
 
 
-            if (data.StartsWith(CommonFlag.F_MMSVerifyMCS))
-            {
-                //tempMCSModel = UnboxMCSMsg(strMsg);
+            //if (data.StartsWith(CommonFlag.F_MMSVerifyMCS))
+            //{
+            //    //tempMCSModel = UnboxMCSMsg(strMsg);
 
-                tempMCSModel = CommonVariables.serializer.Deserialize<MCSModel>(data.Remove(0, CommonFlag.F_MMSVerifyMCS.Length));
-                CommonVariables.AddMCS(tempMCSModel);
-                CommonVariables.LogTool.Log("Message Child Server " + tempMCSModel.MCS_ID + " connect");
-                return "ok";
-            }
+            //    tempMCSModel = CommonVariables.serializer.Deserialize<MCSModel>(data.Remove(0, CommonFlag.F_MMSVerifyMCS.Length));
+            //    CommonVariables.AddMCS(tempMCSModel);
+            //    CommonVariables.LogTool.Log("Message Child Server " + tempMCSModel.MCS_ID + " connect");
+            //    return "ok";
+            //}
 
-            if (data.StartsWith(CommonFlag.F_MMSVerifyMDS))
-            {
-                //tempMDSModel = UnboxMDSMsg(strMsg);
+            //if (data.StartsWith(CommonFlag.F_MMSVerifyMDS))
+            //{
+            //    //tempMDSModel = UnboxMDSMsg(strMsg);
 
-                tempMDSModel = CommonVariables.serializer.Deserialize<MDSModel>(data.Remove(0, CommonFlag.F_MMSVerifyMDS.Length));
-                CommonVariables.AddMDS(tempMDSModel);
-                CommonVariables.LogTool.Log("Message Data Server " + tempMDSModel.MDS_ID + " connect");
-                return "ok";
-            }
+            //    tempMDSModel = CommonVariables.serializer.Deserialize<MDSModel>(data.Remove(0, CommonFlag.F_MMSVerifyMDS.Length));
+            //    CommonVariables.AddMDS(tempMDSModel);
+            //    CommonVariables.LogTool.Log("Message Data Server " + tempMDSModel.MDS_ID + " connect");
+            //    return "ok";
+            //}
 
 
-            if (data.StartsWith(CommonFlag.F_MMSReciveStopMCS))
-            {
-                CommonVariables.RemoveMCS(data.Replace(CommonFlag.F_MMSReciveStopMCS, ""));
-                CommonVariables.LogTool.Log("Message Child Server " + data.Replace("stopMCS", "") + " disconnect");
-            }
+            //if (data.StartsWith(CommonFlag.F_MMSReciveStopMCS))
+            //{
+            //    CommonVariables.RemoveMCS(data.Replace(CommonFlag.F_MMSReciveStopMCS, ""));
+            //    CommonVariables.LogTool.Log("Message Child Server " + data.Replace("stopMCS", "") + " disconnect");
+            //}
 
-            if (data.StartsWith(CommonFlag.F_MMSReciveStopMDS))
-            {
-                CommonVariables.RemoveMCS(data.Replace(CommonFlag.F_MMSReciveStopMDS, ""));
-                CommonVariables.LogTool.Log("Message Data Server " + data.Replace("stopMDS", "") + " disconnect");
-            }
+            //if (data.StartsWith(CommonFlag.F_MMSReciveStopMDS))
+            //{
+            //    CommonVariables.RemoveMCS(data.Replace(CommonFlag.F_MMSReciveStopMDS, ""));
+            //    CommonVariables.LogTool.Log("Message Data Server " + data.Replace("stopMDS", "") + " disconnect");
+            //}
 
             return string.Empty;
         }

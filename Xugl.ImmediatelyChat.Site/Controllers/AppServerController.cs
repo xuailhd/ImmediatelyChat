@@ -11,17 +11,18 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using Xugl.ImmediatelyChat.Common;
+using Xugl.ImmediatelyChat.IServices;
 
 namespace Xugl.ImmediatelyChat.Site.Controllers
 {
     public class AppServerController : Controller
     {
         private readonly ICacheManage cacheManage;
-        private readonly IRepository<MMSServer> mmsServerRepository;
-        public AppServerController(ICacheManage cacheManage, IRepository<MMSServer> mmsServerRepository)
+        private readonly IAppServerService appServerService;
+        public AppServerController(ICacheManage cacheManage, IAppServerService appServerService)
         {
             this.cacheManage = cacheManage;
-            this.mmsServerRepository = mmsServerRepository;
+            this.appServerService = appServerService;
         }
 
         //
@@ -34,16 +35,28 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
             mmsServer.MMS_IP = ip;
             mmsServer.MMS_Port = port;
 
-            IList<MMSServer> mmsServers = cacheManage.GetCache<IList<MMSServer>>("MMSServers");
-
-            if (mmsServers==null)
+            if (cacheManage.GetCache<IList<MMSServer>>("MMSServers")==null)
             {
-                mmsServers = new List<MMSServer>();
+                IList<MMSServer> mmsServers = new List<MMSServer>();
+                mmsServers.Add(mmsServer);
+                cacheManage.AddCache<IList<MMSServer>>("MMSServers", mmsServers);
+                
             }
-
-            mmsServers.Add(mmsServer);
-
-            cacheManage.AddCache<IList<MMSServer>>("MMSServers", mmsServers);
+            else
+            {
+                if (cacheManage.GetCache<IList<MMSServer>>("MMSServers").Count > 0)
+                {
+                    for (int i = cacheManage.GetCache<IList<MMSServer>>("MMSServers").Count - 1; i >= 0; i--)
+                    {
+                        if (cacheManage.GetCache<IList<MMSServer>>("MMSServers")[i].MMS_IP == mmsServer.MMS_IP
+                            && cacheManage.GetCache<IList<MMSServer>>("MMSServers")[i].MMS_Port == mmsServer.MMS_Port)
+                        {
+                            cacheManage.GetCache<IList<MMSServer>>("MMSServers").RemoveAt(i);
+                        }
+                    }
+                }
+                cacheManage.GetCache<IList<MMSServer>>("MMSServers").Add(mmsServer);
+            }
 
             return Json("ok",JsonRequestBehavior.AllowGet);
         }
@@ -56,17 +69,28 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
             mcsServer.MCS_IP = ip;
             mcsServer.MCS_Port = port;
 
-            IList<MCSServer> mcsServers = cacheManage.GetCache<IList<MCSServer>>("MCSServers");
-
-            if (mcsServers == null)
+            if (cacheManage.GetCache<IList<MCSServer>>("MCSServers") == null)
             {
-                mcsServers = new List<MCSServer>();
+                IList<MCSServer> mcsServers = new List<MCSServer>();
+                mcsServers.Add(mcsServer);
+                cacheManage.AddCache<IList<MCSServer>>("MCSServers", mcsServers);
+
             }
-
-            mcsServers.Add(mcsServer);
-
-            cacheManage.AddCache<IList<MCSServer>>("MCSServers", mcsServers);
-
+            else
+            {
+                if (cacheManage.GetCache<IList<MCSServer>>("MCSServers").Count > 0)
+                {
+                    for (int i = cacheManage.GetCache<IList<MCSServer>>("MCSServers").Count - 1; i >= 0; i--)
+                    {
+                        if (cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].MCS_IP == mcsServer.MCS_IP
+                            && cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].MCS_Port == mcsServer.MCS_Port)
+                        {
+                            cacheManage.GetCache<IList<MCSServer>>("MCSServers").RemoveAt(i);
+                        }
+                    }
+                }
+                cacheManage.GetCache<IList<MCSServer>>("MCSServers").Add(mcsServer);
+            }
             return Json("ok", JsonRequestBehavior.AllowGet);
         }
 
@@ -77,17 +101,29 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
             mdsServer.MDS_IP = ip;
             mdsServer.MDS_Port = port;
 
-            IList<MDSServer> mdsServers = cacheManage.GetCache<IList<MDSServer>>("MDSServers");
-
-            if (mdsServers == null)
+            if (cacheManage.GetCache<IList<MDSServer>>("MDSServers") == null)
             {
-                mdsServers = new List<MDSServer>();
+                IList<MDSServer> mdsServers = new List<MDSServer>();
+                mdsServers.Add(mdsServer);
+                cacheManage.AddCache<IList<MDSServer>>("MDSServers", mdsServers);
+
             }
+            else
+            {
+                if (cacheManage.GetCache<IList<MDSServer>>("MDSServers").Count > 0)
+                {
+                    for (int i = cacheManage.GetCache<IList<MDSServer>>("MDSServers").Count - 1; i >= 0; i--)
+                    {
+                        if (cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].MDS_IP == mdsServer.MDS_IP
+                            && cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].MDS_Port == mdsServer.MDS_Port)
+                        {
+                            cacheManage.GetCache<IList<MDSServer>>("MDSServers").RemoveAt(i);
+                        }
+                    }
+                }
 
-            mdsServers.Add(mdsServer);
-
-            cacheManage.AddCache<IList<MDSServer>>("MDSServers", mdsServers);
-
+                cacheManage.GetCache<IList<MDSServer>>("MDSServers").Add(mdsServer);
+            }
             return Json("ok", JsonRequestBehavior.AllowGet);
         }
 
@@ -98,12 +134,14 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
 
             if(!string.IsNullOrEmpty(returnstr))
             {
-                return View("StartFailed", returnstr);
+                ViewData["error"] = returnstr;
+                return View("StartFailed");
             }
             returnstr=SendStartCommand();
             if(!string.IsNullOrEmpty(returnstr))
             {
-                return View("StartFailed", returnstr);
+                ViewData["error"] = returnstr;
+                return View("StartFailed", (object)returnstr);
             }
 
             ServersModel serversModel = new ServersModel();
@@ -118,58 +156,62 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
         private string SendStartCommand()
         {
             byte[] bytesSent;
-            string cmdOrder = "";
             string tempStr = "";
             Socket tempSocket;
 
             try
             {
-                if (Singleton<JavaScriptSerializer>.Instance == null)
+                IList<MMSServer> mmsServers = cacheManage.GetCache<IList<MMSServer>>("MMSServers");
+                appServerService.Clean();
+                if (appServerService.BatchInsert(mmsServers) > 0)
                 {
-                    Singleton<JavaScriptSerializer>.Instance = new JavaScriptSerializer();
+
+
+                    if (Singleton<JavaScriptSerializer>.Instance == null)
+                    {
+                        Singleton<JavaScriptSerializer>.Instance = new JavaScriptSerializer();
+                    }
+                    tempStr = Singleton<JavaScriptSerializer>.Instance.Serialize(cacheManage.GetCache<IList<MCSServer>>("MCSServers"));
+
+                    for (int i = 0; i < cacheManage.GetCache<IList<MMSServer>>("MMSServers").Count; i++)
+                    {
+                        bytesSent = Encoding.UTF8.GetBytes(CommonFlag.F_PSCallMMSStart + tempStr);
+                        IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(cacheManage.GetCache<IList<MMSServer>>("MMSServers")[i].MMS_IP), cacheManage.GetCache<IList<MMSServer>>("MMSServers")[i].MMS_Port);
+                        tempSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+                        tempSocket.Connect(ipe);
+                        tempSocket.Send(bytesSent, bytesSent.Length, 0);
+                        tempSocket.Close();
+                    }
+
+                    tempStr = Singleton<JavaScriptSerializer>.Instance.Serialize(cacheManage.GetCache<IList<MDSServer>>("MDSServers"));
+                    for (int i = 0; i < cacheManage.GetCache<IList<MCSServer>>("MCSServers").Count; i++)
+                    {
+                        bytesSent = Encoding.UTF8.GetBytes(CommonFlag.F_PSCallMCSStart + tempStr);
+                        IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].MCS_IP), cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].MCS_Port);
+                        tempSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+                        tempSocket.Connect(ipe);
+                        tempSocket.Send(bytesSent, bytesSent.Length, 0);
+                        tempSocket.Close();
+                    }
+
+
+                    for (int i = 0; i < cacheManage.GetCache<IList<MDSServer>>("MDSServers").Count; i++)
+                    {
+                        bytesSent = Encoding.UTF8.GetBytes(CommonFlag.F_PSCallMDSStart +
+                            Singleton<JavaScriptSerializer>.Instance.Serialize(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i]));
+                        IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].MDS_IP), cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].MDS_Port);
+                        tempSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+                        tempSocket.Connect(ipe);
+                        tempSocket.Send(bytesSent, bytesSent.Length, 0);
+                        tempSocket.Close();
+                    }
+
+                    return string.Empty;
                 }
-                tempStr = Singleton<JavaScriptSerializer>.Instance.Serialize(cacheManage.GetCache<IList<MCSServer>>("MCSServers"));
-
-                for (int i = 0; i < cacheManage.GetCache<IList<MMSServer>>("MMSServers").Count; i++)
-                {
-                    bytesSent = Encoding.UTF8.GetBytes(CommonFlag.F_PSCallMMSStart + tempStr);
-                    IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(cacheManage.GetCache<IList<MMSServer>>("MMSServers")[i].MMS_IP), cacheManage.GetCache<IList<MMSServer>>("MMSServers")[i].MMS_Port);
-                    tempSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
-                    tempSocket.Connect(ipe);
-                    tempSocket.Send(bytesSent, bytesSent.Length, 0);
-                    tempSocket.Close();
-                }
-
-                tempStr = Singleton<JavaScriptSerializer>.Instance.Serialize(cacheManage.GetCache<IList<MCSServer>>("MDSServers"));
-                for (int i = 0; i < cacheManage.GetCache<IList<MCSServer>>("MCSServers").Count; i++)
-                {
-                    bytesSent = Encoding.UTF8.GetBytes(CommonFlag.F_PSCallMCSStart + tempStr);
-                    IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].MCS_IP), cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].MCS_Port);
-                    tempSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
-                    tempSocket.Connect(ipe);
-                    tempSocket.Send(bytesSent, bytesSent.Length, 0);
-                    tempSocket.Close();
-                }
-
-
-                for (int i = 0; i < cacheManage.GetCache<IList<MDSServer>>("MDSServers").Count; i++)
-                {
-                    cmdOrder = CommonFlag.F_PSCallMDSStart;
-                    cmdOrder = cmdOrder + CommonFlag.F_ArrangeChars;
-                    cmdOrder = cmdOrder + cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr;
-                    cmdOrder = cmdOrder + ";";
-
-                    bytesSent = Encoding.UTF8.GetBytes(cmdOrder);
-                    IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].MDS_IP), cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].MDS_Port);
-                    tempSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
-                    tempSocket.Connect(ipe);
-                    tempSocket.Send(bytesSent, bytesSent.Length, 0);
-                    tempSocket.Close();
-                }
-                return string.Empty;
+                return "save MMSs failed";
             }
             catch(Exception ex)
             {
@@ -282,7 +324,7 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
                 tempquery = from aa in chars
                             join bb in OldChars on aa equals bb into cc
                             from temp in cc.DefaultIfEmpty()
-                            where temp.Equals(char.MinValue)
+                            where string.IsNullOrEmpty(temp)
                             select aa;
 
                 availableChars = tempquery.ToList();

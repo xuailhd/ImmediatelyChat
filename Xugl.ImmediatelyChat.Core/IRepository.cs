@@ -22,5 +22,6 @@ namespace Xugl.ImmediatelyChat.Core
         int Delete(T TEntity);
 
         IQueryable<T> Table { get; }
+
     }
 }

@@ -50,7 +50,7 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
             for (int i = 0; i <= cacheManage.GetCache<IList<MMSServer>>("MMSServers").Count; i++)
             {
                 if (Singleton<SyncSocketClient>.Instance.SendMsg(cacheManage.GetCache<string>("MMSIP"), cacheManage.GetCache<int>("MMSPort"),
-                    Singleton<JavaScriptSerializer>.Instance.Serialize(contactPerson)) != contactPerson.ObjectID)
+                    Common.CommonFlag.F_PSSendMMSUser + Singleton<JavaScriptSerializer>.Instance.Serialize(contactPerson)) != contactPerson.ObjectID)
                 {
                     finishTag = false;
                 }

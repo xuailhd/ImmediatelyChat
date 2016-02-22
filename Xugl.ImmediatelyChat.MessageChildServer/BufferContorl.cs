@@ -124,7 +124,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             IList<MsgRecordModel> msgRecords = new List<MsgRecordModel>();
             if (msgRecordModel.SendType == 1)
             {
-                IContactGroupService contactGroupService = ObjectContainerFactory.CurrentContainer.Resolver<IContactGroupService>();
+                IContactPersonService contactGroupService = ObjectContainerFactory.CurrentContainer.Resolver<IContactPersonService>();
                 IList<ContactPerson> ContactPersons = contactGroupService.GetContactPersonIDListByGroupID(msgRecordModel.RecivedGroupID);
 
                 foreach (ContactPerson contactPerson in ContactPersons)
@@ -140,13 +140,13 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     _msgRecordModel.SendType = msgRecordModel.SendType;
                     _msgRecordModel.MessageID = Guid.NewGuid().ToString();
 
-                    foreach (string mds_id in CommonVariables.GetMDSs.Keys)
+                    for (int i = 0; i < CommonVariables.MDSServers.Count;i++ )
                     {
-                        if (CommonVariables.GetMDSs[mds_id].ArrangeChars.Contains(_msgRecordModel.RecivedObjectID.Substring(0, 1)))
+                        if (CommonVariables.MDSServers[i].ArrangeStr.Contains(_msgRecordModel.RecivedObjectID.Substring(0, 1)))
                         {
-                            _msgRecordModel.MDS_IP = CommonVariables.GetMDSs[mds_id].MDS_IP;
-                            _msgRecordModel.MDS_Port = CommonVariables.GetMDSs[mds_id].MDS_Port;
-                            _msgRecordModel.MDS_ID = CommonVariables.GetMDSs[mds_id].MDS_ID;
+                            _msgRecordModel.MDS_IP = CommonVariables.MDSServers[i].MDS_IP;
+                            _msgRecordModel.MDS_Port = CommonVariables.MDSServers[i].MDS_Port;
+                            //_msgRecordModel.MDS_ID = CommonVariables.MDSServers[i].MDS_ID;
                             break;
                         }
                     }
@@ -154,13 +154,13 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             }
             else
             {
-                foreach (string mds_id in CommonVariables.GetMDSs.Keys)
+                for (int i = 0; i < CommonVariables.MDSServers.Count; i++)
                 {
-                    if (CommonVariables.GetMDSs[mds_id].ArrangeChars.Contains(msgRecordModel.RecivedObjectID.Substring(0, 1)))
+                    if (CommonVariables.MDSServers[i].ArrangeStr.Contains(msgRecordModel.RecivedObjectID.Substring(0, 1)))
                     {
-                        msgRecordModel.MDS_IP = CommonVariables.GetMDSs[mds_id].MDS_IP;
-                        msgRecordModel.MDS_Port = CommonVariables.GetMDSs[mds_id].MDS_Port;
-                        msgRecordModel.MDS_ID = CommonVariables.GetMDSs[mds_id].MDS_ID;
+                        msgRecordModel.MDS_IP = CommonVariables.MDSServers[i].MDS_IP;
+                        msgRecordModel.MDS_Port = CommonVariables.MDSServers[i].MDS_Port;
+                        //msgRecordModel.MDS_ID = CommonVariables.GetMDSs[mds_id].MDS_ID;
                         msgRecordModel.MessageID = Guid.NewGuid().ToString();
                         break;
                     }
@@ -172,15 +172,14 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         public void AddGetMsgIntoBuffer(GetMsgModel getMsgModel)
         {
-            foreach (string mds_id in CommonVariables.GetMDSs.Keys)
+            for (int i = 0; i < CommonVariables.MDSServers.Count; i++)
             {
-                if (CommonVariables.GetMDSs[mds_id].ArrangeChars.Contains(getMsgModel.ObjectID.Substring(0, 1)))
+                if (CommonVariables.MDSServers[i].ArrangeStr.Contains(getMsgModel.ObjectID.Substring(0, 1)))
                 {
                     getMsgModel.MessageID = Guid.NewGuid().ToString();
-                    getMsgModel.MDS_IP = CommonVariables.GetMDSs[mds_id].MDS_IP;
-                    getMsgModel.MDS_Port = CommonVariables.GetMDSs[mds_id].MDS_Port;
-                    getMsgModel.MDS_ID = CommonVariables.GetMDSs[mds_id].MDS_ID;
-
+                    getMsgModel.MDS_IP = CommonVariables.MDSServers[i].MDS_IP;
+                    getMsgModel.MDS_Port = CommonVariables.MDSServers[i].MDS_Port;
+                    //getMsgModel.MDS_ID = CommonVariables.GetMDSs[mds_id].MDS_ID;
                     //CommonVariables.LogTool.Log("getMsgModel " + getMsgModel.MDS_IP + ":" + getMsgModel.MDS_Port.ToString());
                     break;
                 }
@@ -320,18 +319,18 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                         //handler new message
 
                         #region handler new message data
-                        CommonVariables.LogTool.Log("GetUsingMsgRecordBuffer count  " + GetUsingMsgRecordBuffer.Count.ToString());
+                        //CommonVariables.LogTool.Log("GetUsingMsgRecordBuffer count  " + GetUsingMsgRecordBuffer.Count.ToString());
                         if (GetUsingMsgRecordBuffer.Count > 0)
                         {
                             UsingTagForMsgRecord = !UsingTagForMsgRecord;
-                            CommonVariables.LogTool.Log("GetUnUsingMsgRecordBuffer count  " + GetUnUsingMsgRecordBuffer.Count.ToString());
+                            //CommonVariables.LogTool.Log("GetUnUsingMsgRecordBuffer count  " + GetUnUsingMsgRecordBuffer.Count.ToString());
                             while (GetUnUsingMsgRecordBuffer.Count > 0)
                             {
                                 MsgRecordModel msgRecordModel = GetUnUsingMsgRecordBuffer[0];
                                 try
                                 {
                                     string messageStr = CommonFlag.F_MDSVerifyMCSMSG + CommonVariables.serializer.Serialize(msgRecordModel);
-                                    CommonVariables.LogTool.Log("begin send mds " + msgRecordModel.MDS_IP + " port:" + msgRecordModel.MDS_Port + messageStr);
+                                    //CommonVariables.LogTool.Log("begin send mds " + msgRecordModel.MDS_IP + " port:" + msgRecordModel.MDS_Port + messageStr);
                                     asyncSocketClient.SendMsg(msgRecordModel.MDS_IP, msgRecordModel.MDS_Port, messageStr, msgRecordModel.MessageID, HandlerMsgReturnData);
 
                                     ExeingMsgRecordModels.Add(msgRecordModel);

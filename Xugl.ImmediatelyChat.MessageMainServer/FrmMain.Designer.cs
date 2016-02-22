@@ -35,7 +35,6 @@
         {
             this.components = new System.ComponentModel.Container();
             this.btn_StartServer = new System.Windows.Forms.Button();
-            this.btn_StartMessageServer = new System.Windows.Forms.Button();
             this.txt_Log = new System.Windows.Forms.TextBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
@@ -44,21 +43,11 @@
             // 
             this.btn_StartServer.Location = new System.Drawing.Point(24, 13);
             this.btn_StartServer.Name = "btn_StartServer";
-            this.btn_StartServer.Size = new System.Drawing.Size(75, 23);
+            this.btn_StartServer.Size = new System.Drawing.Size(125, 23);
             this.btn_StartServer.TabIndex = 0;
-            this.btn_StartServer.Text = "Start Server";
+            this.btn_StartServer.Text = "Connect Portal Server";
             this.btn_StartServer.UseVisualStyleBackColor = true;
             this.btn_StartServer.Click += new System.EventHandler(this.btn_StartServer_Click);
-            // 
-            // btn_StartMessageServer
-            // 
-            this.btn_StartMessageServer.Location = new System.Drawing.Point(212, 13);
-            this.btn_StartMessageServer.Name = "btn_StartMessageServer";
-            this.btn_StartMessageServer.Size = new System.Drawing.Size(122, 23);
-            this.btn_StartMessageServer.TabIndex = 1;
-            this.btn_StartMessageServer.Text = "Start Message Server";
-            this.btn_StartMessageServer.UseVisualStyleBackColor = true;
-            this.btn_StartMessageServer.Click += new System.EventHandler(this.btn_StartMessageServer_Click);
             // 
             // txt_Log
             // 
@@ -83,10 +72,10 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(617, 385);
             this.Controls.Add(this.txt_Log);
-            this.Controls.Add(this.btn_StartMessageServer);
             this.Controls.Add(this.btn_StartServer);
             this.Name = "FrmMain";
             this.Text = "Message Main Server";
+            this.Load += new System.EventHandler(this.FrmMain_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -95,7 +84,6 @@
         #endregion
 
         private System.Windows.Forms.Button btn_StartServer;
-        private System.Windows.Forms.Button btn_StartMessageServer;
         private System.Windows.Forms.TextBox txt_Log;
         private System.Windows.Forms.Timer timer1;
     }

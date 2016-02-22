@@ -20,10 +20,10 @@ namespace Xugl.ImmediatelyChat.AppService.Implements
     public class HandleSendMsg : IHandleSendMsg
     {
 
-        private readonly IContactGroupService contactGroupService;
+        private readonly IContactPersonService contactGroupService;
         private readonly IRepository<ContactPerson> contactPersonRepository;
 
-        public HandleSendMsg(IContactGroupService contactGroupService,IRepository<ContactPerson> contactPersonRepository)
+        public HandleSendMsg(IContactPersonService contactGroupService,IRepository<ContactPerson> contactPersonRepository)
         {
             this.contactGroupService = contactGroupService;
             this.contactPersonRepository = contactPersonRepository;

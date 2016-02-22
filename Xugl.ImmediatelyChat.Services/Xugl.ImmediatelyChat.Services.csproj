@@ -39,7 +39,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ContactGroupService.cs" />
+    <Compile Include="ContactPersonService.cs" />
+    <Compile Include="AppServerService.cs" />
     <Compile Include="MsgRecordService.cs" />
     <Compile Include="WarehouseService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

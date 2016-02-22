@@ -6,57 +6,22 @@ using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
+using Xugl.ImmediatelyChat.Model;
 
 namespace Xugl.ImmediatelyChat.MessageChildServer
 {
     public class CommonVariables
     {
-        public static string PSIP
-        {
-            get;
-            set;
-        }
+        public static string PSIP { get; set; }
+        public static int PSPort { get; set; }
 
-        public static int PSPort
-        {
-            get;
-            set;
-        }
+        public static string MCSIP { get; set; }
+        public static int MCSPort { get; set; }
+        public static string MCS_ID { get; set; }
 
+        public static string ArrangeStr { get; set; }
 
-        public static string MMSIP
-        {
-            get;
-            set;
-        }
-
-        public static int MMSPort
-        {
-            get;
-            set;
-        }
-
-        public static string MCSIP
-        {
-            get;
-            set;
-        }
-
-        public static int MCSPort
-        {
-            get;
-            set;
-        }
-
-        public static string MCS_ID
-        {
-            get;
-            set;
-        }
-
-        public static string ArrangeChars { get; set; }
-
-
+        public static bool IsBeginMessageService { get; set; }
         #region JavaScriptSerializer
 
         public static JavaScriptSerializer serializer
@@ -76,36 +41,11 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         #region manage MDSs
 
-        public static IDictionary<string, MDSModel> GetMDSs
+        public static IList<MDSServer> MDSServers
         {
             get
             {
-                if (Singleton<IDictionary<string, MDSModel>>.Instance == null)
-                {
-                    Singleton<IDictionary<string, MDSModel>>.Instance = new Dictionary<string, MDSModel>();
-                }
-                return Singleton<IDictionary<string, MDSModel>>.Instance;
-            }
-        }
-
-        public static void AddMDS(MDSModel mdsModel)
-        {
-            if (Singleton<IDictionary<string, MDSModel>>.Instance == null)
-            {
-                Singleton<IDictionary<string, MDSModel>>.Instance = new Dictionary<string, MDSModel>();
-            }
-
-            lock (Singleton<IDictionary<string, MDSModel>>.Instance)
-            {
-                Singleton<IDictionary<string, MDSModel>>.Instance.Add(mdsModel.MDS_ID, mdsModel);
-            }
-        }
-
-        public static void RemoveMDS(string mds_ID)
-        {
-            lock (Singleton<IDictionary<string, MDSModel>>.Instance)
-            {
-                Singleton<IDictionary<string, MDSModel>>.Instance.Remove(mds_ID);
+                return SingletonList<MDSServer>.Instance;
             }
         }
 
@@ -149,6 +89,34 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             get
             {
                 return SingletonList<string>.Instance;
+            }
+        }
+        #endregion
+
+        #region  OperateFile
+        public static IOperateFile OperateFile
+        {
+            get
+            {
+                if (Singleton<IOperateFile>.Instance == null)
+                {
+                    Singleton<IOperateFile>.Instance = Xugl.ImmediatelyChat.Core.DependencyResolution.ObjectContainerFactory.CurrentContainer.Resolver<IOperateFile>();
+                }
+                return Singleton<IOperateFile>.Instance;
+            }
+        }
+
+
+        private static string m_ConfigFilePath;
+        public static string ConfigFilePath
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(m_ConfigFilePath))
+                {
+                    m_ConfigFilePath = AppDomain.CurrentDomain.BaseDirectory + "config.txt";
+                }
+                return m_ConfigFilePath;
             }
         }
         #endregion

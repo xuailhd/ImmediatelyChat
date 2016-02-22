@@ -32,6 +32,10 @@ namespace Xugl.ImmediatelyChat.Core
             {
                 cacheItemPolicy.AbsoluteExpiration=DateTime.Now.AddSeconds(timeoutSec);
             }
+            else
+            {
+                cacheItemPolicy.AbsoluteExpiration = DateTime.MaxValue;
+            }
 
             MemoryCache.Default.Add(cacheItem,cacheItemPolicy);
         }

@@ -7,9 +7,12 @@ using Xugl.ImmediatelyChat.Model;
 
 namespace Xugl.ImmediatelyChat.IServices
 {
-    public interface IContactGroupService
+    public interface IContactPersonService
     {
         IList<ContactPerson> GetContactPersonIDListByGroupID(string groupID);
 
+        int InsertNewPerson(ContactPerson contactPerson);
+
+        int InsertDefaultGroup(string ObjectID);
     }
 }

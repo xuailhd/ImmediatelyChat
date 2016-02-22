@@ -11,50 +11,16 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
 {
     public class CommonVariables
     {
-        public static string PSIP
-        {
-            get;
-            set;
-        }
+        public static string PSIP { get; set; }
+        public static int PSPort { get; set; }
 
-        public static int PSPort
-        {
-            get;
-            set;
-        }
+        public static string MDSIP { get; set; }
+        public static int MDSPort { get; set; }
+        public static string MDS_ID { get; set; }
 
+        public static string ArrangeStr { get; set; }
 
-        public static string MMSIP
-        {
-            get;
-            set;
-        }
-
-        public static int MMSPort
-        {
-            get;
-            set;
-        }
-
-        public static string MDSIP
-        {
-            get;
-            set;
-        }
-
-        public static int MDSPort
-        {
-            get;
-            set;
-        }
-
-        public static string MDS_ID
-        {
-            get;
-            set;
-        }
-
-        public static string ArrangeChars { get; set; }
+        public static bool IsBeginMessageService { get; set; }
 
         #region JavaScriptSerializer
 
@@ -98,6 +64,34 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
                     Singleton<BufferContorl>.Instance = new BufferContorl();
                 }
                 return Singleton<BufferContorl>.Instance;
+            }
+        }
+        #endregion
+
+        #region  OperateFile
+        public static IOperateFile OperateFile
+        {
+            get
+            {
+                if (Singleton<IOperateFile>.Instance == null)
+                {
+                    Singleton<IOperateFile>.Instance = Xugl.ImmediatelyChat.Core.DependencyResolution.ObjectContainerFactory.CurrentContainer.Resolver<IOperateFile>();
+                }
+                return Singleton<IOperateFile>.Instance;
+            }
+        }
+
+
+        private static string m_ConfigFilePath;
+        public static string ConfigFilePath
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(m_ConfigFilePath))
+                {
+                    m_ConfigFilePath = AppDomain.CurrentDomain.BaseDirectory + "config.txt";
+                }
+                return m_ConfigFilePath;
             }
         }
         #endregion
