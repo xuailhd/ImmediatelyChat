@@ -36,7 +36,7 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
             contactPerson.ObjectID = Guid.NewGuid().ToString();
             contactPerson.ContactName = ObjectName;
             contactPerson.Password = Password;
-            if(Singleton<SyncSocketClient>.Instance==null)
+            if (Singleton<SyncSocketClient>.Instance == null)
             {
                 Singleton<SyncSocketClient>.Instance = new SyncSocketClient();
             }
@@ -47,10 +47,13 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
             }
 
 
-            for (int i = 0; i <= cacheManage.GetCache<IList<MMSServer>>("MMSServers").Count; i++)
+            for (int i = 0; i < cacheManage.GetCache<IList<MMSServer>>("MMSServers").Count; i++)
             {
-                if (Singleton<SyncSocketClient>.Instance.SendMsg(cacheManage.GetCache<string>("MMSIP"), cacheManage.GetCache<int>("MMSPort"),
-                    Common.CommonFlag.F_PSSendMMSUser + Singleton<JavaScriptSerializer>.Instance.Serialize(contactPerson)) != contactPerson.ObjectID)
+                string returnstr = Singleton<SyncSocketClient>.Instance.SendMsg(cacheManage.GetCache<IList<MMSServer>>("MMSServers")[i].MMS_IP,
+                    cacheManage.GetCache<IList<MMSServer>>("MMSServers")[i].MMS_Port,
+                    Common.CommonFlag.F_PSSendMMSUser + Singleton<JavaScriptSerializer>.Instance.Serialize(contactPerson));
+
+                if (returnstr != contactPerson.ObjectID)
                 {
                     finishTag = false;
                 }
@@ -58,7 +61,7 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
 
             if (finishTag)
             {
-                if( contactPersonRepository.Insert(contactPerson)>0)
+                if (contactPersonRepository.Insert(contactPerson) > 0)
                 {
                     return Json("register success", JsonRequestBehavior.AllowGet);
                 }

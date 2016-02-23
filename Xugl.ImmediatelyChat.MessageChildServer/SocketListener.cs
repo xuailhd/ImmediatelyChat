@@ -49,11 +49,17 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 return string.Empty;
             }
 
-            if(data.StartsWith(CommonFlag.F_PSCallMCSStart))
+            if (data.StartsWith(CommonFlag.F_PSCallMCSStart))
             {
-                IList<MDSServer> mdsServers = CommonVariables.serializer.Deserialize<IList<MDSServer>>(data.Remove(0, CommonFlag.F_PSCallMCSStart.Length));
+                data = data.Remove(0, CommonFlag.F_PSCallMCSStart.Length);
+                IList<MDSServer> mdsServers = CommonVariables.serializer.Deserialize<IList<MDSServer>>(data.Substring(0, data.IndexOf("&&")));
+
                 if (mdsServers != null && mdsServers.Count > 0)
                 {
+                    data = data.Remove(0, data.IndexOf("&&") + 2);
+                    CommonVariables.ArrangeStr = CommonVariables.serializer.Deserialize<MCSServer>(data).ArrangeStr;
+                    CommonVariables.OperateFile.SaveConfig(CommonVariables.ConfigFilePath, "ArrangeStr", CommonVariables.ArrangeStr);
+                    CommonVariables.LogTool.Log("ArrangeStr:" + CommonVariables.ArrangeStr);
                     CommonVariables.LogTool.Log("MDS count:" + mdsServers.Count);
                     foreach (MDSServer mdsServer in mdsServers)
                     {

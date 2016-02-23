@@ -16,10 +16,12 @@ namespace Xugl.ImmediatelyChat.Services
         private readonly IRepository<ContactGroupSub> contactGroupSubRepository;
         private readonly IDbContext context;
 
-        public MsgRecordService(IRepository<MsgRecord> _msgRecordRepository, IDbContext _context)
+        public MsgRecordService(IRepository<MsgRecord> _msgRecordRepository, IRepository<ContactGroupSub> _contactGroupSubRepository
+            , IDbContext _context)
         {
             msgRecordRepository = _msgRecordRepository;
             context = _context;
+            contactGroupSubRepository = _contactGroupSubRepository;
         }
 
         public IList<MsgRecord> LoadMsgRecord(MsgRecordQuery query)

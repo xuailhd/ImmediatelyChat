@@ -23,7 +23,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             {
                 byte[] bytesSent;
                 int bytecount;
-                bytesSent = Encoding.UTF8.GetBytes("stop");
+                bytesSent = Encoding.UTF8.GetBytes(sendData);
                 IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(ipaddress), port);
                 Socket clientSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 clientSocket.Connect(ipe);
@@ -31,6 +31,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                 bytesSent = new byte[1024];
                 bytecount = clientSocket.Receive(bytesSent);
                 clientSocket.Close();
+                clientSocket = null;
                 return Encoding.UTF8.GetString(bytesSent, 0, bytecount);
             }
             catch (Exception ex)

@@ -20,6 +20,7 @@ namespace Xugl.ImmediatelyChat.Services
         {
             this.contactPersonRepository = contactPersonRepository;
             this.contactGroupSubRepository = contactGroupSubRepository;
+            this.contactGroupRepository = contactGroupRepository;
         }
 
         public IList<ContactPerson> GetContactPersonIDListByGroupID(string groupID)

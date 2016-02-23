@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xugl.ImmediatelyChat.Core.OperateFile
+namespace Xugl.ImmediatelyChat.Core
 {
     public class OperateFile:IOperateFile
     {
@@ -13,9 +13,9 @@ namespace Xugl.ImmediatelyChat.Core.OperateFile
         {
             try
             {
-                if(!File.Exists(fileName))
+                if (!File.Exists(fileName))
                 {
-                    File.Create(fileName);
+                    File.Create(fileName).Close();
                 }
 
                 string templine;
@@ -39,17 +39,23 @@ namespace Xugl.ImmediatelyChat.Core.OperateFile
                         fieldNames.Add(tempkey.ToUpper(), tempvalue);
                     }
                 }
+
+                if (!fieldNames.Keys.Contains(fieldName.ToUpper()))
+                {
+                    fieldNames.Add(fieldName.ToUpper(), fieldValue);
+                }
+
                 using (StreamWriter wr = new StreamWriter(fileName, false))
                 {
                     foreach (string key in fieldNames.Keys)
                     {
-                        
+
                         wr.WriteLine(key + "=" + fieldNames[key]);
                     }
                 }
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
             }
