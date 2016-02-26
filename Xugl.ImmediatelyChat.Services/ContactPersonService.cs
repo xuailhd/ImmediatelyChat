@@ -14,13 +14,15 @@ namespace Xugl.ImmediatelyChat.Services
         private readonly IRepository<ContactPerson> contactPersonRepository;
         private readonly IRepository<ContactGroupSub> contactGroupSubRepository;
         private readonly IRepository<ContactGroup> contactGroupRepository;
+        private readonly IRepository<ContactPersonList> contactPersonListRepository;
 
         public ContactPersonService(IRepository<ContactPerson> contactPersonRepository, IRepository<ContactGroupSub> contactGroupSubRepository,
-            IRepository<ContactGroup> contactGroupRepository)
+            IRepository<ContactGroup> contactGroupRepository, IRepository<ContactPersonList> contactPersonListRepository)
         {
             this.contactPersonRepository = contactPersonRepository;
             this.contactGroupSubRepository = contactGroupSubRepository;
             this.contactGroupRepository = contactGroupRepository;
+            this.contactPersonListRepository = contactPersonListRepository;
         }
 
         public IList<ContactPerson> GetContactPersonIDListByGroupID(string groupID)
@@ -40,7 +42,7 @@ namespace Xugl.ImmediatelyChat.Services
 
         public int InsertDefaultGroup(string ObjectID)
         {
-            if(String.IsNullOrEmpty(ObjectID))
+            if(string.IsNullOrEmpty(ObjectID))
             {
                 return 0;
             }
@@ -57,8 +59,33 @@ namespace Xugl.ImmediatelyChat.Services
             ContactGroupSub contactGroupSub = new ContactGroupSub();
             contactGroupSub.ContactGroupID = contactGroup.GroupObjectID;
             contactGroupSub.ContactPersonObjectID = ObjectID;
+            contactGroupSub.UpdateTime = DateTime.Now;
             return contactGroupSubRepository.Insert(contactGroupSub);
 
+        }
+
+
+
+        public IList<ContactGroupSub> GetLastestContactGroupSub(string objectID, DateTime updateTime)
+        {
+            if(string.IsNullOrEmpty(objectID))
+            {
+                return null;
+            }
+            var query = contactGroupSubRepository.Table.Where(t => t.ContactPersonObjectID == objectID && DateTime.Compare(t.UpdateTime, updateTime) > 0);
+
+            return query.ToList();
+        }
+
+        public IList<ContactPersonList> GetLastestContactPersonList(string objectID, DateTime updateTime)
+        {
+            if (string.IsNullOrEmpty(objectID))
+            {
+                return null;
+            }
+            var query = contactPersonListRepository.Table.Where(t => t.objectID == objectID && DateTime.Compare(t.UpdateTime, updateTime) > 0);
+
+            return query.ToList();
         }
     }
 }

@@ -8,6 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
+using Xugl.ImmediatelyChat.Core.DependencyResolution;
+using Xugl.ImmediatelyChat.IServices;
 using Xugl.ImmediatelyChat.Model;
 using Xugl.ImmediatelyChat.SocketEngine;
 
@@ -17,12 +19,14 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
     internal class SocketListener:Xugl.ImmediatelyChat.SocketEngine.AsyncSocketListener
     {
         private readonly IRepository<ContactPerson> contactPersonRepository;
+        private readonly IContactPersonService contactPersonService;
 
 
         public SocketListener()
             : base(1024, 100, CommonVariables.LogTool)
         {
-            contactPersonRepository = Xugl.ImmediatelyChat.Core.DependencyResolution.ObjectContainerFactory.CurrentContainer.Resolver<IRepository<ContactPerson>>();
+            contactPersonRepository = ObjectContainerFactory.CurrentContainer.Resolver<IRepository<ContactPerson>>();
+            contactPersonService = ObjectContainerFactory.CurrentContainer.Resolver<IContactPersonService>();
         }
 
         protected override void HandleError(ListenerToken token)
@@ -112,9 +116,18 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                             }
                             else
                             {
-                                tempContactPerson.LatestTime = clientStatusModel.LatestTime;
+                                tempContactPerson.LatestTime=clientStatusModel.LatestTime;
                                 contactPersonRepository.Upade(tempContactPerson);
                             }
+
+                            if(DateTime.Compare(clientStatusModel.LatestTime, tempContactPerson.LatestTime.GetValueOrDefault()) < 0)
+                            {
+                                IList<ContactGroupSub> contactGroupSubs = contactPersonService.GetLastestContactGroupSub(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
+                                IList<ContactPersonList> contactPersonLists = contactPersonService.GetLastestContactPersonList(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
+                            }
+                            
+
+                                
 
                             break;
                         }

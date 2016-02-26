@@ -13,6 +13,10 @@ namespace Xugl.ImmediatelyChat.IServices
 
         int InsertNewPerson(ContactPerson contactPerson);
 
-        int InsertDefaultGroup(string ObjectID);
+        int InsertDefaultGroup(string objectID);
+
+        IList<ContactGroupSub> GetLastestContactGroupSub(string objectID, DateTime updateTime);
+
+        IList<ContactPersonList> GetLastestContactPersonList(string objectID, DateTime updateTime);
     }
 }
