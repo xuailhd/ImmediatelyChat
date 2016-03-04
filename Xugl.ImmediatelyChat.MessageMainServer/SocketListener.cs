@@ -246,7 +246,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                     {
                         tempContactData = new ContactData();
                         tempContactData.DestinationObjectID = contactPersonList.DestinationObjectID;
-                        tempContactData.ObjectID = contactPersonList.objectID;
+                        tempContactData.ObjectID = contactPersonList.ObjectID;
                         tempContactData.IsDelete = contactPersonList.IsDelete;
                         tempContactDatas.Add(tempContactData);
                     }

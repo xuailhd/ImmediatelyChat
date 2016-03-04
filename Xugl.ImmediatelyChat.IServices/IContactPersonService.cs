@@ -13,7 +13,7 @@ namespace Xugl.ImmediatelyChat.IServices
 
         ContactPerson FindContactPerson(string objectID);
         int InsertNewPerson(ContactPerson contactPerson);
-        int UpdatePerson(ContactPerson contactPerson);
+        int UpdateContactPerson(ContactPerson contactPerson);
 
         ContactPersonList FindContactPersonList(string objectID, string destinationObjectID);
         int InsertContactPersonList(ContactPersonList contactPersonList);
@@ -21,9 +21,11 @@ namespace Xugl.ImmediatelyChat.IServices
 
         ContactGroup FindContactGroup(string groupID);
         int InsertNewGroup(ContactGroup contactGroup);
-        int UpdateGroup(ContactGroup contactGroup);
+        int UpdateContactGroup(ContactGroup contactGroup);
 
-
+        ContactGroupSub FindContactGroupSub(string groupID, string contactPersonObjectID);
+        int InsertContactGroupSub(ContactGroupSub contactGroupSub);
+        int UpdateContactGroupSub(ContactGroupSub contactGroupSub);
 
         int InsertDefaultGroup(string objectID);
 

@@ -140,7 +140,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     ContactData contactData = CommonVariables.serializer.Deserialize<ContactData>(data.Remove(0, CommonFlag.F_MCSReceiveUAInfo.Length));
 
                     return HandleMMSUAInfo(contactData);
-
                 }
 
                 if (data.StartsWith(CommonFlag.F_MCSVerifyUAMSG))
@@ -232,7 +231,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                         contactPerson.LatestTime = contactData.LatestTime;
                         contactPerson.Password = contactData.Password;
                         contactPerson.UpdateTime = contactData.UpdateTime;
-                        contactPersonService.UpdatePerson(contactPerson);
+                        contactPersonService.UpdateContactPerson(contactPerson);
                     }
 
                 }
@@ -257,7 +256,43 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 }
                 else if (contactData.DataType==2)
                 {
-                    ContactGroup contactGroup=contactPersonService.FindContactPerson
+                    ContactGroup contactGroup = contactPersonService.FindContactGroup(contactData.GroupObjectID);
+                    if(contactGroup==null)
+                    {
+                        contactGroup = new ContactGroup();
+                        contactGroup.GroupName = contactData.GroupName;
+                        contactGroup.GroupObjectID = contactData.GroupObjectID;
+                        contactGroup.IsDelete = contactData.IsDelete;
+                        contactGroup.UpdateTime = contactData.UpdateTime;
+                        contactPersonService.InsertNewGroup(contactGroup);
+                    }
+                    else
+                    {
+                        contactGroup.GroupName = contactData.GroupName;
+                        contactGroup.IsDelete = contactData.IsDelete;
+                        contactGroup.UpdateTime = contactData.UpdateTime;
+                        contactPersonService.UpdateContactGroup(contactGroup);
+                    }
+                }
+                else if (contactData.DataType==3)
+                {
+                    ContactGroupSub contactGroupSub = contactPersonService.FindContactGroupSub(contactData.GroupObjectID, contactData.ContactPersonObjectID);
+                    if(contactGroupSub==null)
+                    {
+                        contactGroupSub = new ContactGroupSub();
+                        contactGroupSub.ContactGroupID = contactData.ContactGroupID;
+                        contactGroupSub.ContactPersonObjectID = contactData.ContactPersonObjectID;
+                        contactGroupSub.IsDelete = contactData.IsDelete;
+                        contactGroupSub.UpdateTime = contactData.UpdateTime;
+                        contactPersonService.InsertContactGroupSub(contactGroupSub);
+                    }
+                    else
+                    {
+                        contactGroupSub.IsDelete = contactData.IsDelete;
+                        contactGroupSub.UpdateTime = contactData.UpdateTime;
+                        contactPersonService.UpdateContactGroupSub(contactGroupSub);
+                    }
+
                 }
                 return CommonFlag.F_MMSVerifyMCSFBGetUAInfo + contactData.ObjectID;
             }

@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BufferContorl.cs" />
     <Compile Include="CommonVariables.cs" />
     <Compile Include="FrmMain.cs">
       <SubType>Form</SubType>
