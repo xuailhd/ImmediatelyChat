@@ -9,21 +9,25 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
+using Xugl.ImmediatelyChat.IServices;
 using Xugl.ImmediatelyChat.Model;
 using Xugl.ImmediatelyChat.SocketEngine;
 
 namespace Xugl.ImmediatelyChat.MessageChildServer
 {
 
-    internal class SocketListener:Xugl.ImmediatelyChat.SocketEngine.AsyncSocketListener
+    internal class SocketListener:Xugl.ImmediatelyChat.SocketEngine.AsyncSocketListener<MsgRecord>
     {
+        private readonly IContactPersonService contactPersonService;
+
         public SocketListener()
             : base(1024, 100, CommonVariables.LogTool)
         {
-            
+            contactPersonService = Xugl.ImmediatelyChat.Core.DependencyResolution.ObjectContainerFactory.CurrentContainer.Resolver<IContactPersonService>();
+
         }
 
-        protected override void HandleError(ListenerToken token)
+        protected override void HandleError(ListenerToken<MsgRecord> token)
         {
             if (token.Models != null && token.Models.Count > 0)
             {
@@ -35,7 +39,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             }
         }
 
-        protected override string HandleRecivedMessage(string inputMessage, ListenerToken token)
+        protected override string HandleRecivedMessage(string inputMessage, ListenerToken<MsgRecord> token)
         {
             if (string.IsNullOrEmpty(inputMessage))
             {
@@ -75,9 +79,9 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             if (CommonVariables.IsBeginMessageService)
             {
                 //handle UA feedback
-                if (data.StartsWith(CommonFlag.F_MCSReciveUAMSGFB))
+                if (data.StartsWith(CommonFlag.F_MCSReceiveUAFBMSG))
                 {
-                    string tempStr = data.Remove(0, CommonFlag.F_MCSReciveUAMSGFB.Length);
+                    string tempStr = data.Remove(0, CommonFlag.F_MCSReceiveUAFBMSG.Length);
                     if (token.Models != null && token.Models.Count > 0)
                     {
                         if (token.Models[0].MsgID == tempStr)
@@ -116,12 +120,28 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     {
                         if (!string.IsNullOrEmpty(clientModel.ObjectID))
                         {
-                            //CommonVariables.LogTool.Log("Account " + clientModel.ObjectID + " connect");
-                            return "ok";
+                            ContactPerson contactPerson= contactPersonService.FindContactPerson(clientModel.ObjectID);
+                            if(contactPerson!=null)
+                            {
+                                if(DateTime.Compare(contactPerson.UpdateTime,clientModel.UpdateTime)==0)
+                                {
+                                    return "ok";
+                                }
+
+                            }
+                            return "wait";
                         }
                     }
                 }
 
+
+                if(data.StartsWith(CommonFlag.F_MCSReceiveUAInfo))
+                {
+                    ContactData contactData = CommonVariables.serializer.Deserialize<ContactData>(data.Remove(0, CommonFlag.F_MCSReceiveUAInfo.Length));
+
+                    return HandleMMSUAInfo(contactData);
+
+                }
 
                 if (data.StartsWith(CommonFlag.F_MCSVerifyUAMSG))
                 {
@@ -186,6 +206,67 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             return string.Empty;
         }
 
+
+        private string HandleMMSUAInfo(ContactData contactData)
+        {
+            try
+            {
+                if (contactData.DataType == 0)
+                {
+                    ContactPerson contactPerson = contactPersonService.FindContactPerson(contactData.ObjectID);
+                    if (contactPerson == null)
+                    {
+                        contactPerson = new ContactPerson();
+                        contactPerson.ContactName = contactData.ContactName;
+                        contactPerson.ImageSrc = contactData.ImageSrc;
+                        contactPerson.LatestTime = contactData.LatestTime;
+                        contactPerson.ObjectID = contactData.ObjectID;
+                        contactPerson.Password = contactData.Password;
+                        contactPerson.UpdateTime = contactData.UpdateTime;
+                        contactPersonService.InsertNewPerson(contactPerson);
+                    }
+                    else
+                    {
+                        contactPerson.ContactName = contactData.ContactName;
+                        contactPerson.ImageSrc = contactData.ImageSrc;
+                        contactPerson.LatestTime = contactData.LatestTime;
+                        contactPerson.Password = contactData.Password;
+                        contactPerson.UpdateTime = contactData.UpdateTime;
+                        contactPersonService.UpdatePerson(contactPerson);
+                    }
+
+                }
+                else if (contactData.DataType == 1)
+                {
+                    ContactPersonList contactPersonList = contactPersonService.FindContactPersonList(contactData.ObjectID, contactData.DestinationObjectID);
+                    if (contactPersonList == null)
+                    {
+                        contactPersonList = new ContactPersonList();
+                        contactPersonList.DestinationObjectID = contactData.DestinationObjectID;
+                        contactPersonList.IsDelete = contactData.IsDelete;
+                        contactPersonList.ObjectID = contactData.ObjectID;
+                        contactPersonList.UpdateTime = contactData.UpdateTime;
+                        contactPersonService.InsertContactPersonList(contactPersonList);
+                    }
+                    else
+                    {
+                        contactPersonList.IsDelete = contactData.IsDelete;
+                        contactPersonList.UpdateTime = contactData.UpdateTime;
+                        contactPersonService.UpdateContactPersonList(contactPersonList);
+                    }
+                }
+                else if (contactData.DataType==2)
+                {
+                    ContactGroup contactGroup=contactPersonService.FindContactPerson
+                }
+                return CommonFlag.F_MMSVerifyMCSFBGetUAInfo + contactData.ObjectID;
+            }
+            catch(Exception ex)
+            {
+                CommonVariables.LogTool.Log("get UAInfor " + ex.Message + ex.StackTrace);
+                return string.Empty;
+            }
+        }
 
         public void BeginService()
         {

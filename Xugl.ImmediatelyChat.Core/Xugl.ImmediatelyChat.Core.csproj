@@ -61,7 +61,6 @@
     <Compile Include="DependencyResolution\StructureMapContainer.cs" />
     <Compile Include="IDbContext.cs" />
     <Compile Include="IRepository.cs" />
-    <Compile Include="Models.cs" />
     <Compile Include="OperateFile\IOperateFile.cs" />
     <Compile Include="OperateFile\OperateFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

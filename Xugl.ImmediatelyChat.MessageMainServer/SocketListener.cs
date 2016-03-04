@@ -16,7 +16,7 @@ using Xugl.ImmediatelyChat.SocketEngine;
 namespace Xugl.ImmediatelyChat.MessageMainServer
 {
 
-    internal class SocketListener:Xugl.ImmediatelyChat.SocketEngine.AsyncSocketListener
+    internal class SocketListener : AsyncSocketListener<ContactData>
     {
         private readonly IRepository<ContactPerson> contactPersonRepository;
         private readonly IContactPersonService contactPersonService;
@@ -29,7 +29,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             contactPersonService = ObjectContainerFactory.CurrentContainer.Resolver<IContactPersonService>();
         }
 
-        protected override void HandleError(ListenerToken token)
+        protected override void HandleError(ListenerToken<ContactData> token)
         {
             if (token.Models != null && token.Models.Count > 0)
             {
@@ -37,7 +37,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 token.Models = null;
             }
         }
-        protected override string HandleRecivedMessage(string inputMessage, ListenerToken token)
+        protected override string HandleRecivedMessage(string inputMessage, ListenerToken<ContactData> token)
         {
             //MCSModel tempMCSModel = null;
             //MDSModel tempMDSModel = null;
@@ -49,11 +49,6 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             }
 
             string data = inputMessage;
-
-            if (token == null)
-            {
-                return string.Empty;
-            }
 
 
             if (data.StartsWith(CommonFlag.F_PSSendMMSUser))
@@ -94,8 +89,6 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 if (data.StartsWith(CommonFlag.F_MMSVerifyUA))
                 {
                     ClientStatusModel clientStatusModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(data.Remove(0, CommonFlag.F_MMSVerifyUA.Length));
-
-                    CommonVariables.LogTool.Log(clientStatusModel.LatestTime.ToString());
                     //Find MCS
                     for (int i = 0; i < CommonVariables.MCSServers.Count;i++ )
                     {
@@ -120,14 +113,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                                 contactPersonRepository.Upade(tempContactPerson);
                             }
 
-                            if(DateTime.Compare(clientStatusModel.LatestTime, tempContactPerson.LatestTime.GetValueOrDefault()) < 0)
-                            {
-                                IList<ContactGroupSub> contactGroupSubs = contactPersonService.GetLastestContactGroupSub(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
-                                IList<ContactPersonList> contactPersonLists = contactPersonService.GetLastestContactPersonList(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
-                            }
-                            
-
-                                
+                            clientStatusModel.UpdateTime = tempContactPerson.UpdateTime;
 
                             break;
                         }
@@ -135,6 +121,43 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
                     //Send MCS
                     return CommonVariables.serializer.Serialize(clientStatusModel);
+                }
+
+
+                if (data.StartsWith(CommonFlag.F_MMSVerifyMCSFBGetUAInfo))
+                {
+                    if(token.Models!=null && token.Models.Count>0)
+                    {
+                        if(data.Remove(0, CommonFlag.F_MMSVerifyMCSFBGetUAInfo.Length)==token.Models[0].ObjectID)
+                        {
+                            token.Models.RemoveAt(0);
+                        }
+
+                        if(token.Models.Count>0)
+                        {
+                            return CommonVariables.serializer.Serialize(token.Models[0]);
+                        }
+                    }
+                    return string.Empty;
+                }
+
+
+                if(data.StartsWith(CommonFlag.F_MMSVerifyMCSGetUAInfo))
+                {
+                    ClientStatusModel clientStatusModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(data.Remove(0, CommonFlag.F_MMSVerifyMCSGetUAInfo.Length));
+                    if (DateTime.Compare(clientStatusModel.UpdateTime, tempContactPerson.UpdateTime) < 0)
+                    {
+                        IList<ContactGroupSub> contactGroupSubs = contactPersonService.GetLastestContactGroupSub(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
+                        IList<ContactPersonList> contactPersonLists = contactPersonService.GetLastestContactPersonList(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
+                        IList<ContactGroup> contactGroups = contactPersonService.GetLastestContactGroup(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
+
+
+                        IList<ContactData> contactDatas = PreparContactData(contactGroupSubs, contactPersonLists, contactGroups);
+
+                        token.Models = contactDatas;
+                        return CommonVariables.serializer.Serialize(token.Models[0]);
+                    }
+                    return string.Empty;
                 }
             }
 
@@ -180,6 +203,58 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
         {
             base.BeginService(CommonVariables.MMSIP,CommonVariables.MMSPort);
         }
-    }
 
+
+        private IList<ContactData> PreparContactData(IList<ContactGroupSub> contactGroupSubs, IList<ContactPersonList> contactPersonLists, IList<ContactGroup> contactGroups)
+        {
+            IList<ContactData> tempContactDatas=null;
+            ContactData tempContactData;
+
+            if ((contactGroupSubs != null && contactGroupSubs.Count > 0) ||
+                (contactPersonLists != null && contactPersonLists.Count > 0) ||
+                (contactGroups != null && contactGroups.Count > 0))
+            {
+                tempContactDatas = new List<ContactData>();
+
+
+                if (contactGroups != null && contactGroups.Count > 0)
+                {
+                    foreach (ContactGroup ContactGroup in contactGroups)
+                    {
+                        tempContactData = new ContactData();
+                        tempContactData.ContactGroupID = ContactGroup.GroupObjectID;
+                        tempContactData.IsDelete = ContactGroup.IsDelete;
+                        tempContactDatas.Add(tempContactData);
+                    }
+                }
+
+                if (contactGroupSubs != null && contactGroupSubs.Count > 0)
+                {
+                    foreach (ContactGroupSub contactGroupSub in contactGroupSubs)
+                    {
+                        tempContactData = new ContactData();
+                        tempContactData.ContactGroupID = contactGroupSub.ContactGroupID;
+                        tempContactData.ObjectID = contactGroupSub.ContactPersonObjectID;
+                        tempContactData.IsDelete = contactGroupSub.IsDelete;
+                        tempContactDatas.Add(tempContactData);
+                    }
+                }
+
+                if (contactPersonLists != null && contactPersonLists.Count > 0)
+                {
+                    foreach (ContactPersonList contactPersonList in contactPersonLists)
+                    {
+                        tempContactData = new ContactData();
+                        tempContactData.DestinationObjectID = contactPersonList.DestinationObjectID;
+                        tempContactData.ObjectID = contactPersonList.objectID;
+                        tempContactData.IsDelete = contactPersonList.IsDelete;
+                        tempContactDatas.Add(tempContactData);
+                    }
+                }
+
+            }
+
+            return tempContactDatas;
+        }
+    }
 }

@@ -42,6 +42,7 @@
     <Compile Include="CommonFlag.cs" />
     <Compile Include="CommonLog.cs" />
     <Compile Include="ICommonLog.cs" />
+    <Compile Include="Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

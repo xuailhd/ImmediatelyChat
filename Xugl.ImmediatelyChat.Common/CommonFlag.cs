@@ -27,7 +27,9 @@ namespace Xugl.ImmediatelyChat.Common
         private static string f_MMSCallMDSStart = "MDS start";
         private static string f_MMSReciveStopMCS = "stopMCS";
         private static string f_MMSReciveStopMDS = "stopMDS";
-        private static string f_MMSVerifyUA = "Verify";
+        private static string f_MMSVerifyUA = "VerifyUA";
+        private static string f_MMSVerifyMCSGetUAInfo = "VerifyMCSGetUAInfo";
+        private static string f_MMSVerifyMCSFBGetUAInfo = "VerifyMCSFBGetUAInfo";
         public static string F_MMSVerifyMCS { get { return f_MMSVerifyMCS; } }
         public static string F_MMSVerifyMDS { get { return f_MMSVerifyMDS; } }
         public static string F_MMSCallMCSStart { get { return f_MMSCallMCSStart; } }
@@ -35,25 +37,29 @@ namespace Xugl.ImmediatelyChat.Common
         public static string F_MMSReciveStopMCS { get { return f_MMSReciveStopMCS; } }
         public static string F_MMSReciveStopMDS { get { return f_MMSReciveStopMDS; } }
         public static string F_MMSVerifyUA { get { return f_MMSVerifyUA; } }
+        public static string F_MMSVerifyMCSGetUAInfo { get { return f_MMSVerifyMCSGetUAInfo; } }
+        public static string F_MMSVerifyMCSFBGetUAInfo { get { return f_MMSVerifyMCSFBGetUAInfo; } }
 
         private static string f_MCSVerifyUA = "VerifyAccount";
         private static string f_MCSVerifyUAMSG = "VerifyMSG";
         private static string f_MCSVerifyUAGetMSG = "VerifyGetMSG";
         private static string f_MCSVerfiyMDSMSG = "VerifyMDSMSG";
-        private static string f_MCSReciveUAMSGFB = "VerifyMSGFB";
+        private static string f_MCSReceiveUAFBMSG = "VerifyFBMSG";
+        private static string f_MCSReceiveUAInfo = "VerifyUAInfo";
         public static string F_MCSVerifyUA { get { return f_MCSVerifyUA; } }
         public static string F_MCSVerifyUAMSG { get { return f_MCSVerifyUAMSG; } }
         public static string F_MCSVerifyUAGetMSG { get { return f_MCSVerifyUAGetMSG; } }
         public static string F_MCSVerfiyMDSMSG { get { return f_MCSVerfiyMDSMSG; } }
-        public static string F_MCSReciveUAMSGFB { get { return f_MCSReciveUAMSGFB; } }
+        public static string F_MCSReceiveUAFBMSG { get { return f_MCSReceiveUAFBMSG; } }
+        public static string F_MCSReceiveUAInfo { get { return f_MCSReceiveUAInfo; } }
 
         private static string f_MDSVerifyMCSMSG = "VerifyMCSMSG";
         private static string f_MDSVerifyMCSGetMSG = "VerifyMCSGetMSG";
-        private static string f_MDSReciveMCSMSGFB = "VerifyMSGFB";
+        private static string f_MDSReciveMCSFBMSG = "VerifyMCSFBMSG";
 
         public static string F_MDSVerifyMCSMSG { get { return f_MDSVerifyMCSMSG; } }
         public static string F_MDSVerifyMCSGetMSG { get { return f_MDSVerifyMCSGetMSG; } }
-        public static string F_MDSReciveMCSMSGFB { get { return f_MDSReciveMCSMSGFB; } }
+        public static string F_MDSReciveMCSFBMSG { get { return f_MDSReciveMCSFBMSG; } }
 
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xugl.ImmediatelyChat.Core
+namespace Xugl.ImmediatelyChat.Common
 {
     public class ClientStatusModel
     {
@@ -17,6 +17,34 @@ namespace Xugl.ImmediatelyChat.Core
         public DateTime LatestTime { get; set; }
 
         public DateTime UpdateTime { get; set; }
+    }
+
+    public class ContactData
+    {
+        public string ObjectID { get; set; }
+        public string Password { get; set; }
+        public string ImageSrc { get; set; }
+        public string ContactName { get; set; }
+        public DateTime? LatestTime { get; set; }
+
+        private string ContactPerson { get; set; }
+        public string DestinationObjectID { get; set; }
+
+
+        public string GroupObjectID { get; set; }
+        public string GroupName { get; set; }
+
+        public string ContactPersonObjectID { get; set; }
+        public string ContactGroupID { get; set; }
+
+
+        public bool IsDelete { get; set; }
+        public DateTime UpdateTime { get; set; }
+
+        /// <summary>
+        /// 0-ContactPerson/1-ContactPersonList/2-ContactGroup/3-ContactGroupSub
+        /// </summary>
+        public int DataType { get; set; }
 
     }
 

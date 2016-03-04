@@ -13,7 +13,7 @@ using Xugl.ImmediatelyChat.Model;
 
 namespace Xugl.ImmediatelyChat.SocketEngine
 {
-    public abstract class AsyncSocketListener
+    public abstract class AsyncSocketListener<T>
     {
         private int m_maxConnnections;
         private int m_maxSize;
@@ -38,7 +38,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             for (int i = 0; i < m_maxConnnections; i++)
             {
                 SocketAsyncEventArgs socketAsyncEventArg = new SocketAsyncEventArgs();
-                socketAsyncEventArg.UserToken = new ListenerToken();
+                socketAsyncEventArg.UserToken = new ListenerToken<T>();
                 socketAsyncEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
                 socketAsyncEventArg.SetBuffer(m_bufferManager.TakeBuffer(m_maxSize), 0, m_maxSize);
                 m_readWritePool.Push(socketAsyncEventArg);
@@ -115,7 +115,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             try
             {
                 SocketAsyncEventArgs readEventArgs = m_readWritePool.Pop();
-                ((ListenerToken)readEventArgs.UserToken).Socket = e.AcceptSocket;
+                ((ListenerToken<T>)readEventArgs.UserToken).Socket = e.AcceptSocket;
 
                 // As soon as the client is connected, post a receive to the connection
                 readEventArgs.SetBuffer(0, m_maxSize);
@@ -134,13 +134,13 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             }
         }
 
-        protected abstract string HandleRecivedMessage(string inputMessage, ListenerToken token);
+        protected abstract string HandleRecivedMessage(string inputMessage, ListenerToken<T> token);
 
-        protected abstract void HandleError(ListenerToken token);
+        protected abstract void HandleError(ListenerToken<T> token);
 
         private void ProcessReceive(SocketAsyncEventArgs e)
         {
-            ListenerToken token = (ListenerToken)e.UserToken;
+            ListenerToken<T> token = (ListenerToken<T>)e.UserToken;
             try
             {
                 // check if the remote host closed the connection
@@ -191,7 +191,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
         // <param name="e"></param>
         private void ProcessSend(SocketAsyncEventArgs e)
         {
-            ListenerToken token = (ListenerToken)e.UserToken;
+            ListenerToken<T> token = (ListenerToken<T>)e.UserToken;
             try
             {
                 if (e.SocketError == SocketError.Success)
@@ -245,9 +245,9 @@ namespace Xugl.ImmediatelyChat.SocketEngine
     }
 
 
-    public class ListenerToken:AsyncUserToken
+    public class ListenerToken<T> : AsyncUserToken where T:class
     {
-        public IList<MsgRecord> Models { get; set; }
+        public IList<T> Models { get; set; }
 
         public string UAObjectID { get; set; }
     }

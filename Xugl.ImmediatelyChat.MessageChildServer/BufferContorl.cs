@@ -23,14 +23,18 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         private int OutPutCount;
 
         private IList<MsgRecordModel> BufferMsgRecordModels1 = new List<MsgRecordModel>();
-        private IList<GetMsgModel> BufferGetMsgModels1 = new List<GetMsgModel>();
-
         private IList<MsgRecordModel> BufferMsgRecordModels2 = new List<MsgRecordModel>();
+
+        private IList<GetMsgModel> BufferGetMsgModels1 = new List<GetMsgModel>();
         private IList<GetMsgModel> BufferGetMsgModels2 = new List<GetMsgModel>();
+
+        private IList<ClientStatusModel> BufferUAModels1 = new List<ClientStatusModel>();
+        private IList<ClientStatusModel> BufferUAModels2 = new List<ClientStatusModel>();
 
 
         private bool UsingTagForMsgRecord = false;
         private bool UsingTagForGetMsg = false;
+        private bool UsingTagForUAMode = false;
 
         //for prevent async data error
         private IList<MsgRecordModel> ExeingMsgRecordModels = new List<MsgRecordModel>();
@@ -113,6 +117,37 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 else
                 {
                     return BufferGetMsgModels2;
+                }
+            }
+        }
+
+
+        private IList<ClientStatusModel> GetUsingUAModelBuffer
+        {
+            get
+            {
+                if (UsingTagForUAMode)
+                {
+                    return BufferUAModels1;
+                }
+                else
+                {
+                    return BufferUAModels2;
+                }
+            }
+        }
+
+        private IList<ClientStatusModel> GetUnUsingUAModelBuffer
+        {
+            get
+            {
+                if (!UsingTagForUAMode)
+                {
+                    return BufferUAModels1;
+                }
+                else
+                {
+                    return BufferUAModels2;
                 }
             }
         }
@@ -377,7 +412,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
                         tag = !tag;
                     }
-
                     Thread.Sleep(2000);
                 }
             }

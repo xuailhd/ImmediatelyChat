@@ -11,5 +11,9 @@ namespace Xugl.ImmediatelyChat.Model
         public string GroupObjectID { get; set; }
 
         public string GroupName { get; set; }
+
+        public bool IsDelete { get; set; }
+
+        public DateTime UpdateTime { get; set; }
     }
 }

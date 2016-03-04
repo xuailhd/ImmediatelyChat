@@ -15,7 +15,7 @@ using Xugl.ImmediatelyChat.SocketEngine;
 namespace Xugl.ImmediatelyChat.MessageDataServer
 {
 
-    internal class SocketListener:Xugl.ImmediatelyChat.SocketEngine.AsyncSocketListener
+    internal class SocketListener:Xugl.ImmediatelyChat.SocketEngine.AsyncSocketListener<MsgRecord>
     {
         public SocketListener()
             : base(1024, 50, CommonVariables.LogTool)
@@ -23,7 +23,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             
         }
 
-        protected override void HandleError(ListenerToken token)
+        protected override void HandleError(ListenerToken<MsgRecord> token)
         {
             if (token.Models != null && token.Models.Count > 0)
             {
@@ -32,7 +32,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             }
         }
 
-        protected override string HandleRecivedMessage(string inputMessage, ListenerToken token)
+        protected override string HandleRecivedMessage(string inputMessage, ListenerToken<MsgRecord> token)
         {
             if (string.IsNullOrEmpty(inputMessage))
             {
@@ -155,5 +155,4 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             base.BeginService(CommonVariables.MDSIP,CommonVariables.MDSPort);
         }
     }
-
 }
