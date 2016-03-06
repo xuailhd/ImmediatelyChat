@@ -46,6 +46,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Xugl.ImmediatelyChat.Common\Xugl.ImmediatelyChat.Common.csproj">
+      <Project>{fcc73dc4-496f-40e5-afc5-081c3b3c6add}</Project>
+      <Name>Xugl.ImmediatelyChat.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Xugl.ImmediatelyChat.Data.EF\Xugl.Immediatelychat.Data.EF.csproj">
       <Project>{c6192ae3-3026-4b7b-af6f-30d2a17288a9}</Project>
       <Name>Xugl.Immediatelychat.Data.EF</Name>

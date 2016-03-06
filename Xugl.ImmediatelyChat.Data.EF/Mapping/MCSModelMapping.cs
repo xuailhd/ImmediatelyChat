@@ -38,7 +38,7 @@ namespace Xugl.ImmediatelyChat.Data.EF.Mapping.MCS
     {
         public ContactPersonListMapping()
         {
-            this.HasKey(t => t.objectID);
+            this.HasKey(t => t.ObjectID);
             this.HasKey(t => t.DestinationObjectID);
         }
     }

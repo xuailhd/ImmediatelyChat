@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.ServiceModel.Channels;
+//using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,6 +76,12 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
         #endregion
 
+        private void GenerateContactData(ClientStatusModel clientStatusModel)
+        {
+           
+            
+        }
+
         public void StartMainThread()
         {
             IsRunning = true;
@@ -111,7 +117,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                             {
                                 string messageStr = CommonFlag.F_MCSReceiveUAInfo + CommonVariables.serializer.Serialize(clientStatusModel);
                                 //CommonVariables.LogTool.Log("begin send mds " + msgRecordModel.MDS_IP + " port:" + msgRecordModel.MDS_Port + messageStr);
-                                asyncSocketClient.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port, messageStr, msgRecordModel.MessageID, HandlerMsgReturnData);
+                                asyncSocketClient.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port, messageStr, clientStatusModel, HandlerMsgReturnData);
 
                                 ExeingMsgRecordModels.Add(msgRecordModel);
                             }

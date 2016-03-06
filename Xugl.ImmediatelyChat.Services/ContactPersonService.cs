@@ -35,9 +35,20 @@ namespace Xugl.ImmediatelyChat.Services
             return contactPersons.ToList();
         }
 
+
+        public ContactPerson FindContactPerson(string objectID)
+        {
+            return null;
+        }
+
         public int InsertNewPerson(ContactPerson contactPerson)
         {
             return contactPersonRepository.Insert(contactPerson);
+        }
+
+        public int UpdateContactPerson(ContactPerson contactPerson)
+        {
+            return 0;
         }
 
         public int InsertDefaultGroup(string ObjectID)
@@ -64,7 +75,11 @@ namespace Xugl.ImmediatelyChat.Services
 
         }
 
-
+        public IList<ContactGroup> GetLastestContactGroup(string objectID, DateTime updateTime)
+        {
+            return null;
+        }
+    
 
         public IList<ContactGroupSub> GetLastestContactGroupSub(string objectID, DateTime updateTime)
         {
@@ -83,9 +98,49 @@ namespace Xugl.ImmediatelyChat.Services
             {
                 return null;
             }
-            var query = contactPersonListRepository.Table.Where(t => t.objectID == objectID && DateTime.Compare(t.UpdateTime, updateTime) > 0);
+            var query = contactPersonListRepository.Table.Where(t => t.ObjectID == objectID && DateTime.Compare(t.UpdateTime, updateTime) > 0);
 
             return query.ToList();
+        }
+
+        public ContactPersonList FindContactPersonList(string objectID, string destinationObjectID)
+        {
+            return null;
+        }
+        public int InsertContactPersonList(ContactPersonList contactPersonList)
+        {
+            return 0;
+        }
+        public int UpdateContactPersonList(ContactPersonList contactPersonList)
+        {
+            return 0;
+        }
+
+        public ContactGroup FindContactGroup(string groupID)
+        {
+            return null;
+        }
+        public int InsertNewGroup(ContactGroup contactGroup)
+        {
+            return 0;
+        }
+        public int UpdateContactGroup(ContactGroup contactGroup)
+        {
+            return 0;
+        }
+
+        public ContactGroupSub FindContactGroupSub(string groupID, string contactPersonObjectID)
+        {
+            return null;
+        }
+        public int InsertContactGroupSub(ContactGroupSub contactGroupSub)
+        {
+            return 0;
+        }
+
+        public int UpdateContactGroupSub(ContactGroupSub contactGroupSub)
+        {
+            return 0;
         }
     }
 }

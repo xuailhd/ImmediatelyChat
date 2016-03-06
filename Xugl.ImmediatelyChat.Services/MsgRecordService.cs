@@ -7,6 +7,7 @@ using Xugl.ImmediatelyChat.IServices;
 using Xugl.ImmediatelyChat.Model;
 using Xugl.ImmediatelyChat.Model.QueryCondition;
 using Xugl.ImmediatelyChat.Core;
+using Xugl.ImmediatelyChat.Common;
 
 namespace Xugl.ImmediatelyChat.Services
 {
