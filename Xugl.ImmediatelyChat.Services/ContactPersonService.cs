@@ -6,15 +6,17 @@ using System.Threading.Tasks;
 using Xugl.ImmediatelyChat.IServices;
 using Xugl.ImmediatelyChat.Model;
 using Xugl.ImmediatelyChat.Core;
+using System.Linq.Expressions;
+using Xugl.ImmediatelyChat.Common;
 
 namespace Xugl.ImmediatelyChat.Services
 {
     public class ContactPersonService : IContactPersonService
     {
         private readonly IRepository<ContactPerson> contactPersonRepository;
-        private readonly IRepository<ContactGroupSub> contactGroupSubRepository;
-        private readonly IRepository<ContactGroup> contactGroupRepository;
         private readonly IRepository<ContactPersonList> contactPersonListRepository;
+        private readonly IRepository<ContactGroup> contactGroupRepository;
+        private readonly IRepository<ContactGroupSub> contactGroupSubRepository;
 
         public ContactPersonService(IRepository<ContactPerson> contactPersonRepository, IRepository<ContactGroupSub> contactGroupSubRepository,
             IRepository<ContactGroup> contactGroupRepository, IRepository<ContactPersonList> contactPersonListRepository)
@@ -38,109 +40,221 @@ namespace Xugl.ImmediatelyChat.Services
 
         public ContactPerson FindContactPerson(string objectID)
         {
-            return null;
+            return contactPersonRepository.Find(t => t.ObjectID == objectID);
+        }
+
+        public ContactPerson FindContactPerson(Expression<Func<ContactPerson, bool>> predicate)
+        {
+            return contactPersonRepository.Find(predicate);
         }
 
         public int InsertNewPerson(ContactPerson contactPerson)
         {
+            if (contactPerson == null)
+            {
+                return 0;
+            }
+
+            if (string.IsNullOrEmpty(contactPerson.UpdateTime))
+            {
+                contactPerson.UpdateTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
+            }
+
+            if (string.IsNullOrEmpty(contactPerson.LatestTime))
+            {
+                contactPerson.LatestTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
+            }
+
             return contactPersonRepository.Insert(contactPerson);
         }
 
         public int UpdateContactPerson(ContactPerson contactPerson)
         {
-            return 0;
-        }
-
-        public int InsertDefaultGroup(string ObjectID)
-        {
-            if(string.IsNullOrEmpty(ObjectID))
+            if (contactPerson == null)
             {
                 return 0;
             }
 
-            ContactGroup contactGroup= contactGroupRepository.Table.Where(t => t.GroupName == "Group1").FirstOrDefault();
-            if(contactGroup==null)
+            return contactPersonRepository.Upade(contactPerson);
+        }
+
+        public int InsertDefaultGroup(string ObjectID)
+        {
+            if (string.IsNullOrEmpty(ObjectID))
+            {
+                return 0;
+            }
+
+            ContactGroup contactGroup = contactGroupRepository.Table.Where(t => t.GroupName == "Group1").FirstOrDefault();
+            if (contactGroup == null)
             {
                 contactGroup = new ContactGroup();
                 contactGroup.GroupName = "Group1";
                 contactGroup.GroupObjectID = "Group1";
+                contactGroup.UpdateTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
                 contactGroupRepository.Insert(contactGroup);
             }
 
             ContactGroupSub contactGroupSub = new ContactGroupSub();
             contactGroupSub.ContactGroupID = contactGroup.GroupObjectID;
             contactGroupSub.ContactPersonObjectID = ObjectID;
-            contactGroupSub.UpdateTime = DateTime.Now;
+            contactGroupSub.UpdateTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
             return contactGroupSubRepository.Insert(contactGroupSub);
 
         }
 
-        public IList<ContactGroup> GetLastestContactGroup(string objectID, DateTime updateTime)
-        {
-            return null;
-        }
-    
-
-        public IList<ContactGroupSub> GetLastestContactGroupSub(string objectID, DateTime updateTime)
-        {
-            if(string.IsNullOrEmpty(objectID))
-            {
-                return null;
-            }
-            var query = contactGroupSubRepository.Table.Where(t => t.ContactPersonObjectID == objectID && DateTime.Compare(t.UpdateTime, updateTime) > 0);
-
-            return query.ToList();
-        }
-
-        public IList<ContactPersonList> GetLastestContactPersonList(string objectID, DateTime updateTime)
+        public IList<ContactGroup> GetLastestContactGroup(string objectID, string updateTime)
         {
             if (string.IsNullOrEmpty(objectID))
             {
                 return null;
             }
-            var query = contactPersonListRepository.Table.Where(t => t.ObjectID == objectID && DateTime.Compare(t.UpdateTime, updateTime) > 0);
+            if (string.IsNullOrEmpty(updateTime))
+            {
+                updateTime = CommonFlag.F_MinDatetime;
+            }
+
+            var query = from aa in contactGroupRepository.Table
+                        join bb in contactGroupSubRepository.Table on aa.GroupObjectID equals bb.ContactGroupID
+                        where bb.ContactPersonObjectID.Equals(objectID) && bb.UpdateTime.CompareTo(updateTime) > 0
+                        select aa;
 
             return query.ToList();
         }
 
+
+        public IList<ContactGroupSub> GetLastestContactGroupSub(string objectID, string updateTime)
+        {
+            if (string.IsNullOrEmpty(objectID))
+            {
+                return null;
+            }
+            if (string.IsNullOrEmpty(updateTime))
+            {
+                updateTime = CommonFlag.F_MinDatetime;
+            }
+
+
+            var query = from aa in contactGroupSubRepository.Table
+                        join bb in
+                            (from cc in contactGroupSubRepository.Table
+                             where cc.ContactPersonObjectID.Equals(objectID) && !cc.IsDelete
+                             select cc.ContactGroupID) on aa.ContactGroupID equals bb
+                        where aa.UpdateTime.CompareTo(updateTime) > 0
+                        select aa;
+
+            return query.ToList();
+        }
+
+        public IList<ContactPersonList> GetLastestContactPersonList(string objectID, string updateTime)
+        {
+            if (string.IsNullOrEmpty(objectID))
+            {
+                return null;
+            }
+            if (string.IsNullOrEmpty(updateTime))
+            {
+                updateTime = CommonFlag.F_MinDatetime;
+            }
+            return contactPersonListRepository.Table.Where(t => t.ObjectID == objectID
+                && t.UpdateTime.CompareTo(updateTime) > 0).ToList();
+        }
+
         public ContactPersonList FindContactPersonList(string objectID, string destinationObjectID)
         {
-            return null;
+            if (string.IsNullOrEmpty(objectID) || string.IsNullOrEmpty(destinationObjectID))
+            {
+                return null;
+            }
+            return contactPersonListRepository.Find(t => t.ObjectID == objectID && t.DestinationObjectID == destinationObjectID);
         }
+
         public int InsertContactPersonList(ContactPersonList contactPersonList)
         {
-            return 0;
+            if (contactPersonList == null)
+            {
+                return 0;
+            }
+
+            if (string.IsNullOrEmpty(contactPersonList.UpdateTime))
+            {
+                contactPersonList.UpdateTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
+            }
+
+            return contactPersonListRepository.Insert(contactPersonList);
         }
         public int UpdateContactPersonList(ContactPersonList contactPersonList)
         {
-            return 0;
+            if (contactPersonList == null)
+            {
+                return 0;
+            }
+
+            return contactPersonListRepository.Upade(contactPersonList);
         }
 
         public ContactGroup FindContactGroup(string groupID)
         {
-            return null;
+            if (string.IsNullOrEmpty(groupID))
+            {
+                return null;
+            }
+
+            return contactGroupRepository.Find(t => t.GroupObjectID == groupID);
         }
         public int InsertNewGroup(ContactGroup contactGroup)
         {
-            return 0;
+            if (contactGroup == null)
+            {
+                return 0;
+            }
+
+            if (string.IsNullOrEmpty(contactGroup.UpdateTime))
+            {
+                contactGroup.UpdateTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
+            }
+
+            return contactGroupRepository.Insert(contactGroup);
         }
         public int UpdateContactGroup(ContactGroup contactGroup)
         {
-            return 0;
+            if (contactGroup == null)
+            {
+                return 0;
+            }
+
+            return contactGroupRepository.Upade(contactGroup);
         }
 
         public ContactGroupSub FindContactGroupSub(string groupID, string contactPersonObjectID)
         {
-            return null;
+            if (string.IsNullOrEmpty(groupID) || string.IsNullOrEmpty(contactPersonObjectID))
+            {
+                return null;
+            }
+            return contactGroupSubRepository.Find(t => t.ContactGroupID == groupID && t.ContactPersonObjectID == contactPersonObjectID);
         }
         public int InsertContactGroupSub(ContactGroupSub contactGroupSub)
         {
-            return 0;
+            if (contactGroupSub == null)
+            {
+                return 0;
+            }
+
+            if (string.IsNullOrEmpty(contactGroupSub.UpdateTime))
+            {
+                contactGroupSub.UpdateTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
+            }
+            return contactGroupSubRepository.Insert(contactGroupSub);
         }
 
         public int UpdateContactGroupSub(ContactGroupSub contactGroupSub)
         {
-            return 0;
+            if (contactGroupSub == null)
+            {
+                return 0;
+            }
+            return contactGroupSubRepository.Upade(contactGroupSub);
         }
     }
 }

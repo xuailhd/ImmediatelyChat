@@ -16,20 +16,37 @@ using Xugl.ImmediatelyChat.SocketEngine;
 namespace Xugl.ImmediatelyChat.MessageMainServer
 {
 
-    internal class SocketListener : AsyncSocketListener<ContactData>
+
+    public class MMSListenerToken : AsyncUserToken
     {
-        private readonly IRepository<ContactPerson> contactPersonRepository;
-        private readonly IContactPersonService contactPersonService;
+        private readonly IContactPersonService _contactPersonService;
 
+        public MMSListenerToken()
+        {
+            _contactPersonService=ObjectContainerFactory.CurrentContainer.Resolver<IContactPersonService>();
+        }
 
+        public IList<ContactData> Models { get; set; }
+
+        public string UAObjectID { get; set; }
+
+        public IContactPersonService ContactPersonService
+        {
+            get
+            {
+                return _contactPersonService;
+            }
+        }
+    }
+
+    internal class SocketListener : AsyncSocketListener<MMSListenerToken>
+    {
         public SocketListener()
             : base(1024, 100, CommonVariables.LogTool)
         {
-            contactPersonRepository = ObjectContainerFactory.CurrentContainer.Resolver<IRepository<ContactPerson>>();
-            contactPersonService = ObjectContainerFactory.CurrentContainer.Resolver<IContactPersonService>();
         }
 
-        protected override void HandleError(ListenerToken<ContactData> token)
+        protected override void HandleError(MMSListenerToken token)
         {
             if (token.Models != null && token.Models.Count > 0)
             {
@@ -37,13 +54,15 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 token.Models = null;
             }
         }
-        protected override string HandleRecivedMessage(string inputMessage, ListenerToken<ContactData> token)
+        protected override string HandleRecivedMessage(string inputMessage, MMSListenerToken token)
         {
             //MCSModel tempMCSModel = null;
             //MDSModel tempMDSModel = null;
             ContactPerson tempContactPerson = null;
 
-            if (string.IsNullOrEmpty(inputMessage))
+
+
+            if (string.IsNullOrEmpty(inputMessage) || token == null)
             {
                 return string.Empty;
             }
@@ -89,6 +108,8 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 if (data.StartsWith(CommonFlag.F_MMSVerifyUA))
                 {
                     ClientStatusModel clientStatusModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(data.Remove(0, CommonFlag.F_MMSVerifyUA.Length));
+
+                    CommonVariables.LogTool.Log("UA:" + clientStatusModel.ObjectID + " connected  " + CommonVariables.MCSServers.Count);
                     //Find MCS
                     for (int i = 0; i < CommonVariables.MCSServers.Count;i++ )
                     {
@@ -97,23 +118,26 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                             clientStatusModel.MCS_IP = CommonVariables.MCSServers[i].MCS_IP;
                             clientStatusModel.MCS_Port = CommonVariables.MCSServers[i].MCS_Port;
 
-                            tempContactPerson = contactPersonRepository.Table.Where(t => t.ObjectID == clientStatusModel.ObjectID).FirstOrDefault();
+                            tempContactPerson = token.ContactPersonService.FindContactPerson(t => t.ObjectID == clientStatusModel.ObjectID);
                             if (tempContactPerson == null)
                             {
                                 return string.Empty;
                             }
 
-                            if (DateTime.Compare(clientStatusModel.LatestTime, tempContactPerson.LatestTime.GetValueOrDefault()) <= 0)
+                            if (clientStatusModel.LatestTime.CompareTo(tempContactPerson.LatestTime) <= 0)
                             {
-                                clientStatusModel.LatestTime = tempContactPerson.LatestTime.GetValueOrDefault();
+                                clientStatusModel.LatestTime = tempContactPerson.LatestTime;
                             }
                             else
                             {
                                 tempContactPerson.LatestTime=clientStatusModel.LatestTime;
-                                contactPersonRepository.Upade(tempContactPerson);
+                                token.ContactPersonService.UpdateContactPerson(tempContactPerson);
                             }
 
-                            clientStatusModel.UpdateTime = tempContactPerson.UpdateTime;
+                            if (clientStatusModel.UpdateTime.CompareTo(tempContactPerson.UpdateTime) < 0)
+                            {
+                                CommonVariables.UAInfoContorl.AddUAModelIntoBuffer(clientStatusModel);
+                            }
 
                             break;
                         }
@@ -123,42 +147,6 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                     return CommonVariables.serializer.Serialize(clientStatusModel);
                 }
 
-
-                if (data.StartsWith(CommonFlag.F_MMSVerifyMCSFBGetUAInfo))
-                {
-                    if(token.Models!=null && token.Models.Count>0)
-                    {
-                        if(data.Remove(0, CommonFlag.F_MMSVerifyMCSFBGetUAInfo.Length)==token.Models[0].ObjectID)
-                        {
-                            token.Models.RemoveAt(0);
-                        }
-
-                        if(token.Models.Count>0)
-                        {
-                            return CommonVariables.serializer.Serialize(token.Models[0]);
-                        }
-                    }
-                    return string.Empty;
-                }
-
-
-                if(data.StartsWith(CommonFlag.F_MMSVerifyMCSGetUAInfo))
-                {
-                    ClientStatusModel clientStatusModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(data.Remove(0, CommonFlag.F_MMSVerifyMCSGetUAInfo.Length));
-                    if (DateTime.Compare(clientStatusModel.UpdateTime, tempContactPerson.UpdateTime) < 0)
-                    {
-                        IList<ContactGroupSub> contactGroupSubs = contactPersonService.GetLastestContactGroupSub(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
-                        IList<ContactPersonList> contactPersonLists = contactPersonService.GetLastestContactPersonList(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
-                        IList<ContactGroup> contactGroups = contactPersonService.GetLastestContactGroup(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
-
-
-                        IList<ContactData> contactDatas = PreparContactData(contactGroupSubs, contactPersonLists, contactGroups);
-
-                        token.Models = contactDatas;
-                        return CommonVariables.serializer.Serialize(token.Models[0]);
-                    }
-                    return string.Empty;
-                }
             }
 
 
@@ -201,60 +189,9 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
         public void BeginService()
         {
+            CommonVariables.UAInfoContorl.StartMainThread();
             base.BeginService(CommonVariables.MMSIP,CommonVariables.MMSPort);
         }
 
-
-        private IList<ContactData> PreparContactData(IList<ContactGroupSub> contactGroupSubs, IList<ContactPersonList> contactPersonLists, IList<ContactGroup> contactGroups)
-        {
-            IList<ContactData> tempContactDatas=null;
-            ContactData tempContactData;
-
-            if ((contactGroupSubs != null && contactGroupSubs.Count > 0) ||
-                (contactPersonLists != null && contactPersonLists.Count > 0) ||
-                (contactGroups != null && contactGroups.Count > 0))
-            {
-                tempContactDatas = new List<ContactData>();
-
-
-                if (contactGroups != null && contactGroups.Count > 0)
-                {
-                    foreach (ContactGroup ContactGroup in contactGroups)
-                    {
-                        tempContactData = new ContactData();
-                        tempContactData.ContactGroupID = ContactGroup.GroupObjectID;
-                        tempContactData.IsDelete = ContactGroup.IsDelete;
-                        tempContactDatas.Add(tempContactData);
-                    }
-                }
-
-                if (contactGroupSubs != null && contactGroupSubs.Count > 0)
-                {
-                    foreach (ContactGroupSub contactGroupSub in contactGroupSubs)
-                    {
-                        tempContactData = new ContactData();
-                        tempContactData.ContactGroupID = contactGroupSub.ContactGroupID;
-                        tempContactData.ObjectID = contactGroupSub.ContactPersonObjectID;
-                        tempContactData.IsDelete = contactGroupSub.IsDelete;
-                        tempContactDatas.Add(tempContactData);
-                    }
-                }
-
-                if (contactPersonLists != null && contactPersonLists.Count > 0)
-                {
-                    foreach (ContactPersonList contactPersonList in contactPersonLists)
-                    {
-                        tempContactData = new ContactData();
-                        tempContactData.DestinationObjectID = contactPersonList.DestinationObjectID;
-                        tempContactData.ObjectID = contactPersonList.ObjectID;
-                        tempContactData.IsDelete = contactPersonList.IsDelete;
-                        tempContactDatas.Add(tempContactData);
-                    }
-                }
-
-            }
-
-            return tempContactDatas;
-        }
     }
 }

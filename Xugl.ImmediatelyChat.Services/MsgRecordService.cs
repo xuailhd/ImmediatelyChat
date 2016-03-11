@@ -31,7 +31,7 @@ namespace Xugl.ImmediatelyChat.Services
 
             if(query.MsgRecordtime!=null)
             {
-                tablequery = tablequery.Where(t => DateTime.Compare(t.SendTime, query.MsgRecordtime) > 0);
+                tablequery = tablequery.Where(t => t.SendTime.CompareTo(query.MsgRecordtime)>0);
             }
 
             if(string.IsNullOrEmpty(query.MsgRecipientObjectID))

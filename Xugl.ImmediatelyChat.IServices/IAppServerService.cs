@@ -11,6 +11,8 @@ namespace Xugl.ImmediatelyChat.IServices
     {
         int BatchInsert(IList<MMSServer> entitys);
 
+        IList<MMSServer> FindMMS();
+            
         int Clean();
     }
 }

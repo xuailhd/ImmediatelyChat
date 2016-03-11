@@ -14,8 +14,15 @@ using Xugl.ImmediatelyChat.SocketEngine;
 
 namespace Xugl.ImmediatelyChat.MessageDataServer
 {
+    public class MDSListenerToken : AsyncUserToken
+    {
+        public IList<MsgRecord> Models { get; set; }
 
-    internal class SocketListener:Xugl.ImmediatelyChat.SocketEngine.AsyncSocketListener<MsgRecord>
+        public string UAObjectID { get; set; }
+    }
+
+
+    internal class SocketListener : AsyncSocketListener<MDSListenerToken>
     {
         public SocketListener()
             : base(1024, 50, CommonVariables.LogTool)
@@ -23,7 +30,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             
         }
 
-        protected override void HandleError(ListenerToken<MsgRecord> token)
+        protected override void HandleError(MDSListenerToken token)
         {
             if (token.Models != null && token.Models.Count > 0)
             {
@@ -32,7 +39,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             }
         }
 
-        protected override string HandleRecivedMessage(string inputMessage, ListenerToken<MsgRecord> token)
+        protected override string HandleRecivedMessage(string inputMessage, MDSListenerToken token)
         {
             if (string.IsNullOrEmpty(inputMessage))
             {
@@ -59,9 +66,9 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             if (CommonVariables.IsBeginMessageService)
             {
                 //handle UA feedback
-                if (data.StartsWith(CommonFlag.F_MDSReciveMCSMSGFB))
+                if (data.StartsWith(CommonFlag.F_MDSReciveMCSFBMSG))
                 {
-                    string tempStr = data.Remove(0, CommonFlag.F_MDSReciveMCSMSGFB.Length);
+                    string tempStr = data.Remove(0, CommonFlag.F_MDSReciveMCSFBMSG.Length);
                     if (token.Models != null && token.Models.Count > 0)
                     {
                         if (token.Models[0].MsgID == tempStr)

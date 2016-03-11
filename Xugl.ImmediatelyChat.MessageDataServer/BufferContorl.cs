@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
 using Xugl.ImmediatelyChat.Core.DependencyResolution;
 using Xugl.ImmediatelyChat.IServices;
@@ -31,7 +32,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
         /// <summary>
         /// which time before or equal this time, will be save into database
         /// </summary>
-        private DateTime savedIntoDataBase;
+        private string savedIntoDataBase;
 
         private readonly IMsgRecordService msgRecordService;
         public bool IsRunning = false;
@@ -79,7 +80,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
 
             IList<MsgRecord> msgRecords=new List<MsgRecord>();
 
-            if(DateTime.Compare(getMsgModel.LatestTime,savedIntoDataBase)<=0)
+            if(getMsgModel.LatestTime.CompareTo(savedIntoDataBase)<=0)
             {
                 MsgRecordQuery query = new MsgRecordQuery();
                 query.MsgRecipientObjectID = getMsgModel.ObjectID;
@@ -88,7 +89,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
                 msgRecords.Union(msgRecordService.LoadMsgRecord(query).OrderBy(t=>t.SendTime));
             }
 
-            msgRecords.Union(GetUsingBufferContainer.Where(t => DateTime.Compare(t.SendTime, getMsgModel.LatestTime) <= 0
+            msgRecords.Union(GetUsingBufferContainer.Where(t => t.SendTime.CompareTo(getMsgModel.LatestTime) <= 0
                 && t.MsgRecipientObjectID == getMsgModel.ObjectID).OrderBy(t=>t.SendTime));
 
             return msgRecords;

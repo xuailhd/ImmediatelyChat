@@ -16,6 +16,6 @@ namespace Xugl.ImmediatelyChat.Model
 
         public bool IsDelete { get; set; }
 
-        public DateTime UpdateTime { get; set; }
+        public string UpdateTime { get; set; }
     }
 }

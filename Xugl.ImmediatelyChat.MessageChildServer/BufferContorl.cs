@@ -232,7 +232,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         public IList<MsgRecord> GetMSG(GetMsgModel getMsgModel)
         {
-            IList<MsgRecord> msgRecords= OutMsgRecords.Where(t => DateTime.Compare(t.SendTime, getMsgModel.LatestTime) <= 0
+            IList<MsgRecord> msgRecords= OutMsgRecords.Where(t => t.SendTime.CompareTo(getMsgModel.LatestTime) <= 0
                 && t.MsgRecipientObjectID == getMsgModel.ObjectID).ToList();
 
             for(int i=0;i<msgRecords.Count;i++)

@@ -22,29 +22,51 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
         private int InputCount;
         private int OutPutCount;
 
-        private IList<ClientStatusModel> BufferUAModels1 = new List<ClientStatusModel>();
-        private IList<ClientStatusModel> BufferUAModels2 = new List<ClientStatusModel>();
+        private IList<ContactDataWithMCS> BufferUAModels1 = new List<ContactDataWithMCS>();
+        private IList<ContactDataWithMCS> BufferUAModels2 = new List<ContactDataWithMCS>();
 
-        private IList<ContactData> ContactDatas = new List<ContactData>();
+        private IList<ContactDataWithMCS> ExeingUAModels = new List<ContactDataWithMCS>();
 
         private bool UsingTagForUAMode = false;
 
         private AsyncSocketClient asyncSocketClient;
+        private readonly IContactPersonService contactPersonService;
 
         private int _maxSize = 1024;
         private int _maxConnnections = 10;
 
         public bool IsRunning = false;
 
+
+        public BufferContorl()
+        {
+            contactPersonService = ObjectContainerFactory.CurrentContainer.Resolver<IContactPersonService>();
+        }
+
         public void AddUAModelIntoBuffer(ClientStatusModel clientStatusModel)
         {
-            GetUsingUAModelBuffer.Add(clientStatusModel);
+            if (asyncSocketClient==null)
+            {
+                return;
+            }
+
+
+
+            GenerateContactData(clientStatusModel);
+        }
+
+
+        private string HandlerUpdateTimeReturnData(string returnData, bool IsError)
+        {
+            if (IsError)
+
+            return string.Empty;
         }
 
 
         #region using unusing buffer manage
 
-        private IList<ClientStatusModel> GetUsingUAModelBuffer
+        private IList<ContactDataWithMCS> GetUsingUAModelBuffer
         {
             get
             {
@@ -59,7 +81,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             }
         }
 
-        private IList<ClientStatusModel> GetUnUsingUAModelBuffer
+        private IList<ContactDataWithMCS> GetUnUsingUAModelBuffer
         {
             get
             {
@@ -78,8 +100,95 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
         private void GenerateContactData(ClientStatusModel clientStatusModel)
         {
-           
-            
+            ContactDataWithMCS contactDataWithMCS = null;
+
+            ContactPerson contactPerson = contactPersonService.FindContactPerson(clientStatusModel.ObjectID);
+            IList<ContactPersonList> contactPersonLists = contactPersonService.GetLastestContactPersonList(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
+            IList<ContactGroup> contactGroups = contactPersonService.GetLastestContactGroup(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
+            IList<ContactGroupSub> contactGroupSubs = contactPersonService.GetLastestContactGroupSub(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
+
+            IList<ContactData> contactDatas = PreparContactData(contactPerson, contactPersonLists, contactGroups, contactGroupSubs);
+
+            CommonVariables.LogTool.Log("contactPersonLists:" + contactPersonLists.Count.ToString() + "   "
+                + "contactGroups:" + contactPersonLists.Count.ToString() + "   "
+                + "contactGroupSubs:" + contactGroupSubs.Count.ToString() + "    "
+                + "contactDatas:" + contactDatas.Count.ToString());
+
+            foreach (ContactData contactData in contactDatas)
+            {
+                contactDataWithMCS = new ContactDataWithMCS();
+                contactDataWithMCS.ContactData = contactData;
+                contactDataWithMCS.MCS_IP = clientStatusModel.MCS_IP;
+                contactDataWithMCS.MCS_Port = clientStatusModel.MCS_Port;
+                GetUsingUAModelBuffer.Add(contactDataWithMCS);
+            }
+        }
+
+        private IList<ContactData> PreparContactData(ContactPerson contactPerson, IList<ContactPersonList> contactPersonLists,
+            IList<ContactGroup> contactGroups, IList<ContactGroupSub> contactGroupSubs)
+        {
+            IList<ContactData> tempContactDatas = null;
+            ContactData tempContactData;
+
+            if (contactPerson!=null)
+            {
+                tempContactDatas = new List<ContactData>();
+
+                tempContactData = new ContactData();
+                tempContactData.ContactName = contactPerson.ContactName;
+                tempContactData.ImageSrc = contactPerson.ImageSrc;
+                tempContactData.LatestTime = contactPerson.LatestTime;
+                tempContactData.ObjectID = contactPerson.ObjectID;
+                tempContactData.UpdateTime = contactPerson.UpdateTime;
+                tempContactData.ContactDataID = Guid.NewGuid().ToString();
+                tempContactData.DataType = 0;
+                tempContactDatas.Add(tempContactData);
+
+                if (contactPersonLists != null && contactPersonLists.Count > 0)
+                {
+                    foreach (ContactPersonList contactPersonList in contactPersonLists)
+                    {
+                        tempContactData = new ContactData();
+                        
+                        tempContactData.DestinationObjectID = contactPersonList.DestinationObjectID;
+                        tempContactData.ObjectID = contactPersonList.ObjectID;
+                        tempContactData.IsDelete = contactPersonList.IsDelete;
+                        tempContactData.UpdateTime = contactPersonList.UpdateTime;
+                        tempContactData.ContactDataID = Guid.NewGuid().ToString();
+                        tempContactData.DataType = 1;
+                        tempContactDatas.Add(tempContactData);
+                    }
+                }
+                if (contactGroups != null && contactGroups.Count > 0)
+                {
+                    foreach (ContactGroup contactGroup in contactGroups)
+                    {
+                        tempContactData = new ContactData();
+                        tempContactData.GroupObjectID = contactGroup.GroupObjectID;
+                        tempContactData.IsDelete = contactGroup.IsDelete;
+                        tempContactData.UpdateTime = contactGroup.UpdateTime;
+                        tempContactData.ContactDataID = Guid.NewGuid().ToString();
+                        tempContactData.DataType = 2;
+                        tempContactDatas.Add(tempContactData);
+                    }
+                }
+                if (contactGroupSubs != null && contactGroupSubs.Count > 0)
+                {
+                    foreach (ContactGroupSub contactGroupSub in contactGroupSubs)
+                    {
+                        tempContactData = new ContactData();
+                        tempContactData.ContactGroupID = contactGroupSub.ContactGroupID;
+                        tempContactData.ContactPersonObjectID = contactGroupSub.ContactPersonObjectID;
+                        tempContactData.IsDelete = contactGroupSub.IsDelete;
+                        tempContactData.UpdateTime = contactGroupSub.UpdateTime;
+                        tempContactData.ContactDataID = Guid.NewGuid().ToString();
+                        tempContactData.DataType = 3;
+                        tempContactDatas.Add(tempContactData);
+                    }
+                }
+            }
+
+            return tempContactDatas;
         }
 
         public void StartMainThread()
@@ -112,24 +221,24 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                         //CommonVariables.LogTool.Log("GetUnUsingMsgRecordBuffer count  " + GetUnUsingMsgRecordBuffer.Count.ToString());
                         while (GetUnUsingUAModelBuffer.Count > 0)
                         {
-                            ClientStatusModel clientStatusModel = GetUnUsingUAModelBuffer[0];
+                            ContactDataWithMCS contactDataWithMCS = GetUnUsingUAModelBuffer[0];
                             try
                             {
-                                string messageStr = CommonFlag.F_MCSReceiveUAInfo + CommonVariables.serializer.Serialize(clientStatusModel);
+                                string messageStr = CommonFlag.F_MCSReceiveUAInfo + CommonVariables.serializer.Serialize(contactDataWithMCS.ContactData);
                                 //CommonVariables.LogTool.Log("begin send mds " + msgRecordModel.MDS_IP + " port:" + msgRecordModel.MDS_Port + messageStr);
-                                asyncSocketClient.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port, messageStr, clientStatusModel, HandlerMsgReturnData);
+                                asyncSocketClient.SendMsg(contactDataWithMCS.MCS_IP, contactDataWithMCS.MCS_Port, messageStr, contactDataWithMCS.ContactData.ContactDataID, HandlerMsgReturnData);
 
-                                ExeingMsgRecordModels.Add(msgRecordModel);
+                                ExeingUAModels.Add(contactDataWithMCS);
                             }
                             catch (Exception ex)
                             {
-                                GetUsingMsgRecordBuffer.Add(msgRecordModel);
-                                CommonVariables.LogTool.Log(msgRecordModel.MessageID + ex.Message + ex.StackTrace);
+                                GetUsingUAModelBuffer.Add(contactDataWithMCS);
+                                CommonVariables.LogTool.Log(contactDataWithMCS.ContactData.ObjectID + ex.Message + ex.StackTrace);
                             }
-                            GetUnUsingMsgRecordBuffer.RemoveAt(0);
+                            GetUnUsingUAModelBuffer.RemoveAt(0);
                         }
                     }
-                    Thread.Sleep(2000);
+                    Thread.Sleep(1000);
                 }
             }
             catch(Exception ex)
@@ -137,54 +246,27 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 CommonVariables.LogTool.Log(ex.Message + ex.StackTrace);
             }
         }
-        
 
 
-        private string HandlerMsgReturnData(string returnData,bool IsError)
+
+        private string HandlerMsgReturnData(string returnData, bool IsError)
         {
             if (!string.IsNullOrEmpty(returnData))
             {
-                MsgRecordModel tempmodel=ExeingMsgRecordModels.Single(t => t.MessageID == returnData);
-                if (IsError)
+                ContactDataWithMCS tempmodel =  ExeingUAModels.FirstOrDefault(t => t.ContactData.ContactDataID == returnData);
+
+                if (tempmodel != null)
                 {
-                    GetUsingMsgRecordBuffer.Add(tempmodel);
-                }
-                ExeingMsgRecordModels.Remove(ExeingMsgRecordModels.Single(t => t.MessageID == returnData));
-            }
-
-            return string.Empty;
-        }
-
-
-        private string HandlerGetMsgReturnData(string returnData, bool IsError)
-        {
-            //CommonVariables.LogTool.Log("recive mds return data:" + returnData);
-            if(IsError)
-            {
-                return string.Empty;
-            }
-
-           
-
-            if (!string.IsNullOrEmpty(returnData))
-            {
-                if (returnData.StartsWith(CommonFlag.F_MCSVerfiyMDSMSG))
-                {
-                    string tempStr = returnData.Remove(0, CommonFlag.F_MCSVerfiyMDSMSG.Length);
-
-                    MsgRecord tempMsgRecord = CommonVariables.serializer.Deserialize<MsgRecord>(tempStr);
-                    if (tempMsgRecord != null)
+                    if (IsError)
                     {
-                        if (!string.IsNullOrEmpty(tempMsgRecord.MsgID))
-                        {
-                            AddMsgIntoOutBuffer(tempMsgRecord);
-                            return tempMsgRecord.MsgID;
-                        }
+                        GetUsingUAModelBuffer.Add(tempmodel);
                     }
+                    ExeingUAModels.Remove(tempmodel);
                 }
             }
             return string.Empty;
         }
+
     }
 
 }

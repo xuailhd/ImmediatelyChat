@@ -24,7 +24,7 @@ namespace Xugl.ImmediatelyChat.Model.QueryCondition
             this.OrderFieldStore.Add(t => t.MsgID);
         }
 
-        public DateTime MsgRecordtime { get; set; }
+        public string MsgRecordtime { get; set; }
         public string MsgRecipientObjectID { get; set; }
         public int SendType { get; set; }
         

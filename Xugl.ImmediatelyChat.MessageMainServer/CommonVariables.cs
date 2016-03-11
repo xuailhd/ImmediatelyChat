@@ -126,5 +126,17 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
         }
         #endregion
 
+        public static BufferContorl UAInfoContorl
+        {
+            get
+            {
+                if (Singleton<BufferContorl>.Instance == null)
+                {
+                    Singleton<BufferContorl>.Instance = new BufferContorl();
+                }
+                return Singleton<BufferContorl>.Instance;
+            }
+        }
+
     }
 }

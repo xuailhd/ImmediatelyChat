@@ -29,5 +29,11 @@ namespace Xugl.ImmediatelyChat.Services
         {
             return this.dbContext.ExecuteSqlCommand("Delete MMSServer");
         }
+
+
+        public IList<MMSServer> FindMMS()
+        {
+            return mmsServerRepository.Table.ToList();
+        }
     }
 }

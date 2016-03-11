@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Xugl.ImmediatelyChat.Model;
@@ -12,6 +13,7 @@ namespace Xugl.ImmediatelyChat.IServices
         IList<ContactPerson> GetContactPersonIDListByGroupID(string groupID);
 
         ContactPerson FindContactPerson(string objectID);
+        ContactPerson FindContactPerson(Expression<Func<ContactPerson, bool>> predicate);
         int InsertNewPerson(ContactPerson contactPerson);
         int UpdateContactPerson(ContactPerson contactPerson);
 
@@ -29,10 +31,10 @@ namespace Xugl.ImmediatelyChat.IServices
 
         int InsertDefaultGroup(string objectID);
 
-        IList<ContactGroupSub> GetLastestContactGroupSub(string objectID, DateTime updateTime);
+        IList<ContactGroupSub> GetLastestContactGroupSub(string objectID, string updateTime);
 
-        IList<ContactPersonList> GetLastestContactPersonList(string objectID, DateTime updateTime);
+        IList<ContactPersonList> GetLastestContactPersonList(string objectID, string updateTime);
 
-        IList<ContactGroup> GetLastestContactGroup(string objectID, DateTime updateTime);
+        IList<ContactGroup> GetLastestContactGroup(string objectID, string updateTime);
     }
 }

@@ -121,19 +121,17 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                 int recivecount= token.Socket.EndReceive(ar);
                 if (recivecount>0)
                 {
-                    if(token.MessageID== Encoding.UTF8.GetString(token.Buffer, 0, recivecount))
+                    string sendData = token.HandlerReturnData(Encoding.UTF8.GetString(token.Buffer, 0, recivecount), false);
+                    if (!string.IsNullOrEmpty(sendData))
                     {
-                        string sendData = token.HandlerReturnData(token.MessageID, false);
-                        if (!string.IsNullOrEmpty(sendData))
-                        {
-                            token.Datasize = Encoding.UTF8.GetBytes(sendData, 0, sendData.Length, token.Buffer, 0);
-                            token.Socket.BeginSend(token.Buffer, 0, token.Datasize, SocketFlags.None, new AsyncCallback(SendCallback), token);
-                            return;
-                        }
-
-                        CloseOneInstance(token);
-                        return;
+                        token.Datasize = Encoding.UTF8.GetBytes(sendData, 0, sendData.Length, token.Buffer, 0);
+                        token.Socket.BeginSend(token.Buffer, 0, token.Datasize, SocketFlags.None, new AsyncCallback(SendCallback), token);
                     }
+                    else
+                    {
+                        CloseOneInstance(token);
+                    }
+                    return;
                 }
                 token.HandlerReturnData(token.MessageID,true);
                 CloseOneInstance(token);

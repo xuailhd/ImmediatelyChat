@@ -14,6 +14,8 @@ namespace Xugl.ImmediatelyChat.Data.EF
         {
             this.For<IDbContext>().Use<DefaultDBContext>().Transient();
             this.For(typeof(IRepository<>)).Use(typeof(Repository<>)).Transient();
+            //this.For<IDbContext>().Use<DefaultDBContext>();
+            //this.For(typeof(IRepository<>)).Use(typeof(Repository<>));
         }
     }
 }

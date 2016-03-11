@@ -25,7 +25,7 @@ namespace Xugl.ImmediatelyChat.Model
         /// </summary>
         public int MsgType { get; set; }
 
-        public DateTime SendTime { get; set; }
+        public string SendTime { get; set; }
 
         public bool IsSended { get; set; }
     }

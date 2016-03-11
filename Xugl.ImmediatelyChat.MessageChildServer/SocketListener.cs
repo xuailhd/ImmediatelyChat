@@ -9,25 +9,43 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
+using Xugl.ImmediatelyChat.Core.DependencyResolution;
 using Xugl.ImmediatelyChat.IServices;
 using Xugl.ImmediatelyChat.Model;
 using Xugl.ImmediatelyChat.SocketEngine;
 
 namespace Xugl.ImmediatelyChat.MessageChildServer
 {
-
-    internal class SocketListener:Xugl.ImmediatelyChat.SocketEngine.AsyncSocketListener<MsgRecord>
+    public class MCSListenerToken : AsyncUserToken
     {
-        private readonly IContactPersonService contactPersonService;
+        private readonly IContactPersonService _contactPersonService;
 
+        public MCSListenerToken()
+        {
+            _contactPersonService = ObjectContainerFactory.CurrentContainer.Resolver<IContactPersonService>();
+        }
+
+        public IList<MsgRecord> Models { get; set; }
+
+        public string UAObjectID { get; set; }
+
+        public IContactPersonService ContactPersonService
+        {
+            get
+            {
+                return _contactPersonService;
+            }
+        }
+    }
+
+    internal class SocketListener : AsyncSocketListener<MCSListenerToken>
+    {
         public SocketListener()
             : base(1024, 100, CommonVariables.LogTool)
         {
-            contactPersonService = Xugl.ImmediatelyChat.Core.DependencyResolution.ObjectContainerFactory.CurrentContainer.Resolver<IContactPersonService>();
-
         }
 
-        protected override void HandleError(ListenerToken<MsgRecord> token)
+        protected override void HandleError(MCSListenerToken token)
         {
             if (token.Models != null && token.Models.Count > 0)
             {
@@ -39,19 +57,14 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             }
         }
 
-        protected override string HandleRecivedMessage(string inputMessage, ListenerToken<MsgRecord> token)
+        protected override string HandleRecivedMessage(string inputMessage, MCSListenerToken token)
         {
-            if (string.IsNullOrEmpty(inputMessage))
+            if (string.IsNullOrEmpty(inputMessage) || token == null)
             {
                 return string.Empty;
             }
 
             string data = inputMessage;
-
-            if (token == null)
-            {
-                return string.Empty;
-            }
 
             if (data.StartsWith(CommonFlag.F_PSCallMCSStart))
             {
@@ -120,10 +133,11 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     {
                         if (!string.IsNullOrEmpty(clientModel.ObjectID))
                         {
-                            ContactPerson contactPerson= contactPersonService.FindContactPerson(clientModel.ObjectID);
+                            CommonVariables.LogTool.Log("F_MCSVerifyUA :" + clientModel.ObjectID + " time:" + clientModel.UpdateTime);
+                            ContactPerson contactPerson= token.ContactPersonService.FindContactPerson(clientModel.ObjectID);
                             if(contactPerson!=null)
                             {
-                                if(DateTime.Compare(contactPerson.UpdateTime,clientModel.UpdateTime)==0)
+                                if(contactPerson.UpdateTime.CompareTo(clientModel.UpdateTime)==0)
                                 {
                                     return "ok";
                                 }
@@ -139,7 +153,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 {
                     ContactData contactData = CommonVariables.serializer.Deserialize<ContactData>(data.Remove(0, CommonFlag.F_MCSReceiveUAInfo.Length));
 
-                    return HandleMMSUAInfo(contactData);
+                    return HandleMMSUAInfo(contactData,token.ContactPersonService);
                 }
 
                 if (data.StartsWith(CommonFlag.F_MCSVerifyUAMSG))
@@ -206,7 +220,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         }
 
 
-        private string HandleMMSUAInfo(ContactData contactData)
+        private string HandleMMSUAInfo(ContactData contactData,IContactPersonService contactPersonService)
         {
             try
             {
@@ -233,7 +247,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                         contactPerson.UpdateTime = contactData.UpdateTime;
                         contactPersonService.UpdateContactPerson(contactPerson);
                     }
-
                 }
                 else if (contactData.DataType == 1)
                 {
@@ -254,10 +267,10 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                         contactPersonService.UpdateContactPersonList(contactPersonList);
                     }
                 }
-                else if (contactData.DataType==2)
+                else if (contactData.DataType == 2)
                 {
                     ContactGroup contactGroup = contactPersonService.FindContactGroup(contactData.GroupObjectID);
-                    if(contactGroup==null)
+                    if (contactGroup == null)
                     {
                         contactGroup = new ContactGroup();
                         contactGroup.GroupName = contactData.GroupName;
@@ -274,10 +287,10 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                         contactPersonService.UpdateContactGroup(contactGroup);
                     }
                 }
-                else if (contactData.DataType==3)
+                else if (contactData.DataType == 3)
                 {
                     ContactGroupSub contactGroupSub = contactPersonService.FindContactGroupSub(contactData.GroupObjectID, contactData.ContactPersonObjectID);
-                    if(contactGroupSub==null)
+                    if (contactGroupSub == null)
                     {
                         contactGroupSub = new ContactGroupSub();
                         contactGroupSub.ContactGroupID = contactData.ContactGroupID;
@@ -294,11 +307,11 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     }
 
                 }
-                return CommonFlag.F_MMSVerifyMCSFBGetUAInfo + contactData.ObjectID;
+                return contactData.ContactDataID;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                CommonVariables.LogTool.Log("get UAInfor " + ex.Message + ex.StackTrace);
+                CommonVariables.LogTool.Log("get UAInfo " + ex.Message + ex.StackTrace);
                 return string.Empty;
             }
         }

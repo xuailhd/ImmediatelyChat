@@ -10,20 +10,21 @@ using Xugl.ImmediatelyChat.Core.DependencyResolution;
 using Xugl.ImmediatelyChat.Core;
 using System.Web.Script.Serialization;
 using Xugl.ImmediatelyChat.SocketEngine;
+using Xugl.ImmediatelyChat.IServices;
 
 namespace Xugl.ImmediatelyChat.Site.Controllers
 {
     public class ContactPersonController : Controller
     {
-        private IRepository<ContactPerson> contactPersonRepository;
-        private IRepository<MMSServer> mmsServerRepository;
         private ICacheManage cacheManage;
+        private IContactPersonService contactPersonService;
+        private IAppServerService appServerService;
 
-        public ContactPersonController(IRepository<MMSServer> mmsServerRepository, IRepository<ContactPerson> contactPersonRepository,
+        public ContactPersonController(IContactPersonService contactPersonService, IAppServerService appServerService,
             ICacheManage cacheManage)
         {
-            this.mmsServerRepository = mmsServerRepository;
-            this.contactPersonRepository = contactPersonRepository;
+            this.contactPersonService = contactPersonService;
+            this.appServerService = appServerService;
             this.cacheManage = cacheManage;
         }
 
@@ -61,7 +62,7 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
 
             if (finishTag)
             {
-                if (contactPersonRepository.Insert(contactPerson) > 0)
+                if (contactPersonService.InsertNewPerson(contactPerson) > 0)
                 {
                     return Json("register success", JsonRequestBehavior.AllowGet);
                 }
@@ -81,7 +82,7 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
 
             if (cacheManage.GetCache<IList<MMSServer>>("MMSServers") == null || cacheManage.GetCache<IList<MMSServer>>("MMSServers").Count<=0)
             {
-                IList<MMSServer> mmsServers = mmsServerRepository.Table.ToList();
+                IList<MMSServer> mmsServers = appServerService.FindMMS();
                 if (mmsServers != null && mmsServers.Count>0)
                 {
                     cacheManage.AddCache<IList<MMSServer>>("MMSServers", mmsServers);
@@ -93,21 +94,9 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
                 }
             }
 
-            ContactPerson contactPerson = contactPersonRepository.Find(t => t.ContactName == ObjectName);
+            ContactPerson contactPerson = contactPersonService.FindContactPerson(t=>t.ContactName==ObjectName);
             if (contactPerson == null)
             {
-                //contactPerson = new ContactPerson();
-                //contactPerson.ObjectID = Guid.NewGuid().ToString();
-                //contactPerson.ContactName = ObjectName;
-                //contactPerson.Password = Password;
-                //SendNewAccount(contactPerson);
-                ////contactPerson.LatestTime = DateTime.Now;
-                //contactPersonRepository.Insert(contactPerson);
-                ////ContactGroupSub contactGroupSub = new ContactGroupSub();
-                ////contactGroupSub.ContactGroupID = "Group1";
-                ////contactGroupSub.ContactPersonObjectID = contactPerson.ObjectID;
-                ////contactGroupSubRepository.Insert(contactGroupSub);
-                //loginReturnContext.Status = 0;
                 loginReturnContext.Status = 1;
             }
             else
@@ -124,9 +113,6 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
                     loginReturnContext.Status = 0;
                 }
             }
-
-            
-            
 
             if (mmsServer!=null)
             {
@@ -147,15 +133,12 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
         {
             MMSServer mmsServer = null;
 
-            if (cacheManage.GetCache<IList<MMSServer>>("MMSServers") == null || cacheManage.GetCache<IList<MMSServer>>("MMSServers").Count <= 0)
+            IList<MMSServer> mmsServers = cacheManage.GetCache<IList<MMSServer>>("MMSServers");
+            foreach(MMSServer tempMMSServer in mmsServers)
             {
-                IList<MMSServer> mmsServers = cacheManage.GetCache<IList<MMSServer>>("MMSServers");
-                foreach(MMSServer tempMMSServer in mmsServers)
+                if(tempMMSServer.ArrangeStr.Contains(objectID.Substring(0, 1)))
                 {
-                    if(tempMMSServer.ArrangeStr.Contains(objectID.Substring(0, 1)))
-                    {
-                        return tempMMSServer;
-                    }
+                    return tempMMSServer;
                 }
             }
             return mmsServer;

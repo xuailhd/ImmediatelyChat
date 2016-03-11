@@ -14,9 +14,18 @@ namespace Xugl.ImmediatelyChat.Common
 
         public int MCS_Port { get; set; }
 
-        public DateTime LatestTime { get; set; }
+        public string LatestTime { get; set; }
 
-        public DateTime UpdateTime { get; set; }
+        public string UpdateTime { get; set; }
+    }
+
+    public class ContactDataWithMCS
+    {
+        public ContactData ContactData { get; set; }
+
+        public string MCS_IP { get; set; }
+
+        public int MCS_Port { get; set; }
     }
 
     public class ContactData
@@ -25,7 +34,7 @@ namespace Xugl.ImmediatelyChat.Common
         public string Password { get; set; }
         public string ImageSrc { get; set; }
         public string ContactName { get; set; }
-        public DateTime? LatestTime { get; set; }
+        public string LatestTime { get; set; }
 
         private string ContactPerson { get; set; }
         public string DestinationObjectID { get; set; }
@@ -39,12 +48,13 @@ namespace Xugl.ImmediatelyChat.Common
 
 
         public bool IsDelete { get; set; }
-        public DateTime UpdateTime { get; set; }
+        public string UpdateTime { get; set; }
 
         /// <summary>
         /// 0-ContactPerson/1-ContactPersonList/2-ContactGroup/3-ContactGroupSub
         /// </summary>
         public int DataType { get; set; }
+        public string ContactDataID { get; set; }
 
     }
 
@@ -96,7 +106,7 @@ namespace Xugl.ImmediatelyChat.Common
         /// </summary>
         public int SendType { get; set; }
 
-        public DateTime SendTime { get; set; }
+        public string SendTime { get; set; }
 
         public string MDS_IP { get; set; }
         public int MDS_Port { get; set; }
@@ -114,7 +124,7 @@ namespace Xugl.ImmediatelyChat.Common
         public string ObjectID { get; set; }
 
         public IList<string> GroupIDs { get; set; }
-        public DateTime LatestTime { get; set; }
+        public string LatestTime { get; set; }
 
         public string MDS_IP { get; set; }
         public int MDS_Port { get; set; }

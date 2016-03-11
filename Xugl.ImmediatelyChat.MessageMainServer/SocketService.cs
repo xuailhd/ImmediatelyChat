@@ -94,6 +94,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
         public void StopMMSService()
         {
+            CommonVariables.UAInfoContorl.StopMainThread();
             //if (IsConnectGoOnRuning == true)
             //{
             //    IsConnectGoOnRuning = false;
