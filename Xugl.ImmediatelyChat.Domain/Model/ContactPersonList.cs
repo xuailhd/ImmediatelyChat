@@ -8,7 +8,7 @@ namespace Xugl.ImmediatelyChat.Model
 {
     public class ContactPersonList
     {
-        private string ContactPerson { get; set; }
+        public string ContactPersonName { get; set; }
 
         public string ObjectID { get; set; }
 

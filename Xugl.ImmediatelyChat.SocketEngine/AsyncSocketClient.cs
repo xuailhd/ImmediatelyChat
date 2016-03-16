@@ -44,6 +44,14 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             m_maxNumberAcceptedClients = new Semaphore(m_maxConnnections, m_maxConnnections);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ipaddress"></param>
+        /// <param name="port"></param>
+        /// <param name="sendData"></param>
+        /// <param name="messageID">if occur error, use this messageID as returndata</param>
+        /// <param name="handlerReturnData"></param>
         public void SendMsg(string ipaddress, int port, string sendData, string messageID, HandlerReturnData handlerReturnData)
         {
             

@@ -134,11 +134,8 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                                 token.ContactPersonService.UpdateContactPerson(tempContactPerson);
                             }
 
-                            if (clientStatusModel.UpdateTime.CompareTo(tempContactPerson.UpdateTime) < 0)
-                            {
-                                CommonVariables.UAInfoContorl.AddUAModelIntoBuffer(clientStatusModel);
-                            }
-
+                            clientStatusModel.UpdateTime = tempContactPerson.UpdateTime;
+                            CommonVariables.UAInfoContorl.AddUAModelIntoBuffer(clientStatusModel);
                             break;
                         }
                     }
@@ -147,6 +144,37 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                     return CommonVariables.serializer.Serialize(clientStatusModel);
                 }
 
+                if(data.StartsWith(CommonFlag.F_MMSVerifyUAGetUAInfo))
+                {
+                    ClientStatusModel clientStatusModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(data.Remove(0, CommonFlag.F_MMSVerifyUAGetUAInfo.Length));
+
+                    if (clientStatusModel == null)
+                    {
+                        return string.Empty;
+                    }
+
+                    if (string.IsNullOrEmpty(clientStatusModel.ObjectID) || string.IsNullOrEmpty(clientStatusModel.UpdateTime))
+                    {
+                        return string.Empty;
+                    }
+
+                    CommonVariables.LogTool.Log("UA:" + clientStatusModel.ObjectID + " UAInfo request  " + clientStatusModel.UpdateTime);
+
+                    token.Models = CommonVariables.UAInfoContorl.PreparContactData(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
+
+                    return CommonVariables.serializer.Serialize(token.Models[0]);
+                }
+
+                if(data.StartsWith(CommonFlag.F_MMSVerifyFBUAGetUAInfo))
+                {
+                    string contactDataID = data.Remove(0, CommonFlag.F_MMSVerifyFBUAGetUAInfo.Length);
+                    if(token.Models[0].ContactDataID!=contactDataID)
+                    {
+                        CommonVariables.LogTool.Log("data transfer error");
+                    }
+                    token.Models.RemoveAt(0);
+                    return CommonVariables.serializer.Serialize(token.Models[0]);
+                }
             }
 
 

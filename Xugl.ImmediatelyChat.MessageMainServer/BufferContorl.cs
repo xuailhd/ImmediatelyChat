@@ -43,26 +43,67 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             contactPersonService = ObjectContainerFactory.CurrentContainer.Resolver<IContactPersonService>();
         }
 
+
+        /// <summary>
+        /// send UA's update time to MCS,verify whether need send UA's information to MCS
+        /// </summary>
+        /// <param name="clientStatusModel"></param>
         public void AddUAModelIntoBuffer(ClientStatusModel clientStatusModel)
         {
-            if (asyncSocketClient==null)
+            if (asyncSocketClient == null)
             {
                 return;
             }
 
-
-
-            GenerateContactData(clientStatusModel);
+            asyncSocketClient.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port, CommonFlag.F_MCSReceiveMMSUAUpdateTime + CommonVariables.serializer.Serialize(clientStatusModel),
+                 clientStatusModel.ObjectID, HandlerUpdateTimeReturnData);
         }
 
 
         private string HandlerUpdateTimeReturnData(string returnData, bool IsError)
         {
             if (IsError)
+            {
+                return string.Empty;
+            }
 
+            ClientStatusModel clientStatusModel = null;
+            ContactDataWithMCS contactDataWithMCS = null;
+            try
+            {
+
+                clientStatusModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(returnData);
+            }
+            catch
+            {
+
+            }
+
+            if (clientStatusModel != null)
+            {
+                ContactPerson contactPerson = contactPersonService.FindContactPerson(clientStatusModel.ObjectID);
+
+                if (contactPerson==null)
+                {
+                    return string.Empty;
+                }
+
+                if (contactPerson.UpdateTime.CompareTo(clientStatusModel.UpdateTime) > 0)
+                {
+                    IList<ContactData> contactDatas = PreparContactData(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
+
+                    foreach (ContactData contactData in contactDatas)
+                    {
+                        contactDataWithMCS = new ContactDataWithMCS();
+                        contactDataWithMCS.ContactData = contactData;
+                        contactDataWithMCS.MCS_IP = clientStatusModel.MCS_IP;
+                        contactDataWithMCS.MCS_Port = clientStatusModel.MCS_Port;
+                        GetUsingUAModelBuffer.Add(contactDataWithMCS);
+                    }
+                }
+            }
             return string.Empty;
         }
-
 
         #region using unusing buffer manage
 
@@ -98,96 +139,61 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
         #endregion
 
-        private void GenerateContactData(ClientStatusModel clientStatusModel)
-        {
-            ContactDataWithMCS contactDataWithMCS = null;
-
-            ContactPerson contactPerson = contactPersonService.FindContactPerson(clientStatusModel.ObjectID);
-            IList<ContactPersonList> contactPersonLists = contactPersonService.GetLastestContactPersonList(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
-            IList<ContactGroup> contactGroups = contactPersonService.GetLastestContactGroup(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
-            IList<ContactGroupSub> contactGroupSubs = contactPersonService.GetLastestContactGroupSub(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
-
-            IList<ContactData> contactDatas = PreparContactData(contactPerson, contactPersonLists, contactGroups, contactGroupSubs);
-
-            CommonVariables.LogTool.Log("contactPersonLists:" + contactPersonLists.Count.ToString() + "   "
-                + "contactGroups:" + contactPersonLists.Count.ToString() + "   "
-                + "contactGroupSubs:" + contactGroupSubs.Count.ToString() + "    "
-                + "contactDatas:" + contactDatas.Count.ToString());
-
-            foreach (ContactData contactData in contactDatas)
-            {
-                contactDataWithMCS = new ContactDataWithMCS();
-                contactDataWithMCS.ContactData = contactData;
-                contactDataWithMCS.MCS_IP = clientStatusModel.MCS_IP;
-                contactDataWithMCS.MCS_Port = clientStatusModel.MCS_Port;
-                GetUsingUAModelBuffer.Add(contactDataWithMCS);
-            }
-        }
-
-        private IList<ContactData> PreparContactData(ContactPerson contactPerson, IList<ContactPersonList> contactPersonLists,
-            IList<ContactGroup> contactGroups, IList<ContactGroupSub> contactGroupSubs)
+        public IList<ContactData> PreparContactData(string objectID, string updateTime)
         {
             IList<ContactData> tempContactDatas = null;
             ContactData tempContactData;
 
-            if (contactPerson!=null)
+            IList<ContactPersonList> contactPersonLists = contactPersonService.GetLastestContactPersonList(objectID, updateTime);
+            IList<ContactGroup> contactGroups = contactPersonService.GetLastestContactGroup(objectID, updateTime);
+            IList<ContactGroupSub> contactGroupSubs = contactPersonService.GetLastestContactGroupSub(objectID, updateTime);
+
+            tempContactDatas = new List<ContactData>();
+
+            if (contactPersonLists != null && contactPersonLists.Count > 0)
             {
-                tempContactDatas = new List<ContactData>();
+                foreach (ContactPersonList contactPersonList in contactPersonLists)
+                {
+                    tempContactData = new ContactData();
 
-                tempContactData = new ContactData();
-                tempContactData.ContactName = contactPerson.ContactName;
-                tempContactData.ImageSrc = contactPerson.ImageSrc;
-                tempContactData.LatestTime = contactPerson.LatestTime;
-                tempContactData.ObjectID = contactPerson.ObjectID;
-                tempContactData.UpdateTime = contactPerson.UpdateTime;
-                tempContactData.ContactDataID = Guid.NewGuid().ToString();
-                tempContactData.DataType = 0;
-                tempContactDatas.Add(tempContactData);
-
-                if (contactPersonLists != null && contactPersonLists.Count > 0)
-                {
-                    foreach (ContactPersonList contactPersonList in contactPersonLists)
-                    {
-                        tempContactData = new ContactData();
-                        
-                        tempContactData.DestinationObjectID = contactPersonList.DestinationObjectID;
-                        tempContactData.ObjectID = contactPersonList.ObjectID;
-                        tempContactData.IsDelete = contactPersonList.IsDelete;
-                        tempContactData.UpdateTime = contactPersonList.UpdateTime;
-                        tempContactData.ContactDataID = Guid.NewGuid().ToString();
-                        tempContactData.DataType = 1;
-                        tempContactDatas.Add(tempContactData);
-                    }
-                }
-                if (contactGroups != null && contactGroups.Count > 0)
-                {
-                    foreach (ContactGroup contactGroup in contactGroups)
-                    {
-                        tempContactData = new ContactData();
-                        tempContactData.GroupObjectID = contactGroup.GroupObjectID;
-                        tempContactData.IsDelete = contactGroup.IsDelete;
-                        tempContactData.UpdateTime = contactGroup.UpdateTime;
-                        tempContactData.ContactDataID = Guid.NewGuid().ToString();
-                        tempContactData.DataType = 2;
-                        tempContactDatas.Add(tempContactData);
-                    }
-                }
-                if (contactGroupSubs != null && contactGroupSubs.Count > 0)
-                {
-                    foreach (ContactGroupSub contactGroupSub in contactGroupSubs)
-                    {
-                        tempContactData = new ContactData();
-                        tempContactData.ContactGroupID = contactGroupSub.ContactGroupID;
-                        tempContactData.ContactPersonObjectID = contactGroupSub.ContactPersonObjectID;
-                        tempContactData.IsDelete = contactGroupSub.IsDelete;
-                        tempContactData.UpdateTime = contactGroupSub.UpdateTime;
-                        tempContactData.ContactDataID = Guid.NewGuid().ToString();
-                        tempContactData.DataType = 3;
-                        tempContactDatas.Add(tempContactData);
-                    }
+                    tempContactData.DestinationObjectID = contactPersonList.DestinationObjectID;
+                    tempContactData.ObjectID = contactPersonList.ObjectID;
+                    tempContactData.IsDelete = contactPersonList.IsDelete;
+                    tempContactData.UpdateTime = contactPersonList.UpdateTime;
+                    tempContactData.ContactDataID = Guid.NewGuid().ToString();
+                    tempContactData.DataType = 1;
+                    tempContactDatas.Add(tempContactData);
                 }
             }
-
+            if (contactGroups != null && contactGroups.Count > 0)
+            {
+                foreach (ContactGroup contactGroup in contactGroups)
+                {
+                    tempContactData = new ContactData();
+                    tempContactData.GroupObjectID = contactGroup.GroupObjectID;
+                    tempContactData.IsDelete = contactGroup.IsDelete;
+                    tempContactData.UpdateTime = contactGroup.UpdateTime;
+                    tempContactData.ContactDataID = Guid.NewGuid().ToString();
+                    tempContactData.DataType = 2;
+                    tempContactData.ObjectID = objectID;
+                    tempContactDatas.Add(tempContactData);
+                }
+            }
+            if (contactGroupSubs != null && contactGroupSubs.Count > 0)
+            {
+                foreach (ContactGroupSub contactGroupSub in contactGroupSubs)
+                {
+                    tempContactData = new ContactData();
+                    tempContactData.ContactGroupID = contactGroupSub.ContactGroupID;
+                    tempContactData.ContactPersonObjectID = contactGroupSub.ContactPersonObjectID;
+                    tempContactData.IsDelete = contactGroupSub.IsDelete;
+                    tempContactData.UpdateTime = contactGroupSub.UpdateTime;
+                    tempContactData.ContactDataID = Guid.NewGuid().ToString();
+                    tempContactData.DataType = 3;
+                    tempContactData.ObjectID = objectID;
+                    tempContactDatas.Add(tempContactData);
+                }
+            }
             return tempContactDatas;
         }
 

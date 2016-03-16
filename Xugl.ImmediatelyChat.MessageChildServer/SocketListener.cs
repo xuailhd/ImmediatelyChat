@@ -149,6 +149,23 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 }
 
 
+                if(data.StartsWith(CommonFlag.F_MCSReceiveMMSUAUpdateTime))
+                {
+                    ClientStatusModel clientModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(data.Remove(0, CommonFlag.F_MCSReceiveMMSUAUpdateTime.Length));
+                    ContactPerson contactPerson = token.ContactPersonService.FindContactPerson(clientModel.ObjectID);
+
+                    if(contactPerson==null)
+                    {
+                        contactPerson = new ContactPerson();
+                        contactPerson.ObjectID = clientModel.ObjectID;
+                        contactPerson.LatestTime = clientModel.LatestTime;
+                        contactPerson.UpdateTime = CommonFlag.F_MinDatetime;
+                        token.ContactPersonService.InsertNewPerson(contactPerson);
+                    }
+                    clientModel.UpdateTime = contactPerson.UpdateTime;
+                    return CommonVariables.serializer.Serialize(clientModel);
+                }
+
                 if(data.StartsWith(CommonFlag.F_MCSReceiveUAInfo))
                 {
                     ContactData contactData = CommonVariables.serializer.Deserialize<ContactData>(data.Remove(0, CommonFlag.F_MCSReceiveUAInfo.Length));
@@ -224,31 +241,33 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         {
             try
             {
-                if (contactData.DataType == 0)
-                {
-                    ContactPerson contactPerson = contactPersonService.FindContactPerson(contactData.ObjectID);
-                    if (contactPerson == null)
-                    {
-                        contactPerson = new ContactPerson();
-                        contactPerson.ContactName = contactData.ContactName;
-                        contactPerson.ImageSrc = contactData.ImageSrc;
-                        contactPerson.LatestTime = contactData.LatestTime;
-                        contactPerson.ObjectID = contactData.ObjectID;
-                        contactPerson.Password = contactData.Password;
-                        contactPerson.UpdateTime = contactData.UpdateTime;
-                        contactPersonService.InsertNewPerson(contactPerson);
-                    }
-                    else
-                    {
-                        contactPerson.ContactName = contactData.ContactName;
-                        contactPerson.ImageSrc = contactData.ImageSrc;
-                        contactPerson.LatestTime = contactData.LatestTime;
-                        contactPerson.Password = contactData.Password;
-                        contactPerson.UpdateTime = contactData.UpdateTime;
-                        contactPersonService.UpdateContactPerson(contactPerson);
-                    }
-                }
-                else if (contactData.DataType == 1)
+                //if (contactData.DataType == 0)
+                //{
+                //    ContactPerson contactPerson = contactPersonService.FindContactPerson(contactData.ObjectID);
+                //    if (contactPerson == null)
+                //    {
+                //        contactPerson = new ContactPerson();
+                //        contactPerson.ContactName = contactData.ContactName;
+                //        contactPerson.ImageSrc = contactData.ImageSrc;
+                //        contactPerson.LatestTime = contactData.LatestTime;
+                //        contactPerson.ObjectID = contactData.ObjectID;
+                //        contactPerson.Password = contactData.Password;
+                //        contactPerson.UpdateTime = contactData.UpdateTime;
+                //        contactPersonService.InsertNewPerson(contactPerson);
+                //    }
+                //    else
+                //    {
+                //        contactPerson.ContactName = contactData.ContactName;
+                //        contactPerson.ImageSrc = contactData.ImageSrc;
+                //        contactPerson.LatestTime = contactData.LatestTime;
+                //        contactPerson.Password = contactData.Password;
+                //        contactPerson.UpdateTime = contactData.UpdateTime;
+                //        contactPersonService.UpdateContactPerson(contactPerson);
+                //    }
+                //}
+                ContactPerson contactPerson = contactPersonService.FindContactPerson(contactData.ObjectID);
+
+                if (contactData.DataType == 1)
                 {
                     ContactPersonList contactPersonList = contactPersonService.FindContactPersonList(contactData.ObjectID, contactData.DestinationObjectID);
                     if (contactPersonList == null)
@@ -266,6 +285,9 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                         contactPersonList.UpdateTime = contactData.UpdateTime;
                         contactPersonService.UpdateContactPersonList(contactPersonList);
                     }
+
+                    contactPerson.UpdateTime = contactPersonList.UpdateTime;
+                    contactPersonService.UpdateContactPerson(contactPerson);
                 }
                 else if (contactData.DataType == 2)
                 {
@@ -286,6 +308,9 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                         contactGroup.UpdateTime = contactData.UpdateTime;
                         contactPersonService.UpdateContactGroup(contactGroup);
                     }
+
+                    contactPerson.UpdateTime = contactGroup.UpdateTime;
+                    contactPersonService.UpdateContactPerson(contactPerson);
                 }
                 else if (contactData.DataType == 3)
                 {
@@ -305,7 +330,8 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                         contactGroupSub.UpdateTime = contactData.UpdateTime;
                         contactPersonService.UpdateContactGroupSub(contactGroupSub);
                     }
-
+                    contactPerson.UpdateTime = contactGroupSub.UpdateTime;
+                    contactPersonService.UpdateContactPerson(contactPerson);
                 }
                 return contactData.ContactDataID;
             }

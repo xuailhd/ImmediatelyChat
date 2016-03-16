@@ -33,7 +33,8 @@ namespace Xugl.ImmediatelyChat.Common
         private static string f_MMSReciveStopMCS = "stopMCS";
         private static string f_MMSReciveStopMDS = "stopMDS";
         private static string f_MMSVerifyUA = "VerifyUA";
-        private static string f_MMSVerifyMCSGetUAInfo = "VerifyMCSGetUAInfo";
+        private static string f_MMSVerifyUAGetUAInfo = "MMSVerifyUAGetUAInfo";
+        private static string f_MMSVerifyFBUAGetUAInfo = "MMSVerifyFBUAGetUAInfo";
         private static string f_MMSVerifyMCSFBGetUAInfo = "VerifyMCSFBGetUAInfo";
         public static string F_MMSVerifyMCS { get { return f_MMSVerifyMCS; } }
         public static string F_MMSVerifyMDS { get { return f_MMSVerifyMDS; } }
@@ -42,7 +43,8 @@ namespace Xugl.ImmediatelyChat.Common
         public static string F_MMSReciveStopMCS { get { return f_MMSReciveStopMCS; } }
         public static string F_MMSReciveStopMDS { get { return f_MMSReciveStopMDS; } }
         public static string F_MMSVerifyUA { get { return f_MMSVerifyUA; } }
-        public static string F_MMSVerifyMCSGetUAInfo { get { return f_MMSVerifyMCSGetUAInfo; } }
+        public static string F_MMSVerifyUAGetUAInfo { get { return f_MMSVerifyUAGetUAInfo; } }
+        public static string F_MMSVerifyFBUAGetUAInfo { get { return f_MMSVerifyFBUAGetUAInfo; } }
         public static string F_MMSVerifyMCSFBGetUAInfo { get { return f_MMSVerifyMCSFBGetUAInfo; } }
 
         private static string f_MCSVerifyUA = "VerifyAccount";
@@ -51,12 +53,14 @@ namespace Xugl.ImmediatelyChat.Common
         private static string f_MCSVerfiyMDSMSG = "VerifyMDSMSG";
         private static string f_MCSReceiveUAFBMSG = "VerifyFBMSG";
         private static string f_MCSReceiveUAInfo = "VerifyUAInfo";
+        private static string f_MCSReceiveMMSUAUpdateTime = "VerifyUAUpdateTime";
         public static string F_MCSVerifyUA { get { return f_MCSVerifyUA; } }
         public static string F_MCSVerifyUAMSG { get { return f_MCSVerifyUAMSG; } }
         public static string F_MCSVerifyUAGetMSG { get { return f_MCSVerifyUAGetMSG; } }
         public static string F_MCSVerfiyMDSMSG { get { return f_MCSVerfiyMDSMSG; } }
         public static string F_MCSReceiveUAFBMSG { get { return f_MCSReceiveUAFBMSG; } }
         public static string F_MCSReceiveUAInfo { get { return f_MCSReceiveUAInfo; } }
+        public static string F_MCSReceiveMMSUAUpdateTime { get { return f_MCSReceiveMMSUAUpdateTime; } }
 
         private static string f_MDSVerifyMCSMSG = "VerifyMCSMSG";
         private static string f_MDSVerifyMCSGetMSG = "VerifyMCSGetMSG";
