@@ -36,7 +36,7 @@ namespace Xugl.ImmediatelyChat.Common
         public string ContactName { get; set; }
         public string LatestTime { get; set; }
 
-        private string ContactPerson { get; set; }
+        public string ContactPersonName { get; set; }
         public string DestinationObjectID { get; set; }
 
 
