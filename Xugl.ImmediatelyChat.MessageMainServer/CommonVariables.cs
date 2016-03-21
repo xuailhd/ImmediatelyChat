@@ -8,6 +8,7 @@ using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
 using Xugl.ImmediatelyChat.IServices;
 using Xugl.ImmediatelyChat.Model;
+using Xugl.ImmediatelyChat.SocketEngine;
 
 namespace Xugl.ImmediatelyChat.MessageMainServer
 {
@@ -135,6 +136,19 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                     Singleton<BufferContorl>.Instance = new BufferContorl();
                 }
                 return Singleton<BufferContorl>.Instance;
+            }
+        }
+
+        public static SyncSocketClient SyncSocketClientIntance
+        {
+            get
+            {
+                if(Singleton<SyncSocketClient>.Instance==null)
+                {
+                    Singleton<SyncSocketClient>.Instance = new SyncSocketClient();
+                }
+
+                return Singleton<SyncSocketClient>.Instance;
             }
         }
 

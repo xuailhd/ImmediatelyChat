@@ -58,7 +58,7 @@ namespace Xugl.ImmediatelyChat.Data.EF
             }
             catch(Exception ex)
             {
-
+                throw ex;
             }
             return resultCount;
         }
@@ -83,7 +83,7 @@ namespace Xugl.ImmediatelyChat.Data.EF
             }
             catch (Exception ex)
             {
-
+                throw ex;
             }
             return resultCount;
         }
@@ -103,11 +103,12 @@ namespace Xugl.ImmediatelyChat.Data.EF
             try
             {
                 this.Entites.Attach(entity);
+                this._context.Entry<T>(entity).State = EntityState.Modified;
                 resultCount=_context.SaveChanges();
             }
             catch(Exception ex)
             {
-
+                throw ex;
             }
             return resultCount;       
         }
@@ -131,7 +132,7 @@ namespace Xugl.ImmediatelyChat.Data.EF
             }
             catch (Exception ex)
             {
-
+                throw ex;
             }
             return resultCount;  
         }
@@ -149,7 +150,7 @@ namespace Xugl.ImmediatelyChat.Data.EF
             }
             catch(Exception ex)
             {
-
+                throw ex;
             }
             return resultCount;
         }

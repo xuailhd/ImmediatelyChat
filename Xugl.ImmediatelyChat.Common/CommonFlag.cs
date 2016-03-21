@@ -11,7 +11,7 @@ namespace Xugl.ImmediatelyChat.Common
         private static string f_ArrangeChars = "ArrangeChars";
         public static string F_ArrangeChars { get { return f_ArrangeChars; } }
 
-        private static string f_DateTimeFormat = "yyyy-MM-dd hh:mm:ss.fff";
+        private static string f_DateTimeFormat = "yyyy-MM-dd HH:mm:ss.fff";
         public static string F_DateTimeFormat { get { return f_DateTimeFormat; } }
 
         private static string f_MinDatetime = "1900-01-01 00:00:00.000";

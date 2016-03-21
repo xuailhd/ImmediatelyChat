@@ -293,35 +293,30 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
 
                         while (tmpi > 0)
                         {
-                            cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr = cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr + availableChars[0].ToString() + ",";
+                            if (string.IsNullOrEmpty(cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr))
+                            {
+                                cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr = availableChars[0].ToString();
+                            }
+                            else
+                            {
+                                cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr = cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr + "," + availableChars[0].ToString();
+                            }
                             availableChars.Remove(availableChars[0]);
                             tmpi--;
-                        }
-                        if (!string.IsNullOrEmpty(cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr))
-                        {
-                            if (cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr.Substring(cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr.Length - 1) == ",")
-                            {
-                                cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr =
-                                    cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr.Remove(cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr.Length - 1);
-                            }
-
                         }
                     }
                     else
                     {
                         foreach (string availableChar in availableChars)
                         {
-                            cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr = cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr + availableChar + ",";
-                        }
-
-                        if (!string.IsNullOrEmpty(cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr))
-                        {
-                            if (cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr.Substring(cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr.Length - 1) == ",")
+                            if (string.IsNullOrEmpty(cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr))
                             {
-                                cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr =
-                                    cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr.Remove(cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr.Length - 1);
+                                cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr = availableChar;
                             }
-
+                            else
+                            {
+                                cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr = cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].ArrangeStr + "," + availableChar;
+                            }
                         }
                     }
                 }
@@ -369,33 +364,29 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
 
                         while (tmpi > 0)
                         {
-                            cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr = cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr + availableChars[0].ToString() + ",";
+                            if (string.IsNullOrEmpty(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr))
+                            {
+                                cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr = availableChars[0].ToString();
+                            }
+                            else
+                            {
+                                cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr = cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr + "," + availableChars[0].ToString();
+                            }
                             availableChars.Remove(availableChars[0]);
                             tmpi--;
-                        }
-
-                        if (!string.IsNullOrEmpty(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr))
-                        {
-                            if (cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr.Substring(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr.Length - 1) == ",")
-                            {
-                                cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr =
-                                    cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr.Remove(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr.Length - 1);
-                            }
                         }
                     }
                     else
                     {
                         foreach (string availableChar in availableChars)
                         {
-                            cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr = cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr + availableChar + ",";
-                        }
-
-                        if (!string.IsNullOrEmpty(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr))
-                        {
-                            if (cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr.Substring(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr.Length - 1) == ",")
+                            if (string.IsNullOrEmpty(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr))
                             {
-                                cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr =
-                                    cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr.Remove(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr.Length - 1);
+                                cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr = availableChar;
+                            }
+                            else
+                            {
+                                cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr = cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr + "," + availableChar;
                             }
                         }
                     }

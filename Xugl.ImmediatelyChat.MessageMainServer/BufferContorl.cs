@@ -90,7 +90,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
                 if (contactPerson.UpdateTime.CompareTo(clientStatusModel.UpdateTime) > 0)
                 {
-                    IList<ContactData> contactDatas = PreparContactData(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
+                    IList<ContactData> contactDatas = PreparContactData(clientStatusModel.ObjectID, clientStatusModel.UpdateTime).OrderBy(t=>t.UpdateTime).ToList();
 
                     foreach (ContactData contactData in contactDatas)
                     {
@@ -265,7 +265,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 {
                     if (IsError)
                     {
-                        GetUsingUAModelBuffer.Add(tempmodel);
+                        //GetUsingUAModelBuffer.Add(tempmodel);
                     }
                     ExeingUAModels.Remove(tempmodel);
                 }

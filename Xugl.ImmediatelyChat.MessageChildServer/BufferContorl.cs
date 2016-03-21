@@ -19,9 +19,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 {
     public class BufferContorl
     {
-        private int InputCount;
-        private int OutPutCount;
-
         private IList<MsgRecordModel> BufferMsgRecordModels1 = new List<MsgRecordModel>();
         private IList<MsgRecordModel> BufferMsgRecordModels2 = new List<MsgRecordModel>();
 

@@ -130,12 +130,29 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                             }
                             else
                             {
-                                tempContactPerson.LatestTime=clientStatusModel.LatestTime;
+                                tempContactPerson.LatestTime = clientStatusModel.LatestTime;
                                 token.ContactPersonService.UpdateContactPerson(tempContactPerson);
                             }
 
                             clientStatusModel.UpdateTime = tempContactPerson.UpdateTime;
-                            CommonVariables.UAInfoContorl.AddUAModelIntoBuffer(clientStatusModel);
+
+                            string mcs_UpdateTime = CommonVariables.SyncSocketClientIntance.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port,
+                                CommonFlag.F_MCSReceiveMMSUAUpdateTime + CommonVariables.serializer.Serialize(clientStatusModel));
+                            
+                            if(string.IsNullOrEmpty(mcs_UpdateTime))
+                            {
+                                return string.Empty;
+                            }
+
+                            IList<ContactData> contactDatas = CommonVariables.UAInfoContorl.PreparContactData(clientStatusModel.ObjectID, mcs_UpdateTime);
+
+                            foreach (ContactData contactData in contactDatas)
+                            {
+                                CommonVariables.SyncSocketClientIntance.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port,
+                                    CommonFlag.F_MCSReceiveUAInfo + CommonVariables.serializer.Serialize(contactData));
+                            }
+
+                            //CommonVariables.UAInfoContorl.AddUAModelIntoBuffer(clientStatusModel);
                             break;
                         }
                     }
@@ -173,6 +190,10 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                         CommonVariables.LogTool.Log("data transfer error");
                     }
                     token.Models.RemoveAt(0);
+                    if (token.Models.Count<=0)
+                    {
+                        return string.Empty;
+                    }
                     return CommonVariables.serializer.Serialize(token.Models[0]);
                 }
             }

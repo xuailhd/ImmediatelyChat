@@ -28,7 +28,7 @@ namespace Xugl.ImmediatelyChat.Core
                     while (!string.IsNullOrEmpty(templine = rd.ReadLine()))
                     {
                         tempkey = templine.Substring(0, templine.IndexOf("="));
-                        if (tempkey == fieldName)
+                        if (tempkey.ToUpper() == fieldName.ToUpper())
                         {
                             tempvalue = fieldValue;
                         }
@@ -78,7 +78,7 @@ namespace Xugl.ImmediatelyChat.Core
                 while (!string.IsNullOrEmpty(templine = rd.ReadLine()))
                 {
                     tempkey = templine.Substring(0, templine.IndexOf("="));
-                    if (tempkey == fieldName)
+                    if (tempkey.ToUpper() == fieldName.ToUpper())
                     {
                         tempvalue = templine.Remove(0, tempkey.Length + 1);
                         break;
