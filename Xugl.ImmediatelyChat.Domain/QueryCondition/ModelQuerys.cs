@@ -60,5 +60,7 @@ namespace Xugl.ImmediatelyChat.Model.QueryCondition
         {
             this.OrderFieldStore.Add(t => t.ObjectID);
         }
+
+        public string ContactPersonName { get; set; }
     } 
 }

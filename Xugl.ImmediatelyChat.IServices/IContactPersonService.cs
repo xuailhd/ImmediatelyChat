@@ -32,9 +32,10 @@ namespace Xugl.ImmediatelyChat.IServices
         int InsertDefaultGroup(string objectID);
 
         IList<ContactGroupSub> GetLastestContactGroupSub(string objectID, string updateTime);
-
         IList<ContactPersonList> GetLastestContactPersonList(string objectID, string updateTime);
-
         IList<ContactGroup> GetLastestContactGroup(string objectID, string updateTime);
+
+        IList<ContactGroup> SearchGroup(string key);
+        IList<ContactPerson> SearchPerson(string key);
     }
 }

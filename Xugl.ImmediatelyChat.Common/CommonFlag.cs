@@ -36,6 +36,8 @@ namespace Xugl.ImmediatelyChat.Common
         private static string f_MMSVerifyUAGetUAInfo = "MMSVerifyUAGetUAInfo";
         private static string f_MMSVerifyFBUAGetUAInfo = "MMSVerifyFBUAGetUAInfo";
         private static string f_MMSVerifyMCSFBGetUAInfo = "VerifyMCSFBGetUAInfo";
+        private static string f_MMSVerifyUASearch = "MMSVerifyUASearch";
+        private static string f_MMSVerifyUAFBSearch = "MMSVerifyUAFBSearch";
         public static string F_MMSVerifyMCS { get { return f_MMSVerifyMCS; } }
         public static string F_MMSVerifyMDS { get { return f_MMSVerifyMDS; } }
         public static string F_MMSCallMCSStart { get { return f_MMSCallMCSStart; } }
@@ -46,6 +48,8 @@ namespace Xugl.ImmediatelyChat.Common
         public static string F_MMSVerifyUAGetUAInfo { get { return f_MMSVerifyUAGetUAInfo; } }
         public static string F_MMSVerifyFBUAGetUAInfo { get { return f_MMSVerifyFBUAGetUAInfo; } }
         public static string F_MMSVerifyMCSFBGetUAInfo { get { return f_MMSVerifyMCSFBGetUAInfo; } }
+        public static string F_MMSVerifyUASearch { get { return f_MMSVerifyUASearch; } }
+        public static string F_MMSVerifyUAFBSearch { get { return f_MMSVerifyUAFBSearch; } }
 
         private static string f_MCSVerifyUA = "VerifyAccount";
         private static string f_MCSVerifyUAMSG = "VerifyMSG";

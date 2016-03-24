@@ -187,10 +187,49 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                     string contactDataID = data.Remove(0, CommonFlag.F_MMSVerifyFBUAGetUAInfo.Length);
                     if(token.Models[0].ContactDataID!=contactDataID)
                     {
-                        CommonVariables.LogTool.Log("data transfer error");
+                        CommonVariables.LogTool.Log("data transfer error " + token.Models[0].ContactDataID + "  vs " + contactDataID);
                     }
                     token.Models.RemoveAt(0);
                     if (token.Models.Count<=0)
+                    {
+                        return string.Empty;
+                    }
+                    return CommonVariables.serializer.Serialize(token.Models[0]);
+                }
+
+
+                if(data.StartsWith(CommonFlag.F_MMSVerifyUASearch))
+                {
+                    ClientSearchModel clientSearchModel = CommonVariables.serializer.Deserialize<ClientSearchModel>(data.Remove(0, CommonFlag.F_MMSVerifyUASearch.Length));
+                    if(clientSearchModel!=null && !string.IsNullOrEmpty(clientSearchModel.ObjectID))
+                    {
+                        if(clientSearchModel.Type==1)
+                        {
+                            token.Models = ContactPersonToContacData(token.ContactPersonService.SearchPerson(clientSearchModel.SearchKey));
+                        }
+                        else if (clientSearchModel.Type==2)
+                        {
+                            token.Models = ContactGroupToContacData(token.ContactPersonService.SearchGroup(clientSearchModel.SearchKey));
+                        }
+
+                        if(token.Models!=null && token.Models.Count>0)
+                        {
+                            return CommonVariables.serializer.Serialize(token.Models[0]);
+                        }
+                    }
+
+                    return string.Empty;
+                }
+
+                if(data.StartsWith(CommonFlag.F_MMSVerifyUAFBSearch))
+                {
+                    string contactDataID = data.Remove(0, CommonFlag.F_MMSVerifyUAFBSearch.Length);
+                    if (token.Models[0].ContactDataID != contactDataID)
+                    {
+                        CommonVariables.LogTool.Log("Search data transfer error " + token.Models[0].ContactDataID + "  vs " + contactDataID);
+                    }
+                    token.Models.RemoveAt(0);
+                    if (token.Models.Count <= 0)
                     {
                         return string.Empty;
                     }
@@ -233,6 +272,52 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             //}
 
             return string.Empty;
+        }
+
+
+        private IList<ContactData> ContactPersonToContacData(IList<ContactPerson> entitys)
+        {
+            if (entitys != null && entitys.Count>0)
+            {
+                ContactData contactData;
+                IList<ContactData> contactDatas = new List<ContactData>();
+
+                foreach(ContactPerson entity in entitys )
+                {
+                    contactData = new ContactData();
+                    contactData.ContactDataID = Guid.NewGuid().ToString();
+                    contactData.ContactName = entity.ContactName;
+                    contactData.ObjectID = entity.ObjectID;
+                    contactData.ImageSrc = entity.ImageSrc;
+                    contactDatas.Add(contactData);
+                }
+
+                return contactDatas;
+            }
+
+            return null;
+        }
+
+        private IList<ContactData> ContactGroupToContacData(IList<ContactGroup> entitys)
+        {
+            if (entitys != null && entitys.Count > 0)
+            {
+                ContactData contactData;
+                IList<ContactData> contactDatas = new List<ContactData>();
+
+                foreach (ContactGroup entity in entitys)
+                {
+                    contactData = new ContactData();
+                    contactData.ContactDataID = Guid.NewGuid().ToString();
+                    contactData.GroupObjectID = entity.GroupObjectID;
+                    contactData.GroupName = entity.GroupName;
+                    contactDatas.Add(contactData);
+                }
+
+                return contactDatas;
+            }
+
+            return null;
         }
 
 

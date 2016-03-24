@@ -19,6 +19,16 @@ namespace Xugl.ImmediatelyChat.Common
         public string UpdateTime { get; set; }
     }
 
+    public class ClientSearchModel
+    {
+        public string ObjectID { get; set; }
+        /// <summary>
+        /// 1 person  2 group
+        /// </summary>
+        public int Type { get; set; }
+        public string SearchKey { get; set; }
+    }
+
     public class ContactDataWithMCS
     {
         public ContactData ContactData { get; set; }

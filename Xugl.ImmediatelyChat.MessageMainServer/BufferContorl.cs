@@ -157,6 +157,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                     tempContactData = new ContactData();
 
                     tempContactData.DestinationObjectID = contactPersonList.DestinationObjectID;
+                    tempContactData.ContactPersonName = contactPersonList.ContactPersonName;
                     tempContactData.ObjectID = contactPersonList.ObjectID;
                     tempContactData.IsDelete = contactPersonList.IsDelete;
                     tempContactData.UpdateTime = contactPersonList.UpdateTime;
@@ -171,6 +172,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 {
                     tempContactData = new ContactData();
                     tempContactData.GroupObjectID = contactGroup.GroupObjectID;
+                    tempContactData.GroupName = contactGroup.GroupName;
                     tempContactData.IsDelete = contactGroup.IsDelete;
                     tempContactData.UpdateTime = contactGroup.UpdateTime;
                     tempContactData.ContactDataID = Guid.NewGuid().ToString();

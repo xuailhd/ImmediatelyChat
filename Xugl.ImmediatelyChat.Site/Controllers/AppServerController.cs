@@ -12,6 +12,7 @@ using System.Net;
 using System.Text;
 using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.IServices;
+using System.IO;
 
 namespace Xugl.ImmediatelyChat.Site.Controllers
 {
@@ -23,6 +24,12 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
         {
             this.cacheManage = cacheManage;
             this.appServerService = appServerService;
+        }
+
+        public FileStreamResult DownLoadApk()
+        {
+            string absoluFilePath = Server.MapPath("~/ImmediatelyChat.apk");
+            return File(new FileStream(absoluFilePath, FileMode.Open), "application/octet-stream", Server.UrlEncode("ImmediatelyChat.apk"));
         }
 
         //

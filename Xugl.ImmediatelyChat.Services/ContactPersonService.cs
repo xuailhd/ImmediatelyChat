@@ -256,5 +256,19 @@ namespace Xugl.ImmediatelyChat.Services
             }
             return contactGroupSubRepository.Upade(contactGroupSub);
         }
+
+
+        public IList<ContactGroup> SearchGroup(string key)
+        {
+            return contactGroupRepository.Table.Where(t => t.GroupName == key).ToList();
+        }
+
+        public IList<ContactPerson> SearchPerson(string key)
+        {
+            //ContactPersonListQuery query = new ContactPersonListQuery();
+            //query.ContactPersonName = key;
+
+            return contactPersonRepository.Table.Where(t => t.ContactName == key).ToList();
+        }
     }
 }
