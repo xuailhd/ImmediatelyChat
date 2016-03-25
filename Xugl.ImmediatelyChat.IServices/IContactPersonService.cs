@@ -37,5 +37,6 @@ namespace Xugl.ImmediatelyChat.IServices
 
         IList<ContactGroup> SearchGroup(string key);
         IList<ContactPerson> SearchPerson(string key);
+
     }
 }

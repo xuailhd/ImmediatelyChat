@@ -97,7 +97,7 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
             ContactPerson contactPerson = contactPersonService.FindContactPerson(t=>t.ContactName==ObjectName);
             if (contactPerson == null)
             {
-                loginReturnContext.Status = 1;
+                loginReturnContext.Status = 3;
             }
             else
             {
@@ -119,10 +119,6 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
                 loginReturnContext.IP = mmsServer.MMS_IP;
                 loginReturnContext.Port = mmsServer.MMS_Port;
                 loginReturnContext.Status = 0;
-            }
-            else
-            {
-                loginReturnContext.Status = 1;
             }
 
             return Json(loginReturnContext, JsonRequestBehavior.AllowGet);

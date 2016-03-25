@@ -15,7 +15,7 @@ namespace Xugl.ImmediatelyChat.Site.Models
         public string IP { get; set; }
         public int Port { get; set; }
         /// <summary>
-        /// 0/1/2   normal/account or password incorrect/MMS server have not start
+        /// 0/1/2/3   normal/password incorrect/MMS server have not start/new account
         /// </summary>
         public int Status { get; set; }
     }

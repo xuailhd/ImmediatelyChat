@@ -29,6 +29,31 @@ namespace Xugl.ImmediatelyChat.Common
         public string SearchKey { get; set; }
     }
 
+    public class ClientAddPerson
+    {
+        public string ObjectID { get; set; }
+        public string DestinationObjectID { get; set; }
+        public string MCS_IP { get; set; }
+        public int MCS_Port { get; set; }
+
+        /// <summary>
+        /// 0/1/2  normal/existing/error
+        /// </summary>
+        public int Status { get; set; }
+    }
+
+    public class ClientAddGroup
+    {
+        public string ObjectID { get; set; }
+        public string GroupObjectID { get; set; }
+        public string MCS_IP { get; set; }
+        public int MCS_Port { get; set; }
+        /// <summary>
+        /// 0/1/2  normal/existing/error
+        /// </summary>
+        public int Status { get; set; }
+    }
+
     public class ContactDataWithMCS
     {
         public ContactData ContactData { get; set; }
