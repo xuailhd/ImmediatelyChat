@@ -125,96 +125,109 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
         private string HandleMMSVerifyUAAddGroup(string data, MMSListenerToken token)
         {
             ClientAddGroup model = CommonVariables.serializer.Deserialize<ClientAddGroup>(data.Remove(0, CommonFlag.F_MMSVerifyUAAddGroup.Length));
+
+
             if (model != null && !string.IsNullOrEmpty(model.ObjectID))
             {
-                if (token.ContactPersonService.FindContactGroupSub(model.ObjectID, model.GroupObjectID) != null)
+                ContactGroupSub contactGroupSub = token.ContactPersonService.FindContactGroupSub(model.ObjectID, model.GroupObjectID);
+                if (contactGroupSub == null)
                 {
-                    model.Status = 1;
-                    return CommonVariables.serializer.Serialize(model);
-                }
-
-                ContactPerson contactPerson = token.ContactPersonService.FindContactPerson(model.ObjectID);
-                if (contactPerson != null)
-                {
-                    ContactGroup contactGroup = token.ContactPersonService.FindContactGroup(model.GroupObjectID);
-                    if (contactGroup != null)
+                    ContactPerson contactPerson = token.ContactPersonService.FindContactPerson(model.ObjectID);
+                    if (contactPerson != null)
                     {
-                        ContactGroupSub contactGroupSub = new ContactGroupSub();
-                        contactGroupSub.ContactGroupID = contactGroup.GroupObjectID;
-                        contactGroupSub.ContactPersonObjectID = contactGroupSub.ContactPersonObjectID;
-                        contactGroupSub.UpdateTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
-
-                        if (token.ContactPersonService.InsertContactGroupSub(contactGroupSub) == 1)
+                        ContactGroup contactGroup = token.ContactPersonService.FindContactGroup(model.GroupObjectID);
+                        if (contactGroup != null)
                         {
-                            contactPerson.UpdateTime = contactGroupSub.UpdateTime;
-                            token.ContactPersonService.UpdateContactPerson(contactPerson);
+                            contactGroupSub = new ContactGroupSub();
+                            contactGroupSub.ContactGroupID = contactGroup.GroupObjectID;
+                            contactGroupSub.ContactPersonObjectID = contactGroupSub.ContactPersonObjectID;
+                            contactGroupSub.UpdateTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
 
-                            ContactData contactData = new ContactData();
-                            contactData.ContactGroupID = contactGroupSub.ContactGroupID;
-                            contactData.ContactPersonObjectID = contactGroupSub.ContactPersonObjectID;
-                            contactData.UpdateTime = contactGroupSub.UpdateTime;
-                            contactData.DataType = 3;
-                            CommonVariables.SyncSocketClientIntance.SendMsg(model.MCS_IP, model.MCS_Port,
-                            CommonFlag.F_MCSReceiveUAInfo + CommonVariables.serializer.Serialize(contactData));
-
-                            model.Status = 0;
-                            return CommonVariables.serializer.Serialize(model);
+                            if (token.ContactPersonService.InsertContactGroupSub(contactGroupSub) == 1)
+                            {
+                                contactPerson.UpdateTime = contactGroupSub.UpdateTime;
+                                token.ContactPersonService.UpdateContactPerson(contactPerson);
+                            }
+                            else
+                            {
+                                return string.Empty;
+                            }
                         }
-
+                        else
+                        {
+                            return string.Empty;
+                        }
+                    }
+                    else
+                    {
+                        return string.Empty;
                     }
                 }
+
+                ContactData contactData = new ContactData();
+                contactGroupSub.ContactGroupID = contactData.ContactGroupID;
+                contactGroupSub.ContactPersonObjectID = contactData.ContactPersonObjectID;
+                contactGroupSub.IsDelete = contactData.IsDelete;
+                contactGroupSub.UpdateTime = contactData.UpdateTime;
+                contactData.DataType = 3;
+
+                CommonVariables.SyncSocketClientIntance.SendMsg(model.MCS_IP, model.MCS_Port,
+                CommonFlag.F_MCSReceiveUAInfo + CommonVariables.serializer.Serialize(contactData));
             }
-            model.Status = 2;
-            return CommonVariables.serializer.Serialize(model);
+
+            return string.Empty;            
         }
 
         private string HandleMMSVerifyUAAddPerson(string data, MMSListenerToken token)
         {
-            ClientAddPerson clientAddPerson = CommonVariables.serializer.Deserialize<ClientAddPerson>(data.Remove(0, CommonFlag.F_MMSVerifyUAAddPerson.Length));
-            if( clientAddPerson!=null && !string.IsNullOrEmpty(clientAddPerson.ObjectID))
+            ClientAddPerson model = CommonVariables.serializer.Deserialize<ClientAddPerson>(data.Remove(0, CommonFlag.F_MMSVerifyUAAddPerson.Length));
+            if (model != null && !string.IsNullOrEmpty(model.ObjectID))
             {
-                if(token.ContactPersonService.FindContactPersonList(clientAddPerson.ObjectID,clientAddPerson.DestinationObjectID)!=null)
+                ContactPersonList contactPersonList = token.ContactPersonService.FindContactPersonList(model.ObjectID, model.DestinationObjectID);
+                if (contactPersonList == null)
                 {
-                    clientAddPerson.Status=1;
-                    return CommonVariables.serializer.Serialize(clientAddPerson);
-                }
-
-                ContactPerson contactPerson = token.ContactPersonService.FindContactPerson(clientAddPerson.ObjectID);
-                if(contactPerson!=null)
-                {
-                    ContactPerson contactPerson2 = token.ContactPersonService.FindContactPerson(clientAddPerson.DestinationObjectID);
-                    if(contactPerson2!=null)
+                    ContactPerson contactPerson = token.ContactPersonService.FindContactPerson(model.ObjectID);
+                    if (contactPerson != null)
                     {
-                        ContactPersonList contactPersonList = new ContactPersonList();
-                        contactPersonList.ContactPersonName = contactPerson2.ContactName;
-                        contactPersonList.DestinationObjectID = contactPerson2.ObjectID;
-                        contactPersonList.ObjectID = contactPerson.ObjectID;
-                        contactPersonList.UpdateTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
-
-                        if( token.ContactPersonService.InsertContactPersonList(contactPersonList)==1)
+                        ContactPerson contactPerson2 = token.ContactPersonService.FindContactPerson(model.DestinationObjectID);
+                        if (contactPerson2 != null)
                         {
-                            contactPerson.UpdateTime = contactPersonList.UpdateTime;
-                            token.ContactPersonService.UpdateContactPerson(contactPerson);
+                            contactPersonList = new ContactPersonList();
+                            contactPersonList.ContactPersonName = contactPerson2.ContactName;
+                            contactPersonList.DestinationObjectID = contactPerson2.ObjectID;
+                            contactPersonList.ObjectID = contactPerson.ObjectID;
+                            contactPersonList.UpdateTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
 
-                            ContactData contactData = new ContactData();
-                            contactData.ContactPersonName = contactPersonList.ContactPersonName;
-                            contactData.ContactPersonObjectID = contactPersonList.DestinationObjectID;
-                            contactData.ObjectID = contactPersonList.ObjectID;
-                            contactData.UpdateTime = contactPersonList.UpdateTime;
-                            contactData.DataType = 1;
+                            if (token.ContactPersonService.InsertContactPersonList(contactPersonList) == 1)
+                            {
+                                contactPerson.UpdateTime = contactPersonList.UpdateTime;
+                                token.ContactPersonService.UpdateContactPerson(contactPerson);
+                            }
 
-                            CommonVariables.SyncSocketClientIntance.SendMsg(clientAddPerson.MCS_IP, clientAddPerson.MCS_Port,
-                            CommonFlag.F_MCSReceiveUAInfo + CommonVariables.serializer.Serialize(contactData));
-
-                            clientAddPerson.Status = 0;
-                            return CommonVariables.serializer.Serialize(clientAddPerson);
                         }
-
+                        else
+                        {
+                            return string.Empty;
+                        }
+                    }
+                    else
+                    {
+                        return string.Empty;
                     }
                 }
+
+                ContactData contactData = new ContactData();
+                contactData.ContactPersonName = contactPersonList.ContactPersonName;
+                contactData.DestinationObjectID = contactPersonList.DestinationObjectID;
+                contactData.IsDelete = contactPersonList.IsDelete;
+                contactData.UpdateTime = contactPersonList.UpdateTime;
+                contactData.DataType = 1;
+
+                CommonVariables.SyncSocketClientIntance.SendMsg(model.MCS_IP, model.MCS_Port,
+                CommonFlag.F_MCSReceiveUAInfo + CommonVariables.serializer.Serialize(contactData));
             }
-            clientAddPerson.Status = 2;
-            return CommonVariables.serializer.Serialize(clientAddPerson);
+            
+            return string.Empty;
         }
 
         private string HandlePSSendMMSUser(string data, MMSListenerToken token)

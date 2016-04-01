@@ -247,30 +247,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         {
             try
             {
-                //if (contactData.DataType == 0)
-                //{
-                //    ContactPerson contactPerson = contactPersonService.FindContactPerson(contactData.ObjectID);
-                //    if (contactPerson == null)
-                //    {
-                //        contactPerson = new ContactPerson();
-                //        contactPerson.ContactName = contactData.ContactName;
-                //        contactPerson.ImageSrc = contactData.ImageSrc;
-                //        contactPerson.LatestTime = contactData.LatestTime;
-                //        contactPerson.ObjectID = contactData.ObjectID;
-                //        contactPerson.Password = contactData.Password;
-                //        contactPerson.UpdateTime = contactData.UpdateTime;
-                //        contactPersonService.InsertNewPerson(contactPerson);
-                //    }
-                //    else
-                //    {
-                //        contactPerson.ContactName = contactData.ContactName;
-                //        contactPerson.ImageSrc = contactData.ImageSrc;
-                //        contactPerson.LatestTime = contactData.LatestTime;
-                //        contactPerson.Password = contactData.Password;
-                //        contactPerson.UpdateTime = contactData.UpdateTime;
-                //        contactPersonService.UpdateContactPerson(contactPerson);
-                //    }
-                //}
                 int temp = 0;
                 ContactPerson contactPerson = contactPersonService.FindContactPerson(contactData.ObjectID);
 
@@ -299,14 +275,10 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                         contactPersonService.UpdateContactPersonList(contactPersonList);
                     }
 
-
-                    CommonVariables.LogTool.Log("UpdateTime Compare " + contactPerson.UpdateTime + ":" + contactPersonList.UpdateTime);
                     if (contactPersonList.UpdateTime.CompareTo(contactPerson.UpdateTime) > 0)
                     {
                         contactPerson.UpdateTime = contactPersonList.UpdateTime;
-                        CommonVariables.LogTool.Log("update contactPerson UpdateTime:" + contactPerson.UpdateTime);
-                        temp = contactPersonService.UpdateContactPerson(contactPerson);
-                        CommonVariables.LogTool.Log("update contactPerson UpdateTime:" + contactPerson.UpdateTime + " count=" + temp.ToString());
+                        contactPersonService.UpdateContactPerson(contactPerson);
                     }
 
                 }
@@ -330,13 +302,10 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                         contactPersonService.UpdateContactGroup(contactGroup);
                     }
 
-                    CommonVariables.LogTool.Log("UpdateTime Compare " + contactPerson.UpdateTime + ":" + contactGroup.UpdateTime);
                     if (contactGroup.UpdateTime.CompareTo(contactPerson.UpdateTime) > 0)
                     {
                         contactPerson.UpdateTime = contactGroup.UpdateTime;
-                        CommonVariables.LogTool.Log("update contactPerson UpdateTime:" + contactPerson.UpdateTime);
-                        temp = contactPersonService.UpdateContactPerson(contactPerson);
-                        CommonVariables.LogTool.Log("update contactPerson UpdateTime:" + contactPerson.UpdateTime + " count=" + temp.ToString());
+                        contactPersonService.UpdateContactPerson(contactPerson);
                     }
                 }
                 else if (contactData.DataType == 3)
@@ -358,13 +327,10 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                         contactPersonService.UpdateContactGroupSub(contactGroupSub);
                     }
 
-                    CommonVariables.LogTool.Log("UpdateTime Compare " + contactPerson.UpdateTime + ":" + contactGroupSub.UpdateTime);
                     if (contactGroupSub.UpdateTime.CompareTo(contactPerson.UpdateTime) > 0)
                     {
                         contactPerson.UpdateTime = contactGroupSub.UpdateTime;
-                        CommonVariables.LogTool.Log("update contactPerson UpdateTime:" + contactPerson.UpdateTime);
-                        temp = contactPersonService.UpdateContactPerson(contactPerson);
-                        CommonVariables.LogTool.Log("update contactPerson UpdateTime:" + contactPerson.UpdateTime + " count=" + temp.ToString());
+                        contactPersonService.UpdateContactPerson(contactPerson);
                     }
                 }
                 return contactData.ContactDataID;
