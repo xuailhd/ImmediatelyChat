@@ -18,10 +18,10 @@ namespace Xugl.ImmediatelyChat.Model
 
         public string MsgRecipientObjectID { get; set; }
 
-        public string GroupID { get; set; }
+        public string MsgRecipientGroupID { get; set; }
 
         /// <summary>
-        /// 0:text;1:file
+        /// 1:text;2:file
         /// </summary>
         public int MsgType { get; set; }
 
