@@ -59,7 +59,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             Stream stream=null;
             try
             {
-                string arrangeStr = CommonVariables.OperateFile.GetConfig(CommonVariables.ConfigFilePath, "ArrangeStr");
+                string arrangeStr = CommonVariables.OperateFile.GetConfig(CommonVariables.ConfigFilePath, CommonFlag.F_ArrangeChars);
 
                 HttpWebRequest myRequest = (HttpWebRequest)WebRequest.Create("http://" + CommonVariables.PSIP
                     + ":" + CommonVariables.PSPort + "/AppServer/CollectMMS?ip=" + CommonVariables.MMSIP + "&&port=" + CommonVariables.MMSPort

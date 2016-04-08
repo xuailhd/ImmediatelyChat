@@ -57,7 +57,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             {
                 MDSServer mdsServer = CommonVariables.serializer.Deserialize<MDSServer>(data.Remove(0, CommonFlag.F_PSCallMDSStart.Length));
                 CommonVariables.ArrangeStr = mdsServer.ArrangeStr;
-                CommonVariables.OperateFile.SaveConfig(CommonVariables.ConfigFilePath, "ArrangeStr", CommonVariables.ArrangeStr);
+                CommonVariables.OperateFile.SaveConfig(CommonVariables.ConfigFilePath, CommonFlag.F_ArrangeChars, CommonVariables.ArrangeStr);
                 CommonVariables.LogTool.Log("Start MDS service:" + CommonVariables.MDSIP + ", Port:" + CommonVariables.MDSPort.ToString());
                 CommonVariables.IsBeginMessageService = true;
                 return string.Empty;

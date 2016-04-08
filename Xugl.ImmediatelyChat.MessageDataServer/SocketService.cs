@@ -122,7 +122,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             Stream stream = null;
             try
             {
-                string arrangeStr= CommonVariables.OperateFile.GetConfig(CommonVariables.ConfigFilePath,"ArrangeStr");
+                string arrangeStr = CommonVariables.OperateFile.GetConfig(CommonVariables.ConfigFilePath, CommonFlag.F_ArrangeChars);
 
                 HttpWebRequest myRequest = (HttpWebRequest)WebRequest.Create("http://" + CommonVariables.PSIP
                     + ":" + CommonVariables.PSPort + "/AppServer/CollectMDS?ip=" + CommonVariables.MDSIP
