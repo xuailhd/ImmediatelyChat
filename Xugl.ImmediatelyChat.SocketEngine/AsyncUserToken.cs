@@ -27,6 +27,10 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             }
         }
 
+
+        public string IP { get; set; }
+        public int Port { get; set; }
+
         public AsyncUserToken()
             : this(null)
         {

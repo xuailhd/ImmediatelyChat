@@ -270,5 +270,20 @@ namespace Xugl.ImmediatelyChat.Services
 
             return contactPersonRepository.Table.Where(t => t.ContactName == key).ToList();
         }
+
+        public int UpdateContactUpdateTimeByGroup(string groupID, string updateTime)
+        {
+            IList<ContactPerson> contactPersons = (from aa in contactPersonRepository.Table
+                                                   join bb in contactGroupSubRepository.Table on aa.ObjectID equals bb.ContactPersonObjectID
+                                                   where bb.ContactGroupID == groupID
+                                                   select aa).ToList();
+
+            foreach (ContactPerson contactPerson in contactPersons)
+            {
+                contactPerson.UpdateTime = updateTime;
+            }
+
+            return contactPersonRepository.BatchUpdate(contactPersons);
+        }
     }
 }

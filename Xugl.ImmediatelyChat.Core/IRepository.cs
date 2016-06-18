@@ -19,7 +19,11 @@ namespace Xugl.ImmediatelyChat.Core
 
         int Upade(T TEntity);
 
+        int BatchUpdate(IList<T> entitys);
+
         int Delete(T TEntity);
+
+        int BatchDelete(IList<T> entitys);
 
         IQueryable<T> Table { get; }
 

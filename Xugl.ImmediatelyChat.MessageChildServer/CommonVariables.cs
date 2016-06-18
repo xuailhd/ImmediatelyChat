@@ -84,13 +84,13 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
 
         #region InRunningUAList
-        public static IList<string> InRunningUAList
-        {
-            get
-            {
-                return SingletonList<string>.Instance;
-            }
-        }
+        //public static IList<string> InRunningUAList
+        //{
+        //    get
+        //    {
+        //        return SingletonList<string>.Instance;
+        //    }
+        //}
         #endregion
 
         #region ClientModels

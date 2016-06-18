@@ -113,6 +113,37 @@ namespace Xugl.ImmediatelyChat.Data.EF
             return resultCount;       
         }
 
+
+
+        public int BatchUpdate(IList<T> entitys)
+        {
+            if (entitys == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if(entitys.Count==0)
+            {
+                return 0;
+            }
+
+            int resultCount = 0;
+            try
+            {
+                foreach (T entity in entitys)
+                {
+                    this.Entites.Attach(entity);
+                    this._context.Entry<T>(entity).State = EntityState.Modified;
+                }
+                resultCount = _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return resultCount;   
+        }
+
         /// <summary>
         /// 
         /// </summary>

@@ -26,11 +26,13 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             timer1.Enabled = true;
 
             this.Text = this.Text + " " + CommonVariables.MDS_ID;
+
+            sockectService.StartConnectMMS();
         }
 
         private void btn_ConnectMainServer_Click(object sender, EventArgs e)
         {
-            sockectService.StartConnectMMS();
+            
         }
 
         private void timer1_Tick(object sender, EventArgs e)

@@ -26,12 +26,13 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
             timer1.Interval = 100;
             timer1.Enabled = true;
+            socketService.StartMMSService();
         }
 
 
         private void btn_StartServer_Click(object sender, EventArgs e)
         {
-            socketService.StartMMSService();
+            
         }
 
         private void timer1_Tick(object sender, EventArgs e)

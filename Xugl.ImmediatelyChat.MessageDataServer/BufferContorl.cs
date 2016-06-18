@@ -22,10 +22,12 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
         private readonly int maxBufferRecordCount;
 
         private IList<MsgRecord> bufferMsgRecords1 = new List<MsgRecord>();
-
         private IList<MsgRecord> bufferMsgRecords2 = new List<MsgRecord>();
+        private bool UsingTagForMsgRecord = false;
 
-        bool Isbuffer1inUsed = true;
+        private IList<GetMsgModel> bufferGetMsgs1 = new List<GetMsgModel>();
+        private IList<GetMsgModel> bufferGetMsgs2 = new List<GetMsgModel>();
+        private bool UsingTagForGetMsg = false;
 
         private Thread mainThread = null;
 
@@ -36,7 +38,9 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
 
         private readonly IMsgRecordService msgRecordService;
         public bool IsRunning = false;
-
+        private AsyncSocketClient sendMsgClient;
+        private const int _maxSize = 1024;
+        private const int _maxSendConnections = 10;
 
         public BufferContorl()
         {
@@ -48,51 +52,71 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
         public void AddMSgRecordIntoBuffer(MsgRecordModel msgRecordModel)
         {
             MsgRecord msgRecord = new MsgRecord();
-            msgRecord.GroupID = msgRecordModel.RecivedGroupID;
-            msgRecord.MsgContent = msgRecordModel.Content;
-            msgRecord.MsgID = msgRecordModel.MessageID;
-            msgRecord.MsgRecipientObjectID = msgRecordModel.RecivedObjectID;
-            msgRecord.MsgSenderName = msgRecordModel.ObjectName;
-            msgRecord.MsgSenderObjectID = msgRecordModel.ObjectID;
+            msgRecord.MsgRecipientGroupID = msgRecordModel.MsgRecipientGroupID;
+            msgRecord.MsgContent = msgRecordModel.MsgContent;
+            msgRecord.MsgID = msgRecordModel.MsgID;
+            msgRecord.MsgRecipientObjectID = msgRecordModel.MsgRecipientObjectID;
+            msgRecord.MsgSenderName = msgRecordModel.MsgSenderName;
+            msgRecord.MsgSenderObjectID = msgRecordModel.MsgSenderObjectID;
             msgRecord.MsgType = msgRecordModel.MsgType;
             msgRecord.SendTime = msgRecordModel.SendTime;
-            GetUsingBufferContainer.Add(msgRecord);
+            GetUsingMsgRecordBuffer.Add(msgRecord);
         }
 
 
-        private IList<MsgRecord> GetUsingBufferContainer
+        private IList<MsgRecord> GetUsingMsgRecordBuffer
         {
             get{
-                return Isbuffer1inUsed ? bufferMsgRecords1 : bufferMsgRecords2;
+                return UsingTagForMsgRecord ? bufferMsgRecords1 : bufferMsgRecords2;
             }
         }
 
-        private IList<MsgRecord> GetUnUsingBufferContainer
+        private IList<MsgRecord> GetUnUsingMsgRecordBuffer
         {
             get
             {
-                return Isbuffer1inUsed ? bufferMsgRecords2 : bufferMsgRecords1;
+                return UsingTagForMsgRecord ? bufferMsgRecords2 : bufferMsgRecords1;
             }
         }
 
-        public IList<MsgRecord> GetMSG(GetMsgModel getMsgModel)
+        private IList<GetMsgModel> GetUsingGetMsgBuffer
+        {
+            get
+            {
+                return UsingTagForMsgRecord ? bufferGetMsgs1 : bufferGetMsgs2;
+            }
+        }
+
+        private IList<GetMsgModel> GetUnUsingGetMsgBuffer
+        {
+            get
+            {
+                return UsingTagForMsgRecord ? bufferGetMsgs2 : bufferGetMsgs1;
+            }
+        }
+
+        public IList<MsgRecord> GetMSG(IMsgRecordService _msgRecordService, GetMsgModel getMsgModel)
         {
 
-            IList<MsgRecord> msgRecords=new List<MsgRecord>();
+            //IList<MsgRecord> msgRecords=new List<MsgRecord>();
 
-            if(getMsgModel.LatestTime.CompareTo(savedIntoDataBase)<=0)
-            {
-                MsgRecordQuery query = new MsgRecordQuery();
-                query.MsgRecipientObjectID = getMsgModel.ObjectID;
-                query.MsgRecordtime = getMsgModel.LatestTime;
+            //if(getMsgModel.LatestTime.CompareTo(savedIntoDataBase)<=0)
+            //{
+            //    MsgRecordQuery query = new MsgRecordQuery();
+            //    query.MsgRecipientObjectID = getMsgModel.ObjectID;
+            //    query.MsgRecordtime = getMsgModel.LatestTime;
 
-                msgRecords.Union(msgRecordService.LoadMsgRecord(query).OrderBy(t=>t.SendTime));
-            }
+            //    msgRecords.Union(msgRecordService.LoadMsgRecord(query).OrderBy(t=>t.SendTime));
+            //}
 
-            msgRecords.Union(GetUsingBufferContainer.Where(t => t.SendTime.CompareTo(getMsgModel.LatestTime) <= 0
-                && t.MsgRecipientObjectID == getMsgModel.ObjectID).OrderBy(t=>t.SendTime));
+            //msgRecords.Union(GetUsingBufferContainer.Where(t => t.SendTime.CompareTo(getMsgModel.LatestTime) <= 0
+            //    && t.MsgRecipientObjectID == getMsgModel.ObjectID).OrderBy(t=>t.SendTime));
 
-            return msgRecords;
+            //return msgRecords;
+            MsgRecordQuery query = new MsgRecordQuery();
+            query.MsgRecipientObjectID = getMsgModel.ObjectID;
+            query.MsgRecordtime = getMsgModel.LatestTime;
+            return _msgRecordService.LoadMsgRecord(query);
         }
 
         public void StartMainThread()
@@ -106,29 +130,93 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
         public void StopMainThread()
         {
             IsRunning = false;
+            if (GetUsingMsgRecordBuffer.Count > 0)
+            {
+                msgRecordService.BatchSave(GetUsingMsgRecordBuffer);
+                GetUsingMsgRecordBuffer.Clear();
+            }
+
+            if (GetUnUsingMsgRecordBuffer.Count > 0)
+            {
+                msgRecordService.BatchSave(GetUnUsingMsgRecordBuffer);
+                GetUnUsingMsgRecordBuffer.Clear();
+            }
         }
 
         private void MainSaveRecordThread()
         {
             CommonVariables.LogTool.Log("begin buffer contorl");
-
-            while(IsRunning)
+            //savedIntoDataBase = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
+            try
             {
-                if (GetUsingBufferContainer.Count >= maxBufferRecordCount)
+                while (IsRunning)
                 {
-                    Isbuffer1inUsed = !Isbuffer1inUsed;
+                    if (GetUsingMsgRecordBuffer.Count > 0)
+                    {
+                        UsingTagForMsgRecord = !UsingTagForMsgRecord;
 
-                    msgRecordService.BatchSave(GetUnUsingBufferContainer);
+                        msgRecordService.BatchSave(GetUnUsingMsgRecordBuffer);
 
-                    savedIntoDataBase = GetUnUsingBufferContainer.Select(t => t.SendTime).Max();
+                        //savedIntoDataBase = GetUnUsingBufferContainer.Select(t => t.SendTime).Max();
 
-                    GetUnUsingBufferContainer.Clear();
+                        GetUnUsingMsgRecordBuffer.Clear();
+                    }
+                    Thread.Sleep(100);
                 }
-                Thread.Sleep(1000);
+            }
+            catch (Exception ex)
+            {
+                CommonVariables.LogTool.Log(ex.Message + ex.StackTrace);
             }
         }
 
+        //private void MainGetMsgThread()
+        //{
+        //    CommonVariables.LogTool.Log("begin get msg buffer contorl");
+        //    sendMsgClient = new AsyncSocketClient(_maxSize, _maxSendConnections, CommonVariables.LogTool);
+        //    try
+        //    {
+        //        while (IsRunning)
+        //        {
+        //            if (GetUsingGetMsgBuffer.Count > 0)
+        //            {
+        //                UsingTagForGetMsg = !UsingTagForGetMsg;
 
+        //                for (int i = 0; i < GetUnUsingGetMsgBuffer.Count; i++)
+        //                {
+        //                    MsgRecordQuery query = new MsgRecordQuery();
+        //                    query.MsgRecipientObjectID = GetUnUsingGetMsgBuffer[i].ObjectID;
+        //                    query.MsgRecordtime = GetUnUsingGetMsgBuffer[i].LatestTime;
+        //                    IList<MsgRecord> msgRecords = msgRecordService.LoadMsgRecord(query);
+
+        //                    sendMsgClient.SendMsg(GetUnUsingGetMsgBuffer[i].MCS_IP,GetUnUsingGetMsgBuffer)
+        //                }
+
+        //                GetUnUsingGetMsgBuffer.Clear();
+        //            }
+        //            Thread.Sleep(100);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        CommonVariables.LogTool.Log(ex.Message + ex.StackTrace);
+        //    }
+        //}
+
+        //private string HandlerMsgReturnData(string returnData, bool IsError)
+        //{
+        //    if (!string.IsNullOrEmpty(returnData))
+        //    {
+        //        MsgRecordModel tempmodel = ExeingMsgRecordModels.Single(t => t.MsgID == returnData);
+        //        if (IsError)
+        //        {
+        //            GetUsingMsgRecordBuffer.Add(tempmodel);
+        //        }
+        //        ExeingMsgRecordModels.Remove(ExeingMsgRecordModels.Single(t => t.MsgID == returnData));
+        //    }
+
+        //    return string.Empty;
+        //}
     }
 
 }

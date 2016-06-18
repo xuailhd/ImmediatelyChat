@@ -39,6 +39,7 @@ namespace Xugl.ImmediatelyChat.Services
                 tablequery=tablequery.Where(t=>t.MsgRecipientObjectID==query.MsgRecipientObjectID);
             }
 
+            tablequery = tablequery.OrderBy(t => t.SendTime);
             return tablequery.ToList();
         }
 
@@ -78,7 +79,7 @@ namespace Xugl.ImmediatelyChat.Services
             IList<string> recipientObjectIDs = new List<string>();
 
             IList<ContactGroupSub> contactGroupSubs = contactGroupSubRepository.Table.
-                Where(t => t.ContactGroupID == msgRecordModel.RecivedObjectID).ToList();
+                Where(t => t.ContactGroupID == msgRecordModel.MsgRecipientGroupID).ToList();
 
             foreach(ContactGroupSub contactGroupSub in contactGroupSubs)
             {

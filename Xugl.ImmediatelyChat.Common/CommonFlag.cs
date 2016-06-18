@@ -78,5 +78,6 @@ namespace Xugl.ImmediatelyChat.Common
         public static string F_MDSVerifyMCSGetMSG { get { return f_MDSVerifyMCSGetMSG; } }
         public static string F_MDSReciveMCSFBMSG { get { return f_MDSReciveMCSFBMSG; } }
 
+        public static object lockobject = new object();
     }
 }

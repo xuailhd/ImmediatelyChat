@@ -144,59 +144,74 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             IList<ContactData> tempContactDatas = null;
             ContactData tempContactData;
 
-            IList<ContactPersonList> contactPersonLists = contactPersonService.GetLastestContactPersonList(objectID, updateTime);
-            IList<ContactGroup> contactGroups = contactPersonService.GetLastestContactGroup(objectID, updateTime);
-            IList<ContactGroupSub> contactGroupSubs = contactPersonService.GetLastestContactGroupSub(objectID, updateTime);
+            ContactPerson contactPerson = contactPersonService.FindContactPerson(objectID);
 
-            tempContactDatas = new List<ContactData>();
+            if(contactPerson!=null)
+            {
+                tempContactDatas = new List<ContactData>();
+                tempContactData = new ContactData();
 
-            if (contactPersonLists != null && contactPersonLists.Count > 0)
-            {
-                foreach (ContactPersonList contactPersonList in contactPersonLists)
-                {
-                    tempContactData = new ContactData();
+                tempContactData.ContactName = contactPerson.ContactName;
+                tempContactData.ImageSrc = contactPerson.ImageSrc;
+                tempContactData.LatestTime = contactPerson.LatestTime;
+                tempContactData.ObjectID = contactPerson.ObjectID;
+                tempContactData.UpdateTime = contactPerson.UpdateTime;
+                tempContactData.ContactDataID = Guid.NewGuid().ToString();
+                tempContactData.DataType = 0;
+                tempContactDatas.Add(tempContactData);
 
-                    tempContactData.DestinationObjectID = contactPersonList.DestinationObjectID;
-                    tempContactData.ContactPersonName = contactPersonList.ContactPersonName;
-                    tempContactData.ObjectID = contactPersonList.ObjectID;
-                    tempContactData.IsDelete = contactPersonList.IsDelete;
-                    tempContactData.UpdateTime = contactPersonList.UpdateTime;
-                    tempContactData.ContactDataID = Guid.NewGuid().ToString();
-                    tempContactData.DataType = 1;
-                    tempContactDatas.Add(tempContactData);
-                }
-            }
-            if (contactGroups != null && contactGroups.Count > 0)
-            {
-                foreach (ContactGroup contactGroup in contactGroups)
+                IList<ContactPersonList> contactPersonLists = contactPersonService.GetLastestContactPersonList(objectID, updateTime);
+                IList<ContactGroup> contactGroups = contactPersonService.GetLastestContactGroup(objectID, updateTime);
+                IList<ContactGroupSub> contactGroupSubs = contactPersonService.GetLastestContactGroupSub(objectID, updateTime);
+                if (contactPersonLists != null && contactPersonLists.Count > 0)
                 {
-                    tempContactData = new ContactData();
-                    tempContactData.GroupObjectID = contactGroup.GroupObjectID;
-                    tempContactData.GroupName = contactGroup.GroupName;
-                    tempContactData.IsDelete = contactGroup.IsDelete;
-                    tempContactData.UpdateTime = contactGroup.UpdateTime;
-                    tempContactData.ContactDataID = Guid.NewGuid().ToString();
-                    tempContactData.DataType = 2;
-                    tempContactData.ObjectID = objectID;
-                    tempContactDatas.Add(tempContactData);
+                    foreach (ContactPersonList contactPersonList in contactPersonLists)
+                    {
+                        tempContactData = new ContactData();
+
+                        tempContactData.DestinationObjectID = contactPersonList.DestinationObjectID;
+                        tempContactData.ContactPersonName = contactPersonList.ContactPersonName;
+                        tempContactData.ObjectID = contactPersonList.ObjectID;
+                        tempContactData.IsDelete = contactPersonList.IsDelete;
+                        tempContactData.UpdateTime = contactPersonList.UpdateTime;
+                        tempContactData.ContactDataID = Guid.NewGuid().ToString();
+                        tempContactData.DataType = 1;
+                        tempContactDatas.Add(tempContactData);
+                    }
                 }
-            }
-            if (contactGroupSubs != null && contactGroupSubs.Count > 0)
-            {
-                foreach (ContactGroupSub contactGroupSub in contactGroupSubs)
+                if (contactGroups != null && contactGroups.Count > 0)
                 {
-                    tempContactData = new ContactData();
-                    tempContactData.ContactGroupID = contactGroupSub.ContactGroupID;
-                    tempContactData.ContactPersonObjectID = contactGroupSub.ContactPersonObjectID;
-                    tempContactData.IsDelete = contactGroupSub.IsDelete;
-                    tempContactData.UpdateTime = contactGroupSub.UpdateTime;
-                    tempContactData.ContactDataID = Guid.NewGuid().ToString();
-                    tempContactData.DataType = 3;
-                    tempContactData.ObjectID = objectID;
-                    tempContactDatas.Add(tempContactData);
+                    foreach (ContactGroup contactGroup in contactGroups)
+                    {
+                        tempContactData = new ContactData();
+                        tempContactData.GroupObjectID = contactGroup.GroupObjectID;
+                        tempContactData.GroupName = contactGroup.GroupName;
+                        tempContactData.IsDelete = contactGroup.IsDelete;
+                        tempContactData.UpdateTime = contactGroup.UpdateTime;
+                        tempContactData.ContactDataID = Guid.NewGuid().ToString();
+                        tempContactData.DataType = 2;
+                        tempContactData.ObjectID = objectID;
+                        tempContactDatas.Add(tempContactData);
+                    }
                 }
+                if (contactGroupSubs != null && contactGroupSubs.Count > 0)
+                {
+                    foreach (ContactGroupSub contactGroupSub in contactGroupSubs)
+                    {
+                        tempContactData = new ContactData();
+                        tempContactData.ContactGroupID = contactGroupSub.ContactGroupID;
+                        tempContactData.ContactPersonObjectID = contactGroupSub.ContactPersonObjectID;
+                        tempContactData.IsDelete = contactGroupSub.IsDelete;
+                        tempContactData.UpdateTime = contactGroupSub.UpdateTime;
+                        tempContactData.ContactDataID = Guid.NewGuid().ToString();
+                        tempContactData.DataType = 3;
+                        tempContactData.ObjectID = objectID;
+                        tempContactDatas.Add(tempContactData);
+                    }
+                }
+                return tempContactDatas;
             }
-            return tempContactDatas;
+            return null;
         }
 
         public void StartMainThread()

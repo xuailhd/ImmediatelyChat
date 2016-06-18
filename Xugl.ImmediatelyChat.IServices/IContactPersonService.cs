@@ -38,5 +38,7 @@ namespace Xugl.ImmediatelyChat.IServices
         IList<ContactGroup> SearchGroup(string key);
         IList<ContactPerson> SearchPerson(string key);
 
+        int UpdateContactUpdateTimeByGroup(string groupID, string updateTime);
+
     }
 }

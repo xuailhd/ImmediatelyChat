@@ -42,27 +42,30 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
             mmsServer.MMS_IP = ip;
             mmsServer.MMS_Port = port;
 
-            if (cacheManage.GetCache<IList<MMSServer>>("MMSServers")==null)
+            lock (CommonFlag.lockobject)
             {
-                IList<MMSServer> mmsServers = new List<MMSServer>();
-                mmsServers.Add(mmsServer);
-                cacheManage.AddCache<IList<MMSServer>>("MMSServers", mmsServers);
-                
-            }
-            else
-            {
-                if (cacheManage.GetCache<IList<MMSServer>>("MMSServers").Count > 0)
+                if (cacheManage.GetCache<IList<MMSServer>>("MMSServers") == null)
                 {
-                    for (int i = cacheManage.GetCache<IList<MMSServer>>("MMSServers").Count - 1; i >= 0; i--)
+                    IList<MMSServer> mmsServers = new List<MMSServer>();
+                    mmsServers.Add(mmsServer);
+                    cacheManage.AddCache<IList<MMSServer>>("MMSServers", mmsServers);
+
+                }
+                else
+                {
+                    if (cacheManage.GetCache<IList<MMSServer>>("MMSServers").Count > 0)
                     {
-                        if (cacheManage.GetCache<IList<MMSServer>>("MMSServers")[i].MMS_IP == mmsServer.MMS_IP
-                            && cacheManage.GetCache<IList<MMSServer>>("MMSServers")[i].MMS_Port == mmsServer.MMS_Port)
+                        for (int i = cacheManage.GetCache<IList<MMSServer>>("MMSServers").Count - 1; i >= 0; i--)
                         {
-                            cacheManage.GetCache<IList<MMSServer>>("MMSServers").RemoveAt(i);
+                            if (cacheManage.GetCache<IList<MMSServer>>("MMSServers")[i].MMS_IP == mmsServer.MMS_IP
+                                && cacheManage.GetCache<IList<MMSServer>>("MMSServers")[i].MMS_Port == mmsServer.MMS_Port)
+                            {
+                                cacheManage.GetCache<IList<MMSServer>>("MMSServers").RemoveAt(i);
+                            }
                         }
                     }
+                    cacheManage.GetCache<IList<MMSServer>>("MMSServers").Add(mmsServer);
                 }
-                cacheManage.GetCache<IList<MMSServer>>("MMSServers").Add(mmsServer);
             }
 
             return Json("ok",JsonRequestBehavior.AllowGet);
@@ -75,28 +78,30 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
             mcsServer.ArrangeStr = arrangeStr;
             mcsServer.MCS_IP = ip;
             mcsServer.MCS_Port = port;
-
-            if (cacheManage.GetCache<IList<MCSServer>>("MCSServers") == null)
+            lock (CommonFlag.lockobject)
             {
-                IList<MCSServer> mcsServers = new List<MCSServer>();
-                mcsServers.Add(mcsServer);
-                cacheManage.AddCache<IList<MCSServer>>("MCSServers", mcsServers);
-
-            }
-            else
-            {
-                if (cacheManage.GetCache<IList<MCSServer>>("MCSServers").Count > 0)
+                if (cacheManage.GetCache<IList<MCSServer>>("MCSServers") == null)
                 {
-                    for (int i = cacheManage.GetCache<IList<MCSServer>>("MCSServers").Count - 1; i >= 0; i--)
+                    IList<MCSServer> mcsServers = new List<MCSServer>();
+                    mcsServers.Add(mcsServer);
+                    cacheManage.AddCache<IList<MCSServer>>("MCSServers", mcsServers);
+
+                }
+                else
+                {
+                    if (cacheManage.GetCache<IList<MCSServer>>("MCSServers").Count > 0)
                     {
-                        if (cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].MCS_IP == mcsServer.MCS_IP
-                            && cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].MCS_Port == mcsServer.MCS_Port)
+                        for (int i = cacheManage.GetCache<IList<MCSServer>>("MCSServers").Count - 1; i >= 0; i--)
                         {
-                            cacheManage.GetCache<IList<MCSServer>>("MCSServers").RemoveAt(i);
+                            if (cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].MCS_IP == mcsServer.MCS_IP
+                                && cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].MCS_Port == mcsServer.MCS_Port)
+                            {
+                                cacheManage.GetCache<IList<MCSServer>>("MCSServers").RemoveAt(i);
+                            }
                         }
                     }
+                    cacheManage.GetCache<IList<MCSServer>>("MCSServers").Add(mcsServer);
                 }
-                cacheManage.GetCache<IList<MCSServer>>("MCSServers").Add(mcsServer);
             }
             return Json("ok", JsonRequestBehavior.AllowGet);
         }
@@ -107,29 +112,31 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
             mdsServer.ArrangeStr = arrangeStr;
             mdsServer.MDS_IP = ip;
             mdsServer.MDS_Port = port;
-
-            if (cacheManage.GetCache<IList<MDSServer>>("MDSServers") == null)
+            lock (CommonFlag.lockobject)
             {
-                IList<MDSServer> mdsServers = new List<MDSServer>();
-                mdsServers.Add(mdsServer);
-                cacheManage.AddCache<IList<MDSServer>>("MDSServers", mdsServers);
-
-            }
-            else
-            {
-                if (cacheManage.GetCache<IList<MDSServer>>("MDSServers").Count > 0)
+                if (cacheManage.GetCache<IList<MDSServer>>("MDSServers") == null)
                 {
-                    for (int i = cacheManage.GetCache<IList<MDSServer>>("MDSServers").Count - 1; i >= 0; i--)
+                    IList<MDSServer> mdsServers = new List<MDSServer>();
+                    mdsServers.Add(mdsServer);
+                    cacheManage.AddCache<IList<MDSServer>>("MDSServers", mdsServers);
+
+                }
+                else
+                {
+                    if (cacheManage.GetCache<IList<MDSServer>>("MDSServers").Count > 0)
                     {
-                        if (cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].MDS_IP == mdsServer.MDS_IP
-                            && cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].MDS_Port == mdsServer.MDS_Port)
+                        for (int i = cacheManage.GetCache<IList<MDSServer>>("MDSServers").Count - 1; i >= 0; i--)
                         {
-                            cacheManage.GetCache<IList<MDSServer>>("MDSServers").RemoveAt(i);
+                            if (cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].MDS_IP == mdsServer.MDS_IP
+                                && cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].MDS_Port == mdsServer.MDS_Port)
+                            {
+                                cacheManage.GetCache<IList<MDSServer>>("MDSServers").RemoveAt(i);
+                            }
                         }
                     }
-                }
 
-                cacheManage.GetCache<IList<MDSServer>>("MDSServers").Add(mdsServer);
+                    cacheManage.GetCache<IList<MDSServer>>("MDSServers").Add(mdsServer);
+                }
             }
             return Json("ok", JsonRequestBehavior.AllowGet);
         }
@@ -351,13 +358,13 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
 
                 availableChars = tempquery.ToList();
 
-                eachServiceCount = chars.Count / mcsCount;
+                eachServiceCount = chars.Count / mdsCount;
                 count = 0;
 
                 for (int i = 0; i < cacheManage.GetCache<IList<MDSServer>>("MDSServers").Count; i++)
                 {
                     count++;
-                    if (count < mcsCount)
+                    if (count < mdsCount)
                     {
                         int tmpi = 0;
                         if (string.IsNullOrEmpty(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].ArrangeStr))

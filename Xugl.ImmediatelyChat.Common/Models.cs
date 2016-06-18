@@ -12,6 +12,9 @@ namespace Xugl.ImmediatelyChat.Common
         public string Client_IP { get; set; }
         public int Client_Port { get; set; }
         public string LatestTime { get; set; }
+        public string MDS_IP { get; set; }
+        public int MDS_Port { get; set; }
+        public string UpdateTime { get; set; }
     }
 
 
@@ -126,35 +129,30 @@ namespace Xugl.ImmediatelyChat.Common
 
     public class MsgRecordModel
     {
-        public string MessageID { get; set; }
+        public string MsgID { get; set; }
 
-        public string ObjectID { get; set; }
+        public string MsgSenderObjectID { get; set; }
 
-        public string ObjectName { get; set; }
+        public string MsgSenderName { get; set; }
 
-        public string Content { get; set; }
+        public string MsgContent { get; set; }
 
-        public string RecivedGroupID { get; set; }
+        public string MsgRecipientObjectID { get; set; }
 
-        public string RecivedObjectID { get; set; }
-
-        public string RecivedObjectID2 { get; set; }
+        public string MsgRecipientGroupID { get; set; }
 
         /// <summary>
-        /// 0:text;1:file
+        /// 1:text;2:file
         /// </summary>
         public int MsgType { get; set; }
 
-        /// <summary>
-        /// 0:single;1:group
-        /// </summary>
-        public int SendType { get; set; }
-
         public string SendTime { get; set; }
+
+        public bool IsSended { get; set; }
+
 
         public string MDS_IP { get; set; }
         public int MDS_Port { get; set; }
-        public string MDS_ID { get; set; }
 
         /// <summary>
         /// 0:normal  1:success  2:error
@@ -167,13 +165,10 @@ namespace Xugl.ImmediatelyChat.Common
         public string MessageID { get; set; }
         public string ObjectID { get; set; }
 
-        public IList<string> GroupIDs { get; set; }
         public string LatestTime { get; set; }
 
         public string MDS_IP { get; set; }
         public int MDS_Port { get; set; }
-        public string MDS_ID { get; set; }
-
         /// <summary>
         /// 0:normal  1:success  2:error
         /// </summary>

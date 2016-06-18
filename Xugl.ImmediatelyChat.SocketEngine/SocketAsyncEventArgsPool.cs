@@ -35,9 +35,9 @@ namespace Xugl.ImmediatelyChat.SocketEngine
         public T PopOrNew()
         {
 
-            if (Count == 0)
+            //if (Count == 0)
 
-                return new T();
+            //    return new T();
 
             return Pop();
 

@@ -27,11 +27,13 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             timer1.Enabled = true;
 
             this.Text = this.Text + " " + CommonVariables.MCS_ID;
+
+            socketService.StartConnectMMS();
         }
 
         private void btn_ConnectMainServer_Click(object sender, EventArgs e)
         {
-            socketService.StartConnectMMS();
+            
         }
 
         private void timer1_Tick(object sender, EventArgs e)

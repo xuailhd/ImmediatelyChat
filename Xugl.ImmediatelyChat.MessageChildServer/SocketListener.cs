@@ -29,6 +29,8 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         public string UAObjectID { get; set; }
 
+        public string TaskFlag { get; set; }
+
         public IContactPersonService ContactPersonService
         {
             get
@@ -49,12 +51,10 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         {
             if (token.Models != null && token.Models.Count > 0)
             {
-                CommonVariables.MessageContorl.ReturnMsg(token.Models);
-                CommonVariables.InRunningUAList.Remove(token.UAObjectID);
                 token.Models.Clear();
                 token.Models = null;
-                token.UAObjectID = string.Empty;
             }
+            return;
         }
 
         protected override string HandleRecivedMessage(string inputMessage, MCSListenerToken token)
@@ -73,6 +73,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
             if (CommonVariables.IsBeginMessageService)
             {
+                
                 //handle UA feedback
                 if (data.StartsWith(CommonFlag.F_MCSReceiveUAFBMSG))
                 {
@@ -172,12 +173,15 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             {
                 if (!string.IsNullOrEmpty(clientModel.ObjectID))
                 {
-                    CommonVariables.LogTool.Log("F_MCSVerifyUA :" + clientModel.ObjectID + " time:" + clientModel.UpdateTime);
                     ContactPerson contactPerson = token.ContactPersonService.FindContactPerson(clientModel.ObjectID);
                     if (contactPerson != null)
                     {
                         if (contactPerson.UpdateTime.CompareTo(clientModel.UpdateTime) == 0)
                         {
+                            if( CommonVariables.ClientModels.ContainsKey(clientModel.ObjectID))
+                            {
+                                CommonVariables.ClientModels.Remove(clientModel.ObjectID);
+                            }
                             return "ok";
                         }
 
@@ -214,7 +218,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 return string.Empty;
             }
 
-            CommonVariables.LogTool.Log("receive UA info:" + contactData.DataType + ", contactDATA ID:" + contactData.ContactDataID);
             return HandleMMSUAInfo(contactData, token.ContactPersonService);
         }
 
@@ -222,14 +225,13 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         {
             string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUAMSG.Length);
             MsgRecordModel msgModel = CommonVariables.serializer.Deserialize<MsgRecordModel>(tempStr);
-            CommonVariables.LogTool.Log("get msg " + msgModel.ObjectID + " " + msgModel.ObjectName + " " + msgModel.Content + " " + msgModel.RecivedGroupID);
 
             if (msgModel != null)
             {
-                if (!string.IsNullOrEmpty(msgModel.ObjectID))
+                if (!string.IsNullOrEmpty(msgModel.MsgSenderObjectID))
                 {
-                    CommonVariables.MessageContorl.AddMSgRecordIntoBuffer(msgModel);
-                    return "ok";
+                    CommonVariables.MessageContorl.AddMsgRecordIntoBuffer(msgModel);
+                    return msgModel.MsgID;
                 }
             }
             return string.Empty;
@@ -239,26 +241,16 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         {
             string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUAGetMSG.Length);
             GetMsgModel getMsgModel = CommonVariables.serializer.Deserialize<GetMsgModel>(tempStr);
-            //CommonVariables.LogTool.Log("get msg " + getMsgModel.ObjectID.ToString() + " && " + getMsgModel.GroupIDs.Count.ToString() + "&&" + getMsgModel.LatestTime.ToString());
             if (getMsgModel != null)
             {
                 if (!string.IsNullOrEmpty(getMsgModel.ObjectID))
                 {
-                    if (!CommonVariables.InRunningUAList.Contains(getMsgModel.ObjectID))
+                    CommonVariables.MessageContorl.AddGetMsgIntoBuffer(getMsgModel);
+                    token.Models = CommonVariables.MessageContorl.GetMSG(getMsgModel);
+                    if (token.Models != null && token.Models.Count > 0)
                     {
-                        CommonVariables.InRunningUAList.Add(getMsgModel.ObjectID);
-                        CommonVariables.MessageContorl.AddGetMsgIntoBuffer(getMsgModel);
-                        token.Models = CommonVariables.MessageContorl.GetMSG(getMsgModel);
-                        //CommonVariables.LogTool.Log("get msg account " + token.Models.Count.ToString());
-                        if (token.Models != null && token.Models.Count > 0)
-                        {
-                            token.UAObjectID = getMsgModel.ObjectID;
-                            return CommonVariables.serializer.Serialize(token.Models[0]);
-                        }
-                        else
-                        {
-                            CommonVariables.InRunningUAList.Remove(getMsgModel.ObjectID);
-                        }
+                        token.UAObjectID = getMsgModel.ObjectID;
+                        return CommonVariables.serializer.Serialize(token.Models[0]);
                     }
                 }
             }
@@ -277,6 +269,19 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     CommonVariables.LogTool.Log("ContactPerson " + contactData.ObjectID + " can not find");
                     return string.Empty;
                 }
+
+                if(contactData.DataType==0)
+                {
+                    contactPerson.ContactName = contactData.ContactName;
+                    contactPerson.ImageSrc = contactData.ImageSrc;
+                    contactPerson.LatestTime = contactData.LatestTime;
+                    if (contactData.UpdateTime.CompareTo(contactPerson.UpdateTime) > 0)
+                    {
+                        contactPerson.UpdateTime = contactData.UpdateTime;
+                    }
+                    contactPersonService.UpdateContactPerson(contactPerson);
+                }
+
 
                 if (contactData.DataType == 1)
                 {

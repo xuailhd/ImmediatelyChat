@@ -13,7 +13,7 @@ using Xugl.ImmediatelyChat.Model;
 
 namespace Xugl.ImmediatelyChat.SocketEngine
 {
-    public abstract class AsyncSocketListener<T> where T : AsyncUserToken, new()
+    public abstract class AsyncSocketListenerUDP<T> where T : AsyncUserToken, new()
     {
         private int m_maxConnnections;
         private int m_maxSize;
@@ -25,7 +25,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
         private Semaphore m_maxNumberAcceptedClients;
         private ICommonLog LogTool;
 
-        public AsyncSocketListener(int _maxSize, int _maxConnnections, ICommonLog _logTool)
+        public AsyncSocketListenerUDP(int _maxSize, int _maxConnnections, ICommonLog _logTool)
         {
             m_readWritePool = new SocketAsyncEventArgsPool<SocketAsyncEventArgs>();
             m_maxConnnections = _maxConnnections;
@@ -54,6 +54,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             {
                 case SocketAsyncOperation.Receive:
                     ProcessReceive(e);
+                    StartReceive();
                     break;
                 case SocketAsyncOperation.Send:
                     ProcessSend(e);
@@ -61,7 +62,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                 default:
                     throw new ArgumentException("The last operation completed on the socket was not a receive or send");
             }
-
+            
         }
 
 
@@ -70,67 +71,22 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             IPAddress ip = IPAddress.Parse(ipaddress);
             IPEndPoint ipe = new IPEndPoint(ip, port);
 
-            mainServiceSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            mainServiceSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Udp);
             mainServiceSocket.Bind(ipe);
             mainServiceSocket.Listen(m_maxConnnections);
-
-            StartAccept(null);
+            
+            StartReceive();
         }
 
 
-        private void StartAccept(SocketAsyncEventArgs acceptEventArg)
+        private void StartReceive()
         {
-            if (acceptEventArg == null)
-            {
-                acceptEventArg = new SocketAsyncEventArgs();
-                acceptEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(AcceptEventArg_Completed);
-            }
-            else
-            {
-                acceptEventArg.AcceptSocket = null;
-            }
             m_maxNumberAcceptedClients.WaitOne();
-            bool willRaiseEvent = mainServiceSocket.AcceptAsync(acceptEventArg);
+            SocketAsyncEventArgs e = m_readWritePool.Pop();
+            bool willRaiseEvent = mainServiceSocket.ReceiveFromAsync(e);
             if (!willRaiseEvent)
             {
-                ProcessAccept(acceptEventArg);
-            }
-        }
-
-
-        private void AcceptEventArg_Completed(object sender, SocketAsyncEventArgs e)
-        {
-            ProcessAccept(e);
-        }
-
-
-        private void ProcessAccept(SocketAsyncEventArgs e)
-        {
-            //Interlocked.Increment(ref m_numConnectedSockets);
-            //Console.WriteLine("Client connection accepted. There are {0} clients connected to the server",
-            //    m_numConnectedSockets);
-
-            // Get the socket for the accepted client connection and put it into the 
-            //ReadEventArg object user token
-            try
-            {
-                SocketAsyncEventArgs readEventArgs = m_readWritePool.Pop();
-                ((T)readEventArgs.UserToken).Socket = e.AcceptSocket;
-
-                // As soon as the client is connected, post a receive to the connection
-                readEventArgs.SetBuffer(0, m_maxSize);
-                bool willRaiseEvent = e.AcceptSocket.ReceiveAsync(readEventArgs);
-                if (!willRaiseEvent)
-                {
-                    ProcessReceive(readEventArgs);
-                }
-                // Accept the next connection request
-                StartAccept(e);
-            }
-            catch (Exception ex)
-            {
-                LogTool.Log(ex.Message + ex.StackTrace);
-                CloseClientSocket(e);
+                ProcessReceive(e);
             }
         }
 
@@ -151,7 +107,9 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                     //Console.WriteLine("The server has read a total of {0} bytes", m_totalBytesRead);
 
                     string data = Encoding.UTF8.GetString(e.Buffer, e.Offset, e.BytesTransferred);
-
+                    token.IP = ((IPEndPoint)e.RemoteEndPoint).Address.ToString();
+                    token.Port = ((IPEndPoint)e.RemoteEndPoint).Port;
+                    LogTool.Log("receive IP:" + token.IP + "  Port:" + token.Port.ToString() + "  msg:" + data);
                     string returndata = HandleRecivedMessage(data, token);
 
                     if (string.IsNullOrEmpty(returndata))
@@ -163,7 +121,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                     int bytecount = Encoding.UTF8.GetBytes(returndata, 0, returndata.Length, e.Buffer,0);
 
                     e.SetBuffer(0,bytecount);
-                    bool willRaiseEvent = token.Socket.SendAsync(e);
+                    bool willRaiseEvent = token.Socket.SendToAsync(e);
                     if (!willRaiseEvent)
                     {
                         ProcessSend(e);
@@ -197,7 +155,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                 if (e.SocketError == SocketError.Success)
                 {
                     e.SetBuffer(0, m_maxSize);
-                    bool willRaiseEvent = token.Socket.ReceiveAsync(e);
+                    bool willRaiseEvent = token.Socket.ReceiveFromAsync(e);
                     if (!willRaiseEvent)
                     {
                         ProcessReceive(e);
