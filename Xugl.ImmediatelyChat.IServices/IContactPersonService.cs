@@ -10,7 +10,7 @@ namespace Xugl.ImmediatelyChat.IServices
 {
     public interface IContactPersonService
     {
-        IList<ContactPerson> GetContactPersonIDListByGroupID(string groupID);
+        IList<String> GetContactPersonIDListByGroupID(string senderObjectID, string groupID);
 
         ContactPerson FindContactPerson(string objectID);
         ContactPerson FindContactPerson(Expression<Func<ContactPerson, bool>> predicate);
@@ -35,8 +35,8 @@ namespace Xugl.ImmediatelyChat.IServices
         IList<ContactPersonList> GetLastestContactPersonList(string objectID, string updateTime);
         IList<ContactGroup> GetLastestContactGroup(string objectID, string updateTime);
 
-        IList<ContactGroup> SearchGroup(string key);
-        IList<ContactPerson> SearchPerson(string key);
+        IList<ContactGroup> SearchGroup(string objectID, string key);
+        IList<ContactPerson> SearchPerson(string objectID, string key);
 
         int UpdateContactUpdateTimeByGroup(string groupID, string updateTime);
 

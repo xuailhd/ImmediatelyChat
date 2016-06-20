@@ -129,6 +129,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
             if (model != null && !string.IsNullOrEmpty(model.ObjectID))
             {
+                ContactData contactData = new ContactData();
                 ContactGroupSub contactGroupSub = token.ContactPersonService.FindContactGroupSub(model.ObjectID, model.GroupObjectID);
                 if (contactGroupSub == null)
                 {
@@ -140,12 +141,42 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                         {
                             contactGroupSub = new ContactGroupSub();
                             contactGroupSub.ContactGroupID = contactGroup.GroupObjectID;
-                            contactGroupSub.ContactPersonObjectID = contactGroupSub.ContactPersonObjectID;
+                            contactGroupSub.ContactPersonObjectID = model.ObjectID;
                             contactGroupSub.UpdateTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
+
+                            CommonVariables.LogTool.Log("contactGroupSub data:" + contactGroupSub.ContactGroupID + "  vs " + contactGroupSub.ContactPersonObjectID + " vs "
+                                + contactGroupSub.UpdateTime);
 
                             if (token.ContactPersonService.InsertContactGroupSub(contactGroupSub) == 1)
                             {
                                 token.ContactPersonService.UpdateContactUpdateTimeByGroup(contactGroup.GroupObjectID, contactGroupSub.UpdateTime);
+
+                                ClientStatusModel clientStatusModel = new ClientStatusModel();
+
+                                clientStatusModel.MCS_IP = model.MCS_IP;
+                                clientStatusModel.MCS_Port = model.MCS_Port;
+                                clientStatusModel.ObjectID = model.ObjectID;
+
+                                string mcs_UpdateTime = CommonVariables.SyncSocketClientIntance.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port,
+                                    CommonFlag.F_MCSReceiveMMSUAUpdateTime + CommonVariables.serializer.Serialize(clientStatusModel));
+
+                                if (string.IsNullOrEmpty(mcs_UpdateTime))
+                                {
+                                    return string.Empty;
+                                }
+
+                                IList<ContactData> contactDatas = CommonVariables.UAInfoContorl.PreparContactData(clientStatusModel.ObjectID, mcs_UpdateTime);
+
+                                foreach (ContactData _contactData in contactDatas)
+                                {
+                                    CommonVariables.SyncSocketClientIntance.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port,
+                                        CommonFlag.F_MCSReceiveUAInfo + CommonVariables.serializer.Serialize(_contactData));
+                                }
+
+                                contactData.GroupName = contactGroup.GroupName;
+                                contactData.GroupObjectID = contactGroup.GroupObjectID;
+                                contactData.IsDelete = contactGroup.IsDelete;
+                                contactData.DataType = 2;
                             }
                             else
                             {
@@ -162,16 +193,15 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                         return string.Empty;
                     }
                 }
-
-                ContactData contactData = new ContactData();
-                contactGroupSub.ContactGroupID = contactData.ContactGroupID;
-                contactGroupSub.ContactPersonObjectID = contactData.ContactPersonObjectID;
-                contactGroupSub.IsDelete = contactData.IsDelete;
-                contactGroupSub.UpdateTime = contactData.UpdateTime;
-                contactData.DataType = 3;
-
-                CommonVariables.SyncSocketClientIntance.SendMsg(model.MCS_IP, model.MCS_Port,
-                CommonFlag.F_MCSReceiveUAInfo + CommonVariables.serializer.Serialize(contactData));
+                else
+                {
+                    ContactGroup contactGroup = token.ContactPersonService.FindContactGroup(contactGroupSub.ContactGroupID);
+                    contactData.GroupName = contactGroup.GroupName;
+                    contactData.GroupObjectID = contactGroup.GroupObjectID;
+                    contactData.IsDelete = contactGroup.IsDelete;
+                    contactData.DataType = 2;
+                }
+                return CommonVariables.serializer.Serialize(contactData);
             }
 
             return string.Empty;            
@@ -282,11 +312,11 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             {
                 if (clientSearchModel.Type == 1)
                 {
-                    token.Models = ContactPersonToContacData(token.ContactPersonService.SearchPerson(clientSearchModel.SearchKey));
+                    token.Models = ContactPersonToContacData(token.ContactPersonService.SearchPerson(clientSearchModel.ObjectID,clientSearchModel.SearchKey));
                 }
                 else if (clientSearchModel.Type == 2)
                 {
-                    token.Models = ContactGroupToContacData(token.ContactPersonService.SearchGroup(clientSearchModel.SearchKey));
+                    token.Models = ContactGroupToContacData(token.ContactPersonService.SearchGroup(clientSearchModel.ObjectID, clientSearchModel.SearchKey));
                 }
 
                 if (token.Models != null && token.Models.Count > 0)
@@ -331,6 +361,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
             token.Models = CommonVariables.UAInfoContorl.PreparContactData(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
 
+            CommonVariables.LogTool.Log(" UAInfo request  " + token.Models);
             if (token.Models != null && token.Models.Count > 0)
             {
                 return CommonVariables.serializer.Serialize(token.Models[0]);

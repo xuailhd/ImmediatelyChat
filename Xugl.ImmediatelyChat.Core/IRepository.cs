@@ -17,7 +17,7 @@ namespace Xugl.ImmediatelyChat.Core
 
         int BatchInsert(IList<T> entitys);
 
-        int Upade(T TEntity);
+        int Update(T TEntity);
 
         int BatchUpdate(IList<T> entitys);
 
@@ -26,6 +26,8 @@ namespace Xugl.ImmediatelyChat.Core
         int BatchDelete(IList<T> entitys);
 
         IQueryable<T> Table { get; }
+
+        IQueryable<T> TableNoTracking { get; }
 
     }
 }

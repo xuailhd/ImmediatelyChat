@@ -24,7 +24,7 @@ namespace Xugl.ImmediatelyChat.Services
                 recordtable = recordtable.Where(t => t.WarehouseCode == query.WarehouseCode);
             }
 
-            return recordtable.ToPagingDataSource<Warehouse>(query).DataSource;
+            return null;
         }
     }
 }

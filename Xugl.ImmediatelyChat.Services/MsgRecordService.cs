@@ -27,7 +27,7 @@ namespace Xugl.ImmediatelyChat.Services
 
         public IList<MsgRecord> LoadMsgRecord(MsgRecordQuery query)
         {
-            var tablequery = msgRecordRepository.Table;
+            var tablequery = msgRecordRepository.TableNoTracking;
 
             if(query.MsgRecordtime!=null)
             {
@@ -54,7 +54,7 @@ namespace Xugl.ImmediatelyChat.Services
                 msgids.Add(msgRecords[i].MsgID);
             }
 
-            var query = from aa in msgRecordRepository.Table
+            var query = from aa in msgRecordRepository.TableNoTracking
                         join bb in msgids on aa.MsgID equals bb
                         select aa.MsgID;
             IList<string> tempids = query.ToList();
@@ -78,7 +78,7 @@ namespace Xugl.ImmediatelyChat.Services
 
             IList<string> recipientObjectIDs = new List<string>();
 
-            IList<ContactGroupSub> contactGroupSubs = contactGroupSubRepository.Table.
+            IList<ContactGroupSub> contactGroupSubs = contactGroupSubRepository.TableNoTracking.
                 Where(t => t.ContactGroupID == msgRecordModel.MsgRecipientGroupID).ToList();
 
             foreach(ContactGroupSub contactGroupSub in contactGroupSubs)

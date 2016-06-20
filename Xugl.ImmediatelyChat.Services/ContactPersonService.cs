@@ -27,14 +27,13 @@ namespace Xugl.ImmediatelyChat.Services
             this.contactPersonListRepository = contactPersonListRepository;
         }
 
-        public IList<ContactPerson> GetContactPersonIDListByGroupID(string groupID)
+        public IList<String> GetContactPersonIDListByGroupID(string senderObjectID, string groupID)
         {
 
-            var contactPersons = from contactGroup in contactGroupSubRepository.Table
-                                 join contactPerson in contactPersonRepository.Table on contactGroup.ContactPersonObjectID equals contactPerson.ObjectID
-                                 where contactGroup.ContactGroupID == groupID
-                                 select contactPerson;
-            return contactPersons.ToList();
+            var contactGroupSubs = from aa in contactGroupSubRepository.TableNoTracking
+                                 where aa.ContactGroupID == groupID && aa.ContactPersonObjectID != senderObjectID
+                                 select aa.ContactPersonObjectID;
+            return contactGroupSubs.ToList();
         }
 
 
@@ -75,7 +74,7 @@ namespace Xugl.ImmediatelyChat.Services
                 return 0;
             }
 
-            return contactPersonRepository.Upade(contactPerson);
+            return contactPersonRepository.Update(contactPerson);
         }
 
         public int InsertDefaultGroup(string ObjectID)
@@ -85,7 +84,7 @@ namespace Xugl.ImmediatelyChat.Services
                 return 0;
             }
 
-            ContactGroup contactGroup = contactGroupRepository.Table.Where(t => t.GroupName == "Group1").FirstOrDefault();
+            ContactGroup contactGroup = contactGroupRepository.TableNoTracking.Where(t => t.GroupName == "Group1").FirstOrDefault();
             if (contactGroup == null)
             {
                 contactGroup = new ContactGroup();
@@ -114,8 +113,8 @@ namespace Xugl.ImmediatelyChat.Services
                 updateTime = CommonFlag.F_MinDatetime;
             }
 
-            var query = from aa in contactGroupRepository.Table
-                        join bb in contactGroupSubRepository.Table on aa.GroupObjectID equals bb.ContactGroupID
+            var query = from aa in contactGroupRepository.TableNoTracking
+                        join bb in contactGroupSubRepository.TableNoTracking on aa.GroupObjectID equals bb.ContactGroupID
                         where bb.ContactPersonObjectID.Equals(objectID) && bb.UpdateTime.CompareTo(updateTime) > 0
                         select aa;
 
@@ -135,9 +134,9 @@ namespace Xugl.ImmediatelyChat.Services
             }
 
 
-            var query = from aa in contactGroupSubRepository.Table
+            var query = from aa in contactGroupSubRepository.TableNoTracking
                         join bb in
-                            (from cc in contactGroupSubRepository.Table
+                            (from cc in contactGroupSubRepository.TableNoTracking
                              where cc.ContactPersonObjectID.Equals(objectID) && !cc.IsDelete
                              select cc.ContactGroupID) on aa.ContactGroupID equals bb
                         where aa.UpdateTime.CompareTo(updateTime) > 0
@@ -156,7 +155,7 @@ namespace Xugl.ImmediatelyChat.Services
             {
                 updateTime = CommonFlag.F_MinDatetime;
             }
-            return contactPersonListRepository.Table.Where(t => t.ObjectID == objectID
+            return contactPersonListRepository.TableNoTracking.Where(t => t.ObjectID == objectID
                 && t.UpdateTime.CompareTo(updateTime) > 0).ToList();
         }
 
@@ -190,7 +189,7 @@ namespace Xugl.ImmediatelyChat.Services
                 return 0;
             }
 
-            return contactPersonListRepository.Upade(contactPersonList);
+            return contactPersonListRepository.Update(contactPersonList);
         }
 
         public ContactGroup FindContactGroup(string groupID)
@@ -223,7 +222,7 @@ namespace Xugl.ImmediatelyChat.Services
                 return 0;
             }
 
-            return contactGroupRepository.Upade(contactGroup);
+            return contactGroupRepository.Update(contactGroup);
         }
 
         public ContactGroupSub FindContactGroupSub(string groupID, string contactPersonObjectID)
@@ -254,27 +253,53 @@ namespace Xugl.ImmediatelyChat.Services
             {
                 return 0;
             }
-            return contactGroupSubRepository.Upade(contactGroupSub);
+            return contactGroupSubRepository.Update(contactGroupSub);
         }
 
 
-        public IList<ContactGroup> SearchGroup(string key)
+        public IList<ContactGroup> SearchGroup(string objectID,string key)
         {
-            return contactGroupRepository.Table.Where(t => t.GroupName == key).ToList();
+            ContactGroup contactGroup = (from aa in contactGroupRepository.TableNoTracking
+                                         join bb in contactGroupSubRepository.TableNoTracking on aa.GroupObjectID equals bb.ContactGroupID
+                                         where aa.GroupName == key && bb.ContactPersonObjectID == objectID
+                                         select aa).FirstOrDefault();
+
+            if (contactGroup == null)
+            {
+                return contactGroupRepository.TableNoTracking.Where(t => t.GroupName == key).ToList();
+            }
+            else
+            {
+                return null;
+            }
         }
 
-        public IList<ContactPerson> SearchPerson(string key)
+        public IList<ContactPerson> SearchPerson(string objectID, string key)
         {
             //ContactPersonListQuery query = new ContactPersonListQuery();
             //query.ContactPersonName = key;
 
-            return contactPersonRepository.Table.Where(t => t.ContactName == key).ToList();
+            ContactPerson contactPerson = (from aa in contactPersonRepository.TableNoTracking
+                                           join bb in contactPersonListRepository.TableNoTracking on aa.ObjectID equals bb.DestinationObjectID
+                                           where bb.ContactPersonName == key
+                                           select aa).FirstOrDefault();
+
+            if (contactPerson == null)
+            {
+                return contactPersonRepository.TableNoTracking.Where(t => t.ContactName == key).ToList();
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public int UpdateContactUpdateTimeByGroup(string groupID, string updateTime)
         {
-            IList<ContactPerson> contactPersons = (from aa in contactPersonRepository.Table
-                                                   join bb in contactGroupSubRepository.Table on aa.ObjectID equals bb.ContactPersonObjectID
+            int updateCount = 0;
+
+            IList<ContactPerson> contactPersons = (from aa in contactPersonRepository.TableNoTracking
+                                                   join bb in contactGroupSubRepository.TableNoTracking on aa.ObjectID equals bb.ContactPersonObjectID
                                                    where bb.ContactGroupID == groupID
                                                    select aa).ToList();
 
@@ -283,7 +308,14 @@ namespace Xugl.ImmediatelyChat.Services
                 contactPerson.UpdateTime = updateTime;
             }
 
-            return contactPersonRepository.BatchUpdate(contactPersons);
+            updateCount = contactPersonRepository.BatchUpdate(contactPersons);
+
+            ContactGroup contactGroup = contactGroupRepository.TableNoTracking.Where(t => t.GroupObjectID == groupID).FirstOrDefault();
+            contactGroup.UpdateTime = updateTime;
+
+            updateCount = updateCount + contactGroupRepository.Update(contactGroup);
+
+            return updateCount;
         }
     }
 }

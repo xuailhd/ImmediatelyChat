@@ -34,6 +34,11 @@ namespace Xugl.ImmediatelyChat.Data.EF
             get { return this.Entites; }
         }
 
+        public virtual IQueryable<T> TableNoTracking
+        {
+            get { return this.Entites.AsNoTracking<T>(); }
+        }
+
         public T Find(params object[] keyValues)
         {
             return this.Entites.Find(keyValues);
@@ -41,7 +46,7 @@ namespace Xugl.ImmediatelyChat.Data.EF
 
         public virtual T Find(Expression<Func<T, bool>> predicate)
         {
-            return this.Entites.FirstOrDefault(predicate);
+            return this.Entites.AsNoTracking<T>().Where(predicate).FirstOrDefault();
         }
 
         public int Insert(T entity)
@@ -93,7 +98,7 @@ namespace Xugl.ImmediatelyChat.Data.EF
         /// </summary>
         /// <param name="TEntity"></param>
         /// <returns></returns>
-        public int Upade(T entity)
+        public int Update(T entity)
         {
             if (entity == null)
             {

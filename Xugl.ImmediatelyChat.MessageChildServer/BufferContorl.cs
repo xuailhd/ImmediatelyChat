@@ -178,13 +178,17 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         private IList<MsgRecordModel> GenerateMsgRecordModel(MsgRecordModel msgRecordModel)
         {
+            CommonVariables.LogTool.Log("GenerateMsgRecordModel:" + msgRecordModel.MsgRecipientGroupID + ":" + msgRecordModel.MsgRecipientObjectID);
+
             IList<MsgRecordModel> msgRecords = new List<MsgRecordModel>();
             if (!string.IsNullOrEmpty(msgRecordModel.MsgRecipientGroupID))
             {
                 IContactPersonService contactGroupService = ObjectContainerFactory.CurrentContainer.Resolver<IContactPersonService>();
-                IList<ContactPerson> ContactPersons = contactGroupService.GetContactPersonIDListByGroupID(msgRecordModel.MsgRecipientGroupID);
+                IList<String> ContactPersonIDs = contactGroupService.GetContactPersonIDListByGroupID(msgRecordModel.MsgSenderObjectID,msgRecordModel.MsgRecipientGroupID);
 
-                foreach (ContactPerson contactPerson in ContactPersons)
+                CommonVariables.LogTool.Log("GenerateMsgRecordModel:" + ContactPersonIDs + " count:" + ContactPersonIDs.Count);
+
+                foreach (String objectID in ContactPersonIDs)
                 {
                     MsgRecordModel _msgRecordModel = new MsgRecordModel();
                     _msgRecordModel.MsgContent = msgRecordModel.MsgContent;
@@ -193,10 +197,11 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     _msgRecordModel.MsgSenderName = msgRecordModel.MsgSenderName;
                     _msgRecordModel.MsgRecipientGroupID = msgRecordModel.MsgRecipientGroupID;
                     _msgRecordModel.IsSended = msgRecordModel.IsSended;
-                    _msgRecordModel.MsgRecipientObjectID = contactPerson.ObjectID;
+                    _msgRecordModel.MsgRecipientObjectID = objectID;
                     _msgRecordModel.SendTime = msgRecordModel.SendTime;
                     _msgRecordModel.MsgID = Guid.NewGuid().ToString();
-
+                    CommonVariables.LogTool.Log("generate MsgRecordModel :" + _msgRecordModel.MsgSenderName + " MsgRecipientGroupID:" + _msgRecordModel.MsgRecipientGroupID +
+                        " MsgRecipientObjectID:" + _msgRecordModel.MsgRecipientObjectID);
                     for (int i = 0; i < CommonVariables.MDSServers.Count;i++ )
                     {
                         if (CommonVariables.MDSServers[i].ArrangeStr.Contains(_msgRecordModel.MsgRecipientObjectID.Substring(0, 1)))
@@ -207,6 +212,8 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                             break;
                         }
                     }
+
+                    msgRecords.Add(msgRecordModel);
                 }
             }
             else if (string.IsNullOrEmpty(msgRecordModel.MsgRecipientGroupID) && !string.IsNullOrEmpty(msgRecordModel.MsgRecipientObjectID))
@@ -267,7 +274,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         public void AddMsgIntoOutBuffer(MsgRecord msgRecord)
         {
-            
+            CommonVariables.LogTool.Log("AddMsgIntoOutBuffer:");   
             if (OutMsgRecords.ContainsKey(msgRecord.MsgRecipientObjectID))
             {
                 if (!(OutMsgRecords[msgRecord.MsgRecipientObjectID].Where(t => t.MsgID == msgRecord.MsgID).Count() > 0))
@@ -277,6 +284,14 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             }
             else
             {
+                if (msgRecord.MsgRecipientObjectID==null)
+                {
+                    CommonVariables.LogTool.Log("null");   
+                }
+                else
+                {
+                    CommonVariables.LogTool.Log(msgRecord.MsgRecipientObjectID);   
+                }
                 OutMsgRecords.Add(msgRecord.MsgRecipientObjectID, new List<MsgRecord>());
                 OutMsgRecords[msgRecord.MsgRecipientObjectID].Add(msgRecord);
             }
