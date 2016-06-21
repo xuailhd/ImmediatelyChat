@@ -52,7 +52,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         /// <summary>
         /// message Buffer, use to send to UA
         /// </summary>
-        private IDictionary<string, IList<MsgRecord>> OutMsgRecords = new Dictionary<string, IList<MsgRecord>>();
+        private static IDictionary<string, IList<MsgRecord>> OutMsgRecords = new Dictionary<string, IList<MsgRecord>>();
         //private IDictionary<string, IList<MsgRecord>> OutMsgRecords2 = new Dictionary<string, IList<MsgRecord>>();
         ////for loop and delete
         //private IList<string> OutMsgRecordKeys1 = new List<string>();
@@ -274,6 +274,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         public void AddMsgIntoOutBuffer(MsgRecord msgRecord)
         {
+            CommonVariables.LogTool.Log(DateTime.Now.ToString(CommonFlag.F_DateTimeFormat));
             CommonVariables.LogTool.Log("AddMsgIntoOutBuffer:");   
             if (OutMsgRecords.ContainsKey(msgRecord.MsgRecipientObjectID))
             {
@@ -290,7 +291,12 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 }
                 else
                 {
-                    CommonVariables.LogTool.Log(msgRecord.MsgRecipientObjectID);   
+                    CommonVariables.LogTool.Log("Don't contain key:" + msgRecord.MsgRecipientObjectID);
+                    foreach(string kes in OutMsgRecords.Keys)
+                    {
+                        CommonVariables.LogTool.Log(kes);   
+                    }
+                    
                 }
                 OutMsgRecords.Add(msgRecord.MsgRecipientObjectID, new List<MsgRecord>());
                 OutMsgRecords[msgRecord.MsgRecipientObjectID].Add(msgRecord);
@@ -303,7 +309,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             {
                 IList<MsgRecord> msgRecords = OutMsgRecords[getMsgModel.ObjectID].Where(t => t.SendTime.CompareTo(getMsgModel.LatestTime) > 0).ToList();
 
-                if (msgRecords != null && msgRecords.Count > 0)
+                if(msgRecords!=null && msgRecords.Count>0)
                 {
                     OutMsgRecords[getMsgModel.ObjectID].Clear();
                     return msgRecords;

@@ -144,9 +144,6 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                             contactGroupSub.ContactPersonObjectID = model.ObjectID;
                             contactGroupSub.UpdateTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
 
-                            CommonVariables.LogTool.Log("contactGroupSub data:" + contactGroupSub.ContactGroupID + "  vs " + contactGroupSub.ContactPersonObjectID + " vs "
-                                + contactGroupSub.UpdateTime);
-
                             if (token.ContactPersonService.InsertContactGroupSub(contactGroupSub) == 1)
                             {
                                 token.ContactPersonService.UpdateContactUpdateTimeByGroup(contactGroup.GroupObjectID, contactGroupSub.UpdateTime);
@@ -357,11 +354,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 return string.Empty;
             }
 
-            CommonVariables.LogTool.Log("UA:" + clientStatusModel.ObjectID + " UAInfo request  " + clientStatusModel.UpdateTime);
-
             token.Models = CommonVariables.UAInfoContorl.PreparContactData(clientStatusModel.ObjectID, clientStatusModel.UpdateTime);
-
-            CommonVariables.LogTool.Log(" UAInfo request  " + token.Models);
             if (token.Models != null && token.Models.Count > 0)
             {
                 return CommonVariables.serializer.Serialize(token.Models[0]);

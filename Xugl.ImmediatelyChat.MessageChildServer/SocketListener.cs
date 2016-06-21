@@ -104,8 +104,29 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 {
                     return HandleMCSVerifyUAGetMSG(data, token);
                 }
+
+                //if(data.StartsWith(CommonFlag.F_MCSVerfiyMDSMSG))
+                //{
+                //    return HandleMCSVerfiyMDSMSG(data, token);
+                //}
             }
 
+            return string.Empty;
+        }
+
+        private string HandleMCSVerfiyMDSMSG(string data,MCSListenerToken token)
+        {
+            string tempStr = data.Remove(0, CommonFlag.F_MCSVerfiyMDSMSG.Length);
+
+            MsgRecord tempMsgRecord = CommonVariables.serializer.Deserialize<MsgRecord>(tempStr);
+            if (tempMsgRecord != null)
+            {
+                if (!string.IsNullOrEmpty(tempMsgRecord.MsgID))
+                {
+                    CommonVariables.MessageContorl.AddMsgIntoOutBuffer(tempMsgRecord);
+                    return CommonFlag.F_MDSReciveMCSFBMSG + tempMsgRecord.MsgID;
+                }
+            }
             return string.Empty;
         }
 
