@@ -189,7 +189,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         private string HandleMCSVerifyUA(string data,MCSListenerToken token)
         {
             string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUA.Length);
-            ClientStatusModel clientModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(tempStr);
+            ClientModel clientModel = CommonVariables.serializer.Deserialize<ClientModel>(tempStr);
             if (clientModel != null)
             {
                 if (!string.IsNullOrEmpty(clientModel.ObjectID))
@@ -199,10 +199,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     {
                         if (contactPerson.UpdateTime.CompareTo(clientModel.UpdateTime) == 0)
                         {
-                            if( CommonVariables.ClientModels.ContainsKey(clientModel.ObjectID))
-                            {
-                                CommonVariables.ClientModels.Remove(clientModel.ObjectID);
-                            }
+                            CommonVariables.MessageContorl.AddClientModel(clientModel);
                             return "ok";
                         }
 
@@ -215,7 +212,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         private string HandleMCSReceiveMMSUAUpdateTime(string data,MCSListenerToken token)
         {
-            ClientStatusModel clientModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(data.Remove(0, CommonFlag.F_MCSReceiveMMSUAUpdateTime.Length));
+            ClientModel clientModel = CommonVariables.serializer.Deserialize<ClientModel>(data.Remove(0, CommonFlag.F_MCSReceiveMMSUAUpdateTime.Length));
             ContactPerson contactPerson = token.ContactPersonService.FindContactPerson(clientModel.ObjectID);
 
             if (contactPerson == null)
@@ -261,12 +258,12 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         private string HandleMCSVerifyUAGetMSG(string data,MCSListenerToken token)
         {
             string tempStr = data.Remove(0, CommonFlag.F_MCSVerifyUAGetMSG.Length);
-            GetMsgModel getMsgModel = CommonVariables.serializer.Deserialize<GetMsgModel>(tempStr);
+            ClientModel getMsgModel = CommonVariables.serializer.Deserialize<ClientModel>(tempStr);
             if (getMsgModel != null)
             {
                 if (!string.IsNullOrEmpty(getMsgModel.ObjectID))
                 {
-                    CommonVariables.MessageContorl.AddGetMsgIntoBuffer(getMsgModel);
+                    CommonVariables.MessageContorl.UpdateClientModel(getMsgModel);
                     token.Models = CommonVariables.MessageContorl.GetMSG(getMsgModel);
                     if (token.Models != null && token.Models.Count > 0)
                     {

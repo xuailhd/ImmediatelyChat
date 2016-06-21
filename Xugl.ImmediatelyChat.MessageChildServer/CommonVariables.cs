@@ -93,19 +93,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         //}
         #endregion
 
-        #region ClientModels
-        public static IDictionary<string,ClientModel> ClientModels
-        {
-            get
-            {
-                if (Singleton<IDictionary<string, ClientModel>>.Instance==null)
-                {
-                    Singleton<IDictionary<string, ClientModel>>.Instance = new Dictionary<string, ClientModel>();
-                }
-                return Singleton<IDictionary<string, ClientModel>>.Instance;
-            }
-        }
-        #endregion
 
         #region  OperateFile
         public static IOperateFile OperateFile

@@ -157,14 +157,14 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
         private string HandleMDSVerifyMCSGetMSG(string data,MDSListenerToken token)
         {
             string tempStr = data.Remove(0, CommonFlag.F_MDSVerifyMCSGetMSG.Length);
-            GetMsgModel getMsgModel = CommonVariables.serializer.Deserialize<GetMsgModel>(tempStr);
+            ClientModel clientModel = CommonVariables.serializer.Deserialize<ClientModel>(tempStr);
 
-            if (getMsgModel != null)
+            if (clientModel != null)
             {
-                if (!string.IsNullOrEmpty(getMsgModel.ObjectID))
+                if (!string.IsNullOrEmpty(clientModel.ObjectID))
                 {
 
-                    token.Models = CommonVariables.MessageContorl.GetMSG(token.MsgRecordService, getMsgModel);
+                    token.Models = CommonVariables.MessageContorl.GetMSG(token.MsgRecordService, clientModel);
                     //CommonVariables.LogTool.Log("recive mcs get msg:" + getMsgModel.LatestTime + "/" + getMsgModel.ObjectID);
                     if (token.Models != null && token.Models.Count > 0)
                     {

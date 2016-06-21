@@ -95,7 +95,7 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             }
         }
 
-        public IList<MsgRecord> GetMSG(IMsgRecordService _msgRecordService, GetMsgModel getMsgModel)
+        public IList<MsgRecord> GetMSG(IMsgRecordService _msgRecordService, ClientModel clientModel)
         {
 
             //IList<MsgRecord> msgRecords=new List<MsgRecord>();
@@ -114,8 +114,8 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
 
             //return msgRecords;
             MsgRecordQuery query = new MsgRecordQuery();
-            query.MsgRecipientObjectID = getMsgModel.ObjectID;
-            query.MsgRecordtime = getMsgModel.LatestTime;
+            query.MsgRecipientObjectID = clientModel.ObjectID;
+            query.MsgRecordtime = clientModel.LatestTime;
             return _msgRecordService.LoadMsgRecord(query);
         }
 

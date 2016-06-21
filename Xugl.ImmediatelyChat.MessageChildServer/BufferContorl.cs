@@ -39,10 +39,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         //private IList<string> BufferGetMsgKeys2 = new List<string>();
         private bool UsingTagForGetMsg = false;
 
-        private IList<ClientStatusModel> BufferUAModels1 = new List<ClientStatusModel>();
-        private IList<ClientStatusModel> BufferUAModels2 = new List<ClientStatusModel>();
-        private bool UsingTagForUAMode = false;
-
         /// <summary>
         /// for prevent async data error
         /// </summary>
@@ -59,6 +55,9 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         //private IList<string> OutMsgRecordKeys2 = new List<string>();
         //private bool UsingTagForOutMsg = false;
 
+        private IDictionary<string, ClientModel> clientModels = new Dictionary<string, ClientModel>();
+
+
         private AsyncSocketClient sendMsgClient;
         private AsyncSocketClient getMsgClient;
 
@@ -67,6 +66,8 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         private const int _maxGetConnections = 10;
         private const int _sendDelay = 200;
         private const int _getDelay = 500;
+
+
 
         public bool IsRunning = false;
 
@@ -82,6 +83,23 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             }
         }
 
+        public void AddClientModel(ClientModel clientModel)
+        {
+            if (!clientModels.ContainsKey(clientModel.ObjectID))
+            {
+                for (int i = 0; i < CommonVariables.MDSServers.Count; i++)
+                {
+                    if (CommonVariables.MDSServers[i].ArrangeStr.Contains(clientModel.ObjectID.Substring(0, 1)))
+                    {
+                        clientModel.MDS_IP = CommonVariables.MDSServers[i].MDS_IP;
+                        clientModel.MDS_Port = CommonVariables.MDSServers[i].MDS_Port;
+                        clientModel.LatestTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
+                        break;
+                    }
+                }
+                clientModels.Add(clientModel.ObjectID, clientModel);
+            }
+        }
 
         #region using unusing buffer manage
 
@@ -144,36 +162,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 }
             }
         }
-
-        private IList<ClientStatusModel> GetUsingUAModelBuffer
-        {
-            get
-            {
-                if (UsingTagForUAMode)
-                {
-                    return BufferUAModels1;
-                }
-                else
-                {
-                    return BufferUAModels2;
-                }
-            }
-        }
-
-        private IList<ClientStatusModel> GetUnUsingUAModelBuffer
-        {
-            get
-            {
-                if (!UsingTagForUAMode)
-                {
-                    return BufferUAModels1;
-                }
-                else
-                {
-                    return BufferUAModels2;
-                }
-            }
-        }
         #endregion
 
         private IList<MsgRecordModel> GenerateMsgRecordModel(MsgRecordModel msgRecordModel)
@@ -224,7 +212,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     {
                         msgRecordModel.MDS_IP = CommonVariables.MDSServers[i].MDS_IP;
                         msgRecordModel.MDS_Port = CommonVariables.MDSServers[i].MDS_Port;
-                        //msgRecordModel.MDS_ID = CommonVariables.GetMDSs[mds_id].MDS_ID;
                         if (string.IsNullOrEmpty(msgRecordModel.MsgID))
                         {
                             msgRecordModel.MsgID = Guid.NewGuid().ToString();
@@ -237,45 +224,25 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             return msgRecords;
         }
 
-        public void AddGetMsgIntoBuffer(GetMsgModel getMsgModel)
+        public void UpdateClientModel(ClientModel clientModel)
         {
-            if (CommonVariables.ClientModels.ContainsKey(getMsgModel.ObjectID))
+            if (clientModels.ContainsKey(clientModel.ObjectID))
             {
-                //if (getMsgModel.LatestTime.CompareTo(CommonVariables.ClientModels[getMsgModel.ObjectID].LatestTime) > 0)
-                //{
-                    //CommonVariables.ClientModels[getMsgModel.ObjectID].LatestTime = getMsgModel.LatestTime;
-
-                    getMsgModel.MessageID = Guid.NewGuid().ToString();
-                    getMsgModel.MDS_IP = CommonVariables.ClientModels[getMsgModel.ObjectID].MDS_IP;
-                    getMsgModel.MDS_Port = CommonVariables.ClientModels[getMsgModel.ObjectID].MDS_Port;
-                    GetUsingGetMsgBuffer.Add(getMsgModel);
-
-                    //CommonVariables.LogTool.Log("AddGetMsg by Exist:" + getMsgModel.ObjectID + "/" + getMsgModel.LatestTime + "/" + getMsgModel.MDS_IP);
-                //}
-            }
-            else
-            {
-                for (int i = 0; i < CommonVariables.MDSServers.Count; i++)
-                {
-                    if (CommonVariables.MDSServers[i].ArrangeStr.Contains(getMsgModel.ObjectID.Substring(0, 1)))
-                    {
-                        getMsgModel.MessageID = Guid.NewGuid().ToString();
-                        getMsgModel.MDS_IP = CommonVariables.MDSServers[i].MDS_IP;
-                        getMsgModel.MDS_Port = CommonVariables.MDSServers[i].MDS_Port;
-                        break;
-                    }
-                }
-                CommonVariables.ClientModels.Add(getMsgModel.ObjectID, new ClientModel() { ObjectID = getMsgModel.ObjectID, 
-                    LatestTime = getMsgModel.LatestTime, MDS_IP=getMsgModel.MDS_IP, MDS_Port= getMsgModel.MDS_Port });
-                GetUsingGetMsgBuffer.Add(getMsgModel);
-
+                clientModels[clientModel.ObjectID].LatestTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
             }
         }
 
         public void AddMsgIntoOutBuffer(MsgRecord msgRecord)
         {
-            CommonVariables.LogTool.Log(DateTime.Now.ToString(CommonFlag.F_DateTimeFormat));
-            CommonVariables.LogTool.Log("AddMsgIntoOutBuffer:");   
+            if (clientModels.ContainsKey(msgRecord.MsgRecipientObjectID))
+            {
+                if (clientModels[msgRecord.MsgRecipientObjectID].LatestTime.CompareTo(msgRecord.SendTime) < 0)
+                {
+                    clientModels[msgRecord.MsgRecipientObjectID].LatestTime = msgRecord.SendTime;
+                }
+            }
+
+
             if (OutMsgRecords.ContainsKey(msgRecord.MsgRecipientObjectID))
             {
                 if (!(OutMsgRecords[msgRecord.MsgRecipientObjectID].Where(t => t.MsgID == msgRecord.MsgID).Count() > 0))
@@ -285,49 +252,25 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             }
             else
             {
-                if (msgRecord.MsgRecipientObjectID==null)
-                {
-                    CommonVariables.LogTool.Log("null");   
-                }
-                else
-                {
-                    CommonVariables.LogTool.Log("Don't contain key:" + msgRecord.MsgRecipientObjectID);
-                    foreach(string kes in OutMsgRecords.Keys)
-                    {
-                        CommonVariables.LogTool.Log(kes);   
-                    }
-                    
-                }
                 OutMsgRecords.Add(msgRecord.MsgRecipientObjectID, new List<MsgRecord>());
                 OutMsgRecords[msgRecord.MsgRecipientObjectID].Add(msgRecord);
             }
         }
 
-        public IList<MsgRecord> GetMSG(GetMsgModel getMsgModel)
+        public IList<MsgRecord> GetMSG(ClientModel clientModel)
         {
-            if (OutMsgRecords.ContainsKey(getMsgModel.ObjectID))
+            if (OutMsgRecords.ContainsKey(clientModel.ObjectID))
             {
-                IList<MsgRecord> msgRecords = OutMsgRecords[getMsgModel.ObjectID].Where(t => t.SendTime.CompareTo(getMsgModel.LatestTime) > 0).ToList();
+                IList<MsgRecord> msgRecords = OutMsgRecords[clientModel.ObjectID].Where(t => t.SendTime.CompareTo(clientModel.LatestTime) > 0).ToList();
 
                 if(msgRecords!=null && msgRecords.Count>0)
                 {
-                    OutMsgRecords[getMsgModel.ObjectID].Clear();
+                    OutMsgRecords[clientModel.ObjectID].Clear();
                     return msgRecords;
                 }
             }
             return null;
         }
-
-        //public void ReturnMsg(IList<MsgRecord> msgRecords)
-        //{
-        //    if(msgRecords!=null && msgRecords.Count>0)
-        //    {
-        //        for(int i=0;i<msgRecords.Count;i++)
-        //        {
-        //            OutMsgRecords.Add(msgRecords[i]);
-        //        }
-        //    }
-        //}
 
         public void StartMainThread()
         {
@@ -346,8 +289,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         {
             IsRunning = false;
         }
-
-        
         
         private void MainSendMSGThread()
         {
@@ -397,25 +338,13 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             {
                 while (IsRunning)
                 {
-                    if (GetUsingGetMsgBuffer.Count > 0)
+                    IList<ClientModel> tempclientModels = clientModels.Values.Where(t=>t.LatestTime.CompareTo(DateTime.Now.AddMinutes(-3))>0).ToList();
+
+                    if (tempclientModels != null && tempclientModels.Count > 0)
                     {
-                        UsingTagForGetMsg = !UsingTagForGetMsg;
-                        //CommonVariables.LogTool.Log("GetUnUsingGetMsgBuffer count  " + GetUnUsingGetMsgBuffer.Count.ToString());
-                        while (GetUnUsingGetMsgBuffer.Count > 0)
+                        for (int i = 0; i < clientModels.Count;i++ )
                         {
-                            GetMsgModel getMsgModel = GetUnUsingGetMsgBuffer[0];
-                            try
-                            {
-                                string messageStr = CommonFlag.F_MDSVerifyMCSGetMSG + CommonVariables.serializer.Serialize(getMsgModel);
-                                //CommonVariables.LogTool.Log("begin send mds " + getMsgModel.MDS_IP + " port:" + getMsgModel.MDS_Port + messageStr);
-                                getMsgClient.SendMsg(getMsgModel.MDS_IP, getMsgModel.MDS_Port, messageStr, getMsgModel.MessageID, HandlerGetMsgReturnData);
-                                //ExeingGetMsgModels.Add(getMsgModel);                        
-                            }
-                            catch (Exception ex)
-                            {
-                                CommonVariables.LogTool.Log(ex.Message + ex.StackTrace);
-                            }
-                            GetUnUsingGetMsgBuffer.RemoveAt(0);
+                            SendGetMsgToMDS(tempclientModels[i]);
                         }
                     }
                     Thread.Sleep(_sendDelay);
@@ -426,6 +355,14 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 CommonVariables.LogTool.Log(ex.Message + ex.StackTrace);
             }
         }
+
+
+        private void SendGetMsgToMDS(ClientModel clientModel)
+        {
+            string messageStr = CommonFlag.F_MDSVerifyMCSGetMSG + CommonVariables.serializer.Serialize(clientModel);
+            getMsgClient.SendMsg(clientModel.MDS_IP, clientModel.MDS_Port, messageStr, clientModel.ObjectID, HandlerGetMsgReturnData);
+        }
+
 
         private string HandlerMsgReturnData(string returnData,bool IsError)
         {

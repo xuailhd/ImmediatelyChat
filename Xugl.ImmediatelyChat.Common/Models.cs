@@ -11,23 +11,11 @@ namespace Xugl.ImmediatelyChat.Common
         public string ObjectID { get; set; }
         public string Client_IP { get; set; }
         public int Client_Port { get; set; }
-        public string LatestTime { get; set; }
+        public string MCS_IP { get; set; }
+        public int MCS_Port { get; set; }
         public string MDS_IP { get; set; }
         public int MDS_Port { get; set; }
-        public string UpdateTime { get; set; }
-    }
-
-
-    public class ClientStatusModel
-    {
-        public string ObjectID { get; set; }
-
-        public string MCS_IP { get; set; }
-
-        public int MCS_Port { get; set; }
-
         public string LatestTime { get; set; }
-
         public string UpdateTime { get; set; }
     }
 
