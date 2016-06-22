@@ -48,15 +48,15 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
         /// send UA's update time to MCS,verify whether need send UA's information to MCS
         /// </summary>
         /// <param name="clientStatusModel"></param>
-        public void AddUAModelIntoBuffer(ClientStatusModel clientStatusModel)
+        public void AddUAModelIntoBuffer(ClientModel clientModel)
         {
             if (asyncSocketClient == null)
             {
                 return;
             }
 
-            asyncSocketClient.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port, CommonFlag.F_MCSReceiveMMSUAUpdateTime + CommonVariables.serializer.Serialize(clientStatusModel),
-                 clientStatusModel.ObjectID, HandlerUpdateTimeReturnData);
+            asyncSocketClient.SendMsg(clientModel.MCS_IP, clientModel.MCS_Port, CommonFlag.F_MCSReceiveMMSUAUpdateTime + CommonVariables.serializer.Serialize(clientModel),
+                 clientModel.ObjectID, HandlerUpdateTimeReturnData);
         }
 
 
@@ -67,12 +67,12 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 return string.Empty;
             }
 
-            ClientStatusModel clientStatusModel = null;
+            ClientModel clientStatusModel = null;
             ContactDataWithMCS contactDataWithMCS = null;
             try
             {
 
-                clientStatusModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(returnData);
+                clientStatusModel = CommonVariables.serializer.Deserialize<ClientModel>(returnData);
             }
             catch
             {

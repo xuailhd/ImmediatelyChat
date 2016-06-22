@@ -147,7 +147,17 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             {
                 if (!string.IsNullOrEmpty(msgModel.MsgSenderObjectID))
                 {
-                    CommonVariables.MessageContorl.AddMSgRecordIntoBuffer(msgModel);
+                    MsgRecord msgReocod = CommonVariables.MessageContorl.AddMSgRecordIntoBuffer(msgModel);
+
+                    foreach(MCSServer mcsServer in CommonVariables.MCSServers)
+                    {
+                        if (mcsServer.ArrangeStr.Contains(msgReocod.MsgRecipientObjectID.Substring(0, 1)))
+                        {
+                            CommonVariables.MessageContorl.SendMsgToMCS(mcsServer, msgReocod);
+                            break;
+                        }
+                    }
+
                     return msgModel.MsgID;
                 }
             }

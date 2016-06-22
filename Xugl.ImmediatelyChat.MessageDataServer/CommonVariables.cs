@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.Core;
+using Xugl.ImmediatelyChat.Model;
 
 namespace Xugl.ImmediatelyChat.MessageDataServer
 {
@@ -36,6 +37,18 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
                 return Singleton<JavaScriptSerializer>.Instance;
             }
         }
+        #endregion
+
+        #region manage MCSs
+
+        public static IList<MCSServer> MCSServers
+        {
+            get
+            {
+                return SingletonList<MCSServer>.Instance;
+            }
+        }
+
         #endregion
 
         #region Log tool

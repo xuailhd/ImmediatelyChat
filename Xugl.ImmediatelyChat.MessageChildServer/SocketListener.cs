@@ -105,10 +105,10 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     return HandleMCSVerifyUAGetMSG(data, token);
                 }
 
-                //if(data.StartsWith(CommonFlag.F_MCSVerfiyMDSMSG))
-                //{
-                //    return HandleMCSVerfiyMDSMSG(data, token);
-                //}
+                if (data.StartsWith(CommonFlag.F_MCSVerfiyMDSMSG))
+                {
+                    return HandleMCSVerfiyMDSMSG(data, token);
+                }
             }
 
             return string.Empty;
@@ -197,9 +197,14 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     ContactPerson contactPerson = token.ContactPersonService.FindContactPerson(clientModel.ObjectID);
                     if (contactPerson != null)
                     {
+                        //CommonVariables.LogTool.Log(contactPerson.UpdateTime + " VS" + clientModel.UpdateTime);
                         if (contactPerson.UpdateTime.CompareTo(clientModel.UpdateTime) == 0)
                         {
                             CommonVariables.MessageContorl.AddClientModel(clientModel);
+
+                            //CommonVariables.LogTool.Log(clientModel.ObjectID + " VS" + clientModel.LatestTime + "VS" + clientModel.MDS_IP);
+
+                            CommonVariables.MessageContorl.SendGetMsgToMDS(clientModel);
                             return "ok";
                         }
 

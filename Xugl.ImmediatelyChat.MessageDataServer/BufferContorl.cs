@@ -42,14 +42,27 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
         private const int _maxSize = 1024;
         private const int _maxSendConnections = 10;
 
+        private AsyncSocketClient asyncSocketClient;
+
         public BufferContorl()
         {
             msgRecordService = ObjectContainerFactory.CurrentContainer.Resolver<IMsgRecordService>();
             maxBufferRecordCount = 1000;
+            asyncSocketClient = new AsyncSocketClient(_maxSize, _maxSendConnections, CommonVariables.LogTool);
         }
 
+        public void SendMsgToMCS(MCSServer mcsServer,MsgRecord msgRecord)
+        {
+            String strmsg= CommonFlag.F_MCSVerfiyMDSMSG + CommonVariables.serializer.Serialize(msgRecord);
+            asyncSocketClient.SendMsg(mcsServer.MCS_IP, mcsServer.MCS_Port, strmsg, msgRecord.MsgID, HandMCSReturnData);
+        }
 
-        public void AddMSgRecordIntoBuffer(MsgRecordModel msgRecordModel)
+        private string HandMCSReturnData(string returnData, bool isError)
+        {
+            return string.Empty;
+        }
+
+        public MsgRecord AddMSgRecordIntoBuffer(MsgRecordModel msgRecordModel)
         {
             MsgRecord msgRecord = new MsgRecord();
             msgRecord.MsgRecipientGroupID = msgRecordModel.MsgRecipientGroupID;
@@ -61,6 +74,8 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
             msgRecord.MsgType = msgRecordModel.MsgType;
             msgRecord.SendTime = msgRecordModel.SendTime;
             GetUsingMsgRecordBuffer.Add(msgRecord);
+
+            return msgRecord;
         }
 
 
@@ -97,22 +112,6 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
 
         public IList<MsgRecord> GetMSG(IMsgRecordService _msgRecordService, ClientModel clientModel)
         {
-
-            //IList<MsgRecord> msgRecords=new List<MsgRecord>();
-
-            //if(getMsgModel.LatestTime.CompareTo(savedIntoDataBase)<=0)
-            //{
-            //    MsgRecordQuery query = new MsgRecordQuery();
-            //    query.MsgRecipientObjectID = getMsgModel.ObjectID;
-            //    query.MsgRecordtime = getMsgModel.LatestTime;
-
-            //    msgRecords.Union(msgRecordService.LoadMsgRecord(query).OrderBy(t=>t.SendTime));
-            //}
-
-            //msgRecords.Union(GetUsingBufferContainer.Where(t => t.SendTime.CompareTo(getMsgModel.LatestTime) <= 0
-            //    && t.MsgRecipientObjectID == getMsgModel.ObjectID).OrderBy(t=>t.SendTime));
-
-            //return msgRecords;
             MsgRecordQuery query = new MsgRecordQuery();
             query.MsgRecipientObjectID = clientModel.ObjectID;
             query.MsgRecordtime = clientModel.LatestTime;

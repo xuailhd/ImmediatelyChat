@@ -65,9 +65,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         private const int _maxSendConnections = 10;
         private const int _maxGetConnections = 10;
         private const int _sendDelay = 200;
-        private const int _getDelay = 500;
-
-
+        private const int _getDelay = 5000;
 
         public bool IsRunning = false;
 
@@ -85,18 +83,22 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         public void AddClientModel(ClientModel clientModel)
         {
+
+            for (int i = 0; i < CommonVariables.MDSServers.Count; i++)
+            {
+                if (CommonVariables.MDSServers[i].ArrangeStr.Contains(clientModel.ObjectID.Substring(0, 1)))
+                {
+                    clientModel.MDS_IP = CommonVariables.MDSServers[i].MDS_IP;
+                    clientModel.MDS_Port = CommonVariables.MDSServers[i].MDS_Port;
+                    if (String.IsNullOrEmpty( clientModel.LatestTime))
+                    {
+                        clientModel.LatestTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
+                    }
+                    break;
+                }
+            }
             if (!clientModels.ContainsKey(clientModel.ObjectID))
             {
-                for (int i = 0; i < CommonVariables.MDSServers.Count; i++)
-                {
-                    if (CommonVariables.MDSServers[i].ArrangeStr.Contains(clientModel.ObjectID.Substring(0, 1)))
-                    {
-                        clientModel.MDS_IP = CommonVariables.MDSServers[i].MDS_IP;
-                        clientModel.MDS_Port = CommonVariables.MDSServers[i].MDS_Port;
-                        clientModel.LatestTime = DateTime.Now.ToString(CommonFlag.F_DateTimeFormat);
-                        break;
-                    }
-                }
                 clientModels.Add(clientModel.ObjectID, clientModel);
             }
         }
@@ -242,7 +244,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                 }
             }
 
-
             if (OutMsgRecords.ContainsKey(msgRecord.MsgRecipientObjectID))
             {
                 if (!(OutMsgRecords[msgRecord.MsgRecipientObjectID].Where(t => t.MsgID == msgRecord.MsgID).Count() > 0))
@@ -300,8 +301,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     if (GetUsingMsgRecordBuffer.Count > 0)
                     {
                         UsingTagForMsgRecord = !UsingTagForMsgRecord;
-                        //CommonVariables.LogTool.Log("GetUnUsingMsgRecordBuffer count  " + GetUnUsingMsgRecordBuffer.Count.ToString());
-                        
 
                         while (GetUnUsingMsgRecordBuffer.Count > 0)
                         {
@@ -338,7 +337,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             {
                 while (IsRunning)
                 {
-                    IList<ClientModel> tempclientModels = clientModels.Values.Where(t=>t.LatestTime.CompareTo(DateTime.Now.AddMinutes(-3))>0).ToList();
+                    IList<ClientModel> tempclientModels = clientModels.Values.Where(t=>t.LatestTime.CompareTo(DateTime.Now.AddMinutes(-3).ToString())>0).ToList();
 
                     if (tempclientModels != null && tempclientModels.Count > 0)
                     {
@@ -357,7 +356,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         }
 
 
-        private void SendGetMsgToMDS(ClientModel clientModel)
+        public void SendGetMsgToMDS(ClientModel clientModel)
         {
             string messageStr = CommonFlag.F_MDSVerifyMCSGetMSG + CommonVariables.serializer.Serialize(clientModel);
             getMsgClient.SendMsg(clientModel.MDS_IP, clientModel.MDS_Port, messageStr, clientModel.ObjectID, HandlerGetMsgReturnData);
@@ -383,12 +382,10 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
         private string HandlerGetMsgReturnData(string returnData, bool IsError)
         {
             //CommonVariables.LogTool.Log("recive mds return data:" + returnData);
-            if(IsError)
+            if (IsError)
             {
                 return string.Empty;
             }
-
-           
 
             if (!string.IsNullOrEmpty(returnData))
             {

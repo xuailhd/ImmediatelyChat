@@ -12,6 +12,7 @@ namespace Xugl.ImmediatelyChat.IServices
     {
         IList<String> GetContactPersonIDListByGroupID(string senderObjectID, string groupID);
 
+        ContactPerson FindContactPersonNoTracking(string objectID);
         ContactPerson FindContactPerson(string objectID);
         ContactPerson FindContactPerson(Expression<Func<ContactPerson, bool>> predicate);
         int InsertNewPerson(ContactPerson contactPerson);

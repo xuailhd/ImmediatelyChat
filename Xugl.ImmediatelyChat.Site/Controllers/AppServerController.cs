@@ -432,7 +432,7 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
 
         public ActionResult Index()
         {
-            MMSModel mMSModel = new MMSModel();
+            MMSServer mMSModel = new MMSServer();
             mMSModel.MMS_IP = cacheManage.GetCache<string>("MMSIP");
             mMSModel.MMS_Port = cacheManage.GetCache<int>("MMSPort");
             return View(mMSModel);

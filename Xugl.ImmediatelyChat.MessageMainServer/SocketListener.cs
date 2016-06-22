@@ -148,7 +148,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                             {
                                 token.ContactPersonService.UpdateContactUpdateTimeByGroup(contactGroup.GroupObjectID, contactGroupSub.UpdateTime);
 
-                                ClientStatusModel clientStatusModel = new ClientStatusModel();
+                                ClientModel clientStatusModel = new ClientModel();
 
                                 clientStatusModel.MCS_IP = model.MCS_IP;
                                 clientStatusModel.MCS_Port = model.MCS_Port;
@@ -342,7 +342,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
         private string HandleMMSVerifyUAGetUAInfo(string data, MMSListenerToken token)
         {
-            ClientStatusModel clientStatusModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(data.Remove(0, CommonFlag.F_MMSVerifyUAGetUAInfo.Length));
+            ClientModel clientStatusModel = CommonVariables.serializer.Deserialize<ClientModel>(data.Remove(0, CommonFlag.F_MMSVerifyUAGetUAInfo.Length));
 
             if (clientStatusModel == null)
             {
@@ -365,9 +365,9 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
         private string HandleMMSVerifyUA(string data, MMSListenerToken token)
         {
             ContactPerson tempContactPerson = null;
-            ClientStatusModel clientStatusModel = CommonVariables.serializer.Deserialize<ClientStatusModel>(data.Remove(0, CommonFlag.F_MMSVerifyUA.Length));
+            ClientModel clientStatusModel = CommonVariables.serializer.Deserialize<ClientModel>(data.Remove(0, CommonFlag.F_MMSVerifyUA.Length));
 
-            CommonVariables.LogTool.Log("UA:" + clientStatusModel.ObjectID + " connected  " + CommonVariables.MCSServers.Count);
+            CommonVariables.LogTool.Log("UA:" + clientStatusModel.ObjectID + " connected  " + clientStatusModel.LatestTime);
             //Find MCS
             for (int i = 0; i < CommonVariables.MCSServers.Count; i++)
             {
@@ -376,7 +376,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                     clientStatusModel.MCS_IP = CommonVariables.MCSServers[i].MCS_IP;
                     clientStatusModel.MCS_Port = CommonVariables.MCSServers[i].MCS_Port;
 
-                    tempContactPerson = token.ContactPersonService.FindContactPerson(t => t.ObjectID == clientStatusModel.ObjectID);
+                    tempContactPerson = token.ContactPersonService.FindContactPersonNoTracking(clientStatusModel.ObjectID);
                     if (tempContactPerson == null)
                     {
                         return string.Empty;
@@ -396,6 +396,8 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
                     string mcs_UpdateTime = CommonVariables.SyncSocketClientIntance.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port,
                         CommonFlag.F_MCSReceiveMMSUAUpdateTime + CommonVariables.serializer.Serialize(clientStatusModel));
+
+                    CommonVariables.LogTool.Log("mcs_UpdateTime:" + mcs_UpdateTime);
 
                     if (string.IsNullOrEmpty(mcs_UpdateTime))
                     {

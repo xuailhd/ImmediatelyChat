@@ -93,27 +93,7 @@ namespace Xugl.ImmediatelyChat.Common
 
     }
 
-    public class MMSModel
-    {
-        public string MMS_IP { get; set; }
-        public int MMS_Port { get; set; }
-    }
 
-    public class MDSModel
-    {
-        public string MDS_IP { get; set; }
-        public int MDS_Port { get; set; }
-        public string ArrangeChars { get; set; }
-        public string MDS_ID { get; set; }
-    }
-
-    public class MCSModel
-    {
-        public string MCS_IP { get; set; }
-        public int MCS_Port { get; set; }
-        public string ArrangeChars { get; set; }
-        public string MCS_ID { get; set; }
-    }
 
     public class MsgRecordModel
     {

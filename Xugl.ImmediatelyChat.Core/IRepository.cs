@@ -27,7 +27,7 @@ namespace Xugl.ImmediatelyChat.Core
 
         IQueryable<T> Table { get; }
 
-        IQueryable<T> TableNoTracking { get; }
+        //IQueryable<T> TableNoTracking { get; }
 
     }
 }
