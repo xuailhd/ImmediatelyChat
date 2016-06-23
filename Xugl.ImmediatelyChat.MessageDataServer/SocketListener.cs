@@ -97,11 +97,24 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
 
         private string HandlePSCallMDSStart(string data,MDSListenerToken token)
         {
-            MDSServer mdsServer = CommonVariables.serializer.Deserialize<MDSServer>(data.Remove(0, CommonFlag.F_PSCallMDSStart.Length));
-            CommonVariables.ArrangeStr = mdsServer.ArrangeStr;
-            CommonVariables.OperateFile.SaveConfig(CommonVariables.ConfigFilePath, CommonFlag.F_ArrangeChars, CommonVariables.ArrangeStr);
-            CommonVariables.LogTool.Log("Start MDS service:" + CommonVariables.MDSIP + ", Port:" + CommonVariables.MDSPort.ToString());
-            CommonVariables.IsBeginMessageService = true;
+            data = data.Remove(0, CommonFlag.F_PSCallMDSStart.Length);
+            IList<MCSServer> mcsServers = CommonVariables.serializer.Deserialize<IList<MCSServer>>(data.Substring(0, data.IndexOf("&&")));
+
+            if (mcsServers != null && mcsServers.Count > 0)
+            {
+                data = data.Remove(0, data.IndexOf("&&") + 2);
+                CommonVariables.ArrangeStr = CommonVariables.serializer.Deserialize<MDSServer>(data).ArrangeStr;
+                CommonVariables.OperateFile.SaveConfig(CommonVariables.ConfigFilePath, CommonFlag.F_ArrangeChars, CommonVariables.ArrangeStr);
+                CommonVariables.LogTool.Log("ArrangeStr:" + CommonVariables.ArrangeStr);
+                CommonVariables.LogTool.Log("MCS count:" + mcsServers.Count);
+                foreach (MCSServer mcsServer in mcsServers)
+                {
+                    CommonVariables.MCSServers.Add(mcsServer);
+                    CommonVariables.LogTool.Log("IP:" + mcsServer.MCS_IP + " Port:" + mcsServer.MCS_Port + "  ArrangeStr:" + mcsServer.ArrangeStr);
+                }
+                CommonVariables.LogTool.Log("Start MDS service:" + CommonVariables.MDSIP + ", Port:" + CommonVariables.MDSPort.ToString());
+                CommonVariables.IsBeginMessageService = true;
+            }
             return string.Empty;
         }
 

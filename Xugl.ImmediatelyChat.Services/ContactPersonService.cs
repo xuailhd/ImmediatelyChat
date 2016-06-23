@@ -286,7 +286,7 @@ namespace Xugl.ImmediatelyChat.Services
 
             ContactPerson contactPerson = (from aa in contactPersonRepository.Table
                                            join bb in contactPersonListRepository.Table on aa.ObjectID equals bb.DestinationObjectID
-                                           where bb.ContactPersonName == key
+                                           where bb.ContactPersonName == key && bb.DestinationObjectID == objectID
                                            select aa).FirstOrDefault();
 
             if (contactPerson == null)

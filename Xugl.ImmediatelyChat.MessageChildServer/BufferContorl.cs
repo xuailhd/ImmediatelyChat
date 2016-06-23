@@ -168,16 +168,11 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
         private IList<MsgRecordModel> GenerateMsgRecordModel(MsgRecordModel msgRecordModel)
         {
-            CommonVariables.LogTool.Log("GenerateMsgRecordModel:" + msgRecordModel.MsgRecipientGroupID + ":" + msgRecordModel.MsgRecipientObjectID);
-
             IList<MsgRecordModel> msgRecords = new List<MsgRecordModel>();
             if (!string.IsNullOrEmpty(msgRecordModel.MsgRecipientGroupID))
             {
                 IContactPersonService contactGroupService = ObjectContainerFactory.CurrentContainer.Resolver<IContactPersonService>();
                 IList<String> ContactPersonIDs = contactGroupService.GetContactPersonIDListByGroupID(msgRecordModel.MsgSenderObjectID,msgRecordModel.MsgRecipientGroupID);
-
-                CommonVariables.LogTool.Log("GenerateMsgRecordModel:" + ContactPersonIDs + " count:" + ContactPersonIDs.Count);
-
                 foreach (String objectID in ContactPersonIDs)
                 {
                     MsgRecordModel _msgRecordModel = new MsgRecordModel();
@@ -190,8 +185,6 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     _msgRecordModel.MsgRecipientObjectID = objectID;
                     _msgRecordModel.SendTime = msgRecordModel.SendTime;
                     _msgRecordModel.MsgID = Guid.NewGuid().ToString();
-                    CommonVariables.LogTool.Log("generate MsgRecordModel :" + _msgRecordModel.MsgSenderName + " MsgRecipientGroupID:" + _msgRecordModel.MsgRecipientGroupID +
-                        " MsgRecipientObjectID:" + _msgRecordModel.MsgRecipientObjectID);
                     for (int i = 0; i < CommonVariables.MDSServers.Count;i++ )
                     {
                         if (CommonVariables.MDSServers[i].ArrangeStr.Contains(_msgRecordModel.MsgRecipientObjectID.Substring(0, 1)))
@@ -203,7 +196,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                         }
                     }
 
-                    msgRecords.Add(msgRecordModel);
+                    msgRecords.Add(_msgRecordModel);
                 }
             }
             else if (string.IsNullOrEmpty(msgRecordModel.MsgRecipientGroupID) && !string.IsNullOrEmpty(msgRecordModel.MsgRecipientObjectID))

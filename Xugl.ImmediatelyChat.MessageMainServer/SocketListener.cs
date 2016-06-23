@@ -304,9 +304,9 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
         private string HandleMMSVerifyUASearch(string data, MMSListenerToken token)
         {
             ClientSearchModel clientSearchModel = CommonVariables.serializer.Deserialize<ClientSearchModel>(data.Remove(0, CommonFlag.F_MMSVerifyUASearch.Length));
-            CommonVariables.LogTool.Log("UA:" + clientSearchModel.ObjectID + " Search request  " + clientSearchModel.SearchKey);
             if (clientSearchModel != null && !string.IsNullOrEmpty(clientSearchModel.ObjectID))
             {
+                CommonVariables.LogTool.Log("UA:" + clientSearchModel.ObjectID + "Type " + clientSearchModel.Type + " Search request  " + clientSearchModel.SearchKey);
                 if (clientSearchModel.Type == 1)
                 {
                     token.Models = ContactPersonToContacData(token.ContactPersonService.SearchPerson(clientSearchModel.ObjectID,clientSearchModel.SearchKey));
@@ -319,6 +319,10 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 if (token.Models != null && token.Models.Count > 0)
                 {
                     return CommonVariables.serializer.Serialize(token.Models[0]);
+                }
+                else
+                {
+                    CommonVariables.LogTool.Log("Search request Result null ");
                 }
             }
 
@@ -397,7 +401,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                     string mcs_UpdateTime = CommonVariables.SyncSocketClientIntance.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port,
                         CommonFlag.F_MCSReceiveMMSUAUpdateTime + CommonVariables.serializer.Serialize(clientStatusModel));
 
-                    CommonVariables.LogTool.Log("mcs_UpdateTime:" + mcs_UpdateTime);
+                    //CommonVariables.LogTool.Log("mcs_UpdateTime:" + mcs_UpdateTime);
 
                     if (string.IsNullOrEmpty(mcs_UpdateTime))
                     {

@@ -211,11 +211,11 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
                         tempSocket.Close();
                     }
 
-
+                    tempStr = Singleton<JavaScriptSerializer>.Instance.Serialize(cacheManage.GetCache<IList<MCSServer>>("MCSServers"));
                     for (int i = 0; i < cacheManage.GetCache<IList<MDSServer>>("MDSServers").Count; i++)
                     {
-                        bytesSent = Encoding.UTF8.GetBytes(CommonFlag.F_PSCallMDSStart +
-                            Singleton<JavaScriptSerializer>.Instance.Serialize(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i]));
+                        bytesSent = Encoding.UTF8.GetBytes(CommonFlag.F_PSCallMDSStart + tempStr + "&&"
+                            + Singleton<JavaScriptSerializer>.Instance.Serialize(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i]));
                         IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].MDS_IP), cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].MDS_Port);
                         tempSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 

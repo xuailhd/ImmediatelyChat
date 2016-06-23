@@ -178,6 +178,18 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             catch (Exception ex)
             {
                 LogTool.Log(ex.Message + ex.StackTrace);
+                if(ex.InnerException!=null)
+                {
+                    LogTool.Log(ex.InnerException.Message);
+                }
+                if (ex.InnerException.InnerException != null)
+                {
+                    LogTool.Log(ex.InnerException.InnerException.Message);
+                }
+                if (ex.InnerException.InnerException.InnerException != null)
+                {
+                    LogTool.Log(ex.InnerException.InnerException.InnerException.Message);
+                }
                 HandleError(token);
                 CloseClientSocket(e);
             }
