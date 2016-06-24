@@ -13,8 +13,7 @@ namespace Xugl.ImmediatelyChat.Data.EF.Mapping.Site
     {
         public MMSServerMapping()
         {
-            this.HasKey(t => t.MMS_IP);
-            this.HasKey(t => t.MMS_Port);
+            this.HasKey(t => new { t.MMS_IP, t.MMS_Port });
 
             this.Property(t => t.MMS_Port).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
         }

@@ -21,8 +21,7 @@ namespace Xugl.ImmediatelyChat.Data.EF.Mapping.MCS
         public ContactGroupSubMapping()
         {
             //this.HasKey(t => t.ContactGroupID);
-            this.HasKey(t => t.ContactGroupID);
-            this.HasKey(t => t.ContactPersonObjectID);
+            this.HasKey(t => new { t.ContactGroupID, t.ContactPersonObjectID });
         }
     }
 
@@ -38,8 +37,7 @@ namespace Xugl.ImmediatelyChat.Data.EF.Mapping.MCS
     {
         public ContactPersonListMapping()
         {
-            this.HasKey(t => t.ObjectID);
-            this.HasKey(t => t.DestinationObjectID);
+            this.HasKey(t => new { t.ObjectID, t.DestinationObjectID });
         }
     }
 }

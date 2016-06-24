@@ -170,9 +170,11 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                                         CommonFlag.F_MCSReceiveUAInfo + CommonVariables.serializer.Serialize(_contactData));
                                 }
 
+                                contactGroup = token.ContactPersonService.FindContactGroup(model.GroupObjectID);
                                 contactData.GroupName = contactGroup.GroupName;
                                 contactData.GroupObjectID = contactGroup.GroupObjectID;
                                 contactData.IsDelete = contactGroup.IsDelete;
+                                contactData.UpdateTime = contactGroup.UpdateTime;
                                 contactData.DataType = 2;
                             }
                             else
