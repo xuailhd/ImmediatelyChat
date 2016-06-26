@@ -75,35 +75,35 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
             {
                 
                 //handle UA feedback
-                if (data.StartsWith(CommonFlag.F_MCSReceiveUAFBMSG))
-                {
-                    return HandleMCSReceiveUAFBMSG(data, token);
-                }
+                //if (data.StartsWith(CommonFlag.F_MCSReceiveUAFBMSG))
+                //{
+                //    return HandleMCSReceiveUAFBMSG(data, token);
+                //}
 
-                if (data.StartsWith(CommonFlag.F_MCSVerifyUA))
-                {
-                    return HandleMCSVerifyUA(data, token);
-                }
+                //if (data.StartsWith(CommonFlag.F_MCSVerifyUA))
+                //{
+                //    return HandleMCSVerifyUA(data, token);
+                //}
 
                 if (data.StartsWith(CommonFlag.F_MCSReceiveMMSUAUpdateTime))
                 {
                     return HandleMCSReceiveMMSUAUpdateTime(data, token);
                 }
 
-                if (data.StartsWith(CommonFlag.F_MCSReceiveUAInfo))
-                {
-                    return HandleMCSReceiveUAInfo(data, token);
-                }
+                //if (data.StartsWith(CommonFlag.F_MCSReceiveUAInfo))
+                //{
+                //    return HandleMCSReceiveUAInfo(data, token);
+                //}
 
-                if (data.StartsWith(CommonFlag.F_MCSVerifyUAMSG))
-                {
-                    return HandleMCSVerifyUAMSG(data, token);
-                }
+                //if (data.StartsWith(CommonFlag.F_MCSVerifyUAMSG))
+                //{
+                //    return HandleMCSVerifyUAMSG(data, token);
+                //}
 
-                if (data.StartsWith(CommonFlag.F_MCSVerifyUAGetMSG))
-                {
-                    return HandleMCSVerifyUAGetMSG(data, token);
-                }
+                //if (data.StartsWith(CommonFlag.F_MCSVerifyUAGetMSG))
+                //{
+                //    return HandleMCSVerifyUAGetMSG(data, token);
+                //}
 
                 if (data.StartsWith(CommonFlag.F_MCSVerfiyMDSMSG))
                 {

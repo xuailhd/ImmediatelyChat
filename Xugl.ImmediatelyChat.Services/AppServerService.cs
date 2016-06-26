@@ -27,7 +27,7 @@ namespace Xugl.ImmediatelyChat.Services
 
         public int Clean()
         {
-            return this.dbContext.ExecuteSqlCommand("Delete MMSServer");
+            return mmsServerRepository.BatchDelete(mmsServerRepository.Table.ToList());
         }
 
 

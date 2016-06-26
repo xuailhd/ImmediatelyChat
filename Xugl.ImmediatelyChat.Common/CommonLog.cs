@@ -15,10 +15,8 @@ namespace Xugl.ImmediatelyChat.Common
         {
             get
             {
-                lock (temp)
-                {
-                    return _LogMsgs.ToString();
-                }
+
+                return _LogMsgs.ToString(0, _LogMsgs.Length > 5000 ? 5000 : _LogMsgs.Length);
             }
         }
 
@@ -50,11 +48,9 @@ namespace Xugl.ImmediatelyChat.Common
         {
             if (_LogMsgs.Length>5000)
             {
-                lock (temp)
-                {
-                    _LogMsgs.Clear();
-                }
+                _LogMsgs.Clear();
             }
+
             _LogMsgs.Append("\r\n" + msg);
         }
     }

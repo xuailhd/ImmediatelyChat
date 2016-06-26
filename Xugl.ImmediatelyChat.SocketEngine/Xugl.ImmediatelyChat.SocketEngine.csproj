@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncSocketListenerUDP.cs" />
+    <Compile Include="SyncSocketClientUDP.cs" />
     <Compile Include="SyncSocketClient.cs" />
     <Compile Include="AsyncSocketClient.cs" />
     <Compile Include="AsyncUserToken.cs" />

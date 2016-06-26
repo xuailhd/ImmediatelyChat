@@ -334,7 +334,7 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
                     if (tempclientModels != null && tempclientModels.Count > 0)
                     {
-                        for (int i = 0; i < clientModels.Count;i++ )
+                        for (int i = 0; i < tempclientModels.Count; i++)
                         {
                             SendGetMsgToMDS(tempclientModels[i]);
                         }

@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xugl.ImmediatelyChat.Socket
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xugl.ImmediatelyChat.Common", "Xugl.ImmediatelyChat.Common\Xugl.ImmediatelyChat.Common.csproj", "{FCC73DC4-496F-40E5-AFC5-081C3B3C6ADD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xugl.ImmediatelyChat.Test", "Xugl.ImmediatelyChat.Test\Xugl.ImmediatelyChat.Test.csproj", "{4BB79879-7F0F-4378-AC27-66409B10DFFE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +87,10 @@ Global
 		{FCC73DC4-496F-40E5-AFC5-081C3B3C6ADD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FCC73DC4-496F-40E5-AFC5-081C3B3C6ADD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FCC73DC4-496F-40E5-AFC5-081C3B3C6ADD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BB79879-7F0F-4378-AC27-66409B10DFFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BB79879-7F0F-4378-AC27-66409B10DFFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BB79879-7F0F-4378-AC27-66409B10DFFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BB79879-7F0F-4378-AC27-66409B10DFFE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

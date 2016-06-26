@@ -57,7 +57,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             
             IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(ipaddress), port);
             Socket clientSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
+            m_maxNumberAcceptedClients.WaitOne();
             AsyncClientToken asyncClientToken = m_readWritePool.PopOrNew();
             asyncClientToken.HandlerReturnData = handlerReturnData;
             asyncClientToken.Socket = clientSocket;
@@ -65,7 +65,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             int sendcount = Encoding.UTF8.GetBytes(sendData, 0, sendData.Length, asyncClientToken.Buffer, 0);
             asyncClientToken.Datasize = sendcount;
 
-            m_maxNumberAcceptedClients.WaitOne();
+            
             try
             {
                 clientSocket.BeginConnect(ipe, new AsyncCallback(ConnectCallback), asyncClientToken);

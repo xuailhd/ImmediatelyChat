@@ -181,14 +181,14 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                 if(ex.InnerException!=null)
                 {
                     LogTool.Log(ex.InnerException.Message);
-                }
-                if (ex.InnerException.InnerException != null)
-                {
-                    LogTool.Log(ex.InnerException.InnerException.Message);
-                }
-                if (ex.InnerException.InnerException.InnerException != null)
-                {
-                    LogTool.Log(ex.InnerException.InnerException.InnerException.Message);
+                    if (ex.InnerException.InnerException != null)
+                    {
+                        LogTool.Log(ex.InnerException.InnerException.Message);
+                        if (ex.InnerException.InnerException.InnerException != null)
+                        {
+                            LogTool.Log(ex.InnerException.InnerException.InnerException.Message);
+                        }
+                    }
                 }
                 HandleError(token);
                 CloseClientSocket(e);

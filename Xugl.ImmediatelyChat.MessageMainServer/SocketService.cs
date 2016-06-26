@@ -15,14 +15,12 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 {
     class SocketService
     {
-        private Socket mainServiceSocket;
-        private bool IsConnectGoOnRuning;
+
         SocketListener socketListener;
+        //UDPSocketListener udpSocketListener;
 
         public void StartMMSService()
         {
-            IsConnectGoOnRuning = true;
-
             ThreadStart threadStart = new ThreadStart(MMSService);
             Thread thread = new Thread(threadStart);
             thread.Start();
@@ -42,6 +40,9 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
                     socketListener = new SocketListener();
                     socketListener.BeginService();
+
+                    //udpSocketListener = new UDPSocketListener();
+                    //udpSocketListener.BeginService();
                     return;
                 }
                 CommonVariables.LogTool.Log("Post PS Failed");
@@ -63,7 +64,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
                 HttpWebRequest myRequest = (HttpWebRequest)WebRequest.Create("http://" + CommonVariables.PSIP
                     + ":" + CommonVariables.PSPort + "/AppServer/CollectMMS?ip=" + CommonVariables.MMSIP + "&&port=" + CommonVariables.MMSPort
-                    + "&&arrangeStr=" + arrangeStr);
+                    + "&&portudp=" + CommonVariables.MMSPortUDP + "&&arrangeStr=" + arrangeStr);
 
                 myRequest.Method = "Get";
 

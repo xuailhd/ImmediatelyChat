@@ -4,6 +4,8 @@ using System.Data;
 using System.Data.Common;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Migrations;
+using System.Data.Entity.Migrations.History;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
@@ -19,7 +21,7 @@ namespace Xugl.ImmediatelyChat.Data.EF
     public class DefaultDBContext:DbContext,IDbContext
     {
         public DefaultDBContext()
-            : base("Xugl.ImmediatelyChat.DBContext")
+            : base(System.Configuration.ConfigurationManager.AppSettings["DBStr"].ToString())
         {
             this.Configuration.ProxyCreationEnabled = false;
             Database.SetInitializer(new DropCreateDatabaseIfModelChanges<DefaultDBContext>());
@@ -146,4 +148,37 @@ namespace Xugl.ImmediatelyChat.Data.EF
     //        //base.Seed(context);
     //    }
     //}
+
+    internal sealed class Configuration : DbMigrationsConfiguration<DefaultDBContext>
+    {
+        public Configuration()
+        {
+            AutomaticMigrationsEnabled = true;
+            ContextKey = "Tesis.DAL.ApplicationDbContext";
+            // register mysql code generator
+            SetSqlGenerator("MySql.Data.MySqlClient", new MySql.Data.Entity.MySqlMigrationSqlGenerator());
+            SetHistoryContextFactory("MySql.Data.MySqlClient", (conn, schema) => new MySqlHistoryContext(conn, schema));
+        }
+
+        //protected override void Seed(DefaultDBContext context)
+        //{
+        //    UserBL.CreateFirstUser(context);
+        //}
+    }
+
+    public class MySqlHistoryContext : HistoryContext
+    {
+        public MySqlHistoryContext(DbConnection connection, string defaultSchema)
+            : base(connection, defaultSchema)
+        {
+
+        }
+
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<HistoryRow>().Property(h => h.MigrationId).HasMaxLength(100).IsRequired();
+            modelBuilder.Entity<HistoryRow>().Property(h => h.ContextKey).HasMaxLength(200).IsRequired();
+        }
+    }
 }

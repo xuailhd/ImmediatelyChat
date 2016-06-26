@@ -15,6 +15,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             CommonVariables.PSPort = Convert.ToInt32(ConfigurationManager.AppSettings["PSPort"].ToString());
             CommonVariables.MMSIP = ConfigurationManager.AppSettings["MMSIP"].ToString();
             CommonVariables.MMSPort = Convert.ToInt32(ConfigurationManager.AppSettings["MMSPort"]);
+            CommonVariables.MMSPortUDP = Convert.ToInt32(ConfigurationManager.AppSettings["MMSPortUDP"]);
         }
     }
 }

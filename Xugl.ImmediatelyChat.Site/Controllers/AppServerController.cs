@@ -35,12 +35,14 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
         //
         // GET: /AppServer/
 
-        public ActionResult CollectMMS(string ip,int port,string arrangeStr)
+        public ActionResult CollectMMS(string ip,int port,int udpport, string arrangeStr)
         {
             MMSServer mmsServer = new MMSServer();
             mmsServer.ArrangeStr = arrangeStr;
             mmsServer.MMS_IP = ip;
             mmsServer.MMS_Port = port;
+            mmsServer.MMS_PortUDP = udpport;
+            mmsServer.MMS_IP = System.Configuration.ConfigurationManager.AppSettings["LocalIP"].ToString();
 
             lock (CommonFlag.lockobject)
             {
@@ -72,12 +74,14 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
         }
 
 
-        public ActionResult CollectMCS(string ip, int port, string arrangeStr)
+        public ActionResult CollectMCS(string ip, int port, int udpport, string arrangeStr)
         {
             MCSServer mcsServer = new MCSServer();
             mcsServer.ArrangeStr = arrangeStr;
             mcsServer.MCS_IP = ip;
             mcsServer.MCS_Port = port;
+            mcsServer.MCS_PortUDP = udpport;
+            mcsServer.MCS_IP = System.Configuration.ConfigurationManager.AppSettings["LocalIP"].ToString();
             lock (CommonFlag.lockobject)
             {
                 if (cacheManage.GetCache<IList<MCSServer>>("MCSServers") == null)
@@ -112,6 +116,7 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
             mdsServer.ArrangeStr = arrangeStr;
             mdsServer.MDS_IP = ip;
             mdsServer.MDS_Port = port;
+            mdsServer.MDS_IP = System.Configuration.ConfigurationManager.AppSettings["LocalIP"].ToString();
             lock (CommonFlag.lockobject)
             {
                 if (cacheManage.GetCache<IList<MDSServer>>("MDSServers") == null)

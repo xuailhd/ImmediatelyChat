@@ -11,7 +11,7 @@ using Xugl.ImmediatelyChat.Core;
 
 namespace Xugl.ImmediatelyChat.SocketEngine
 {
-    public delegate bool HandlerSyncReturnData(string returnData,bool isError);
+    //public delegate bool HandlerSyncReturnData(string returnData,bool isError);
 
     public class SyncSocketClient
     {

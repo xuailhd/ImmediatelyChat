@@ -38,6 +38,12 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             set;
         }
 
+        public static int MMSPortUDP
+        {
+            get;
+            set;
+        }
+
         public static bool IsBeginMessageService { get; set; }
 
         public static string ArrangeStr { get; set; }

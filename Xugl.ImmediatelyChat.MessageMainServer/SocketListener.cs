@@ -56,19 +56,12 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
         }
         protected override string HandleRecivedMessage(string inputMessage, MMSListenerToken token)
         {
-            //MCSModel tempMCSModel = null;
-            //MDSModel tempMDSModel = null;
-            
-
-
-
             if (string.IsNullOrEmpty(inputMessage) || token == null)
             {
                 return string.Empty;
             }
 
             string data = inputMessage;
-
 
             if (data.StartsWith(CommonFlag.F_PSSendMMSUser))
             {
@@ -80,44 +73,44 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 return HandlePSCallMMSStart(data);
             }
 
-            if (CommonVariables.IsBeginMessageService)
-            {
-                //UA
-                if (data.StartsWith(CommonFlag.F_MMSVerifyUA))
-                {
-                    return HandleMMSVerifyUA(data, token);
-                }
+            //if (CommonVariables.IsBeginMessageService)
+            //{
+            //    //UA
+            //    if (data.StartsWith(CommonFlag.F_MMSVerifyUA))
+            //    {
+            //        return HandleMMSVerifyUA(data, token);
+            //    }
 
-                if(data.StartsWith(CommonFlag.F_MMSVerifyUAGetUAInfo))
-                {
-                    return HandleMMSVerifyUAGetUAInfo(data, token);
-                }
+            //    if(data.StartsWith(CommonFlag.F_MMSVerifyUAGetUAInfo))
+            //    {
+            //        return HandleMMSVerifyUAGetUAInfo(data, token);
+            //    }
 
-                if(data.StartsWith(CommonFlag.F_MMSVerifyFBUAGetUAInfo))
-                {
-                    return HandleMMSVerifyFBUAGetUAInfo(data, token);
-                }
+            //    if(data.StartsWith(CommonFlag.F_MMSVerifyFBUAGetUAInfo))
+            //    {
+            //        return HandleMMSVerifyFBUAGetUAInfo(data, token);
+            //    }
 
-                if(data.StartsWith(CommonFlag.F_MMSVerifyUASearch))
-                {
-                    return HandleMMSVerifyUASearch(data, token);
-                }
+            //    if(data.StartsWith(CommonFlag.F_MMSVerifyUASearch))
+            //    {
+            //        return HandleMMSVerifyUASearch(data, token);
+            //    }
 
-                if(data.StartsWith(CommonFlag.F_MMSVerifyUAFBSearch))
-                {
-                    return HandleMMSVerifyUAFBSearch(data, token);
-                }
+            //    if(data.StartsWith(CommonFlag.F_MMSVerifyUAFBSearch))
+            //    {
+            //        return HandleMMSVerifyUAFBSearch(data, token);
+            //    }
 
-                if(data.StartsWith(CommonFlag.F_MMSVerifyUAAddPerson))
-                {
-                    return HandleMMSVerifyUAAddPerson(data, token);
-                }
+            //    if(data.StartsWith(CommonFlag.F_MMSVerifyUAAddPerson))
+            //    {
+            //        return HandleMMSVerifyUAAddPerson(data, token);
+            //    }
 
-                if(data.StartsWith(CommonFlag.F_MMSVerifyUAAddGroup))
-                {
-                    return HandleMMSVerifyUAAddGroup(data, token);
-                }
-            }
+            //    if(data.StartsWith(CommonFlag.F_MMSVerifyUAAddGroup))
+            //    {
+            //        return HandleMMSVerifyUAAddGroup(data, token);
+            //    }
+            //}
             return string.Empty;
         }
 
