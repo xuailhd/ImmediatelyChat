@@ -9,30 +9,21 @@ namespace Xugl.ImmediatelyChat.Model
     public class MMSServer
     {
         public string MMS_IP { get; set; }
-
         public int MMS_Port { get; set; }
-        public int MMS_PortUDP { get; set; }
-
         public string ArrangeStr { get; set; }
     }
 
     public class MCSServer
     {
         public string MCS_IP { get; set; }
-
         public int MCS_Port { get; set; }
-
-        public int MCS_PortUDP { get; set; }
-
         public string ArrangeStr { get; set; }
     }
 
     public class MDSServer
     {
         public string MDS_IP { get; set; }
-
         public int MDS_Port { get; set; }
-
         public string ArrangeStr { get; set; }
     }
 }

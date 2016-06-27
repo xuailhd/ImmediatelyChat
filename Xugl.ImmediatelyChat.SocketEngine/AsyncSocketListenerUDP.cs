@@ -173,5 +173,11 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             m_readWritePool.Push(e);
             m_maxNumberAcceptedClients.Release();
         }
+
+        public void CloseListener()
+        {
+            mainServiceSocket.Close();
+            mainServiceSocket = null;
+        }
     }
 }

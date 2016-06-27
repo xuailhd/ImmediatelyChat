@@ -38,12 +38,6 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             set;
         }
 
-        public static int MMSPortUDP
-        {
-            get;
-            set;
-        }
-
         public static bool IsBeginMessageService { get; set; }
 
         public static string ArrangeStr { get; set; }
@@ -145,16 +139,16 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
             }
         }
 
-        public static SyncSocketClient SyncSocketClientIntance
+        public static SyncSocketClientUDP SyncSocketClientIntance
         {
             get
             {
-                if(Singleton<SyncSocketClient>.Instance==null)
+                if (Singleton<SyncSocketClientUDP>.Instance == null)
                 {
-                    Singleton<SyncSocketClient>.Instance = new SyncSocketClient();
+                    Singleton<SyncSocketClientUDP>.Instance = new SyncSocketClientUDP();
                 }
 
-                return Singleton<SyncSocketClient>.Instance;
+                return Singleton<SyncSocketClientUDP>.Instance;
             }
         }
 

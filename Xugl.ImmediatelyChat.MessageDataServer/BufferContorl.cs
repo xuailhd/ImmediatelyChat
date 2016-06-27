@@ -38,17 +38,17 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
 
         private readonly IMsgRecordService msgRecordService;
         public bool IsRunning = false;
-        private AsyncSocketClient sendMsgClient;
+        //private AsyncSocketClientUDP sendMsgClient;
         private const int _maxSize = 1024;
         private const int _maxSendConnections = 10;
 
-        private AsyncSocketClient asyncSocketClient;
+        private AsyncSocketClientUDP asyncSocketClient;
 
         public BufferContorl()
         {
             msgRecordService = ObjectContainerFactory.CurrentContainer.Resolver<IMsgRecordService>();
             maxBufferRecordCount = 1000;
-            asyncSocketClient = new AsyncSocketClient(_maxSize, _maxSendConnections, CommonVariables.LogTool);
+            asyncSocketClient = new AsyncSocketClientUDP(_maxSize, _maxSendConnections, CommonVariables.LogTool);
         }
 
         public void SendMsgToMCS(MCSServer mcsServer,MsgRecord msgRecord)
@@ -168,54 +168,6 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
                 CommonVariables.LogTool.Log(ex.Message + ex.StackTrace);
             }
         }
-
-        //private void MainGetMsgThread()
-        //{
-        //    CommonVariables.LogTool.Log("begin get msg buffer contorl");
-        //    sendMsgClient = new AsyncSocketClient(_maxSize, _maxSendConnections, CommonVariables.LogTool);
-        //    try
-        //    {
-        //        while (IsRunning)
-        //        {
-        //            if (GetUsingGetMsgBuffer.Count > 0)
-        //            {
-        //                UsingTagForGetMsg = !UsingTagForGetMsg;
-
-        //                for (int i = 0; i < GetUnUsingGetMsgBuffer.Count; i++)
-        //                {
-        //                    MsgRecordQuery query = new MsgRecordQuery();
-        //                    query.MsgRecipientObjectID = GetUnUsingGetMsgBuffer[i].ObjectID;
-        //                    query.MsgRecordtime = GetUnUsingGetMsgBuffer[i].LatestTime;
-        //                    IList<MsgRecord> msgRecords = msgRecordService.LoadMsgRecord(query);
-
-        //                    sendMsgClient.SendMsg(GetUnUsingGetMsgBuffer[i].MCS_IP,GetUnUsingGetMsgBuffer)
-        //                }
-
-        //                GetUnUsingGetMsgBuffer.Clear();
-        //            }
-        //            Thread.Sleep(100);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        CommonVariables.LogTool.Log(ex.Message + ex.StackTrace);
-        //    }
-        //}
-
-        //private string HandlerMsgReturnData(string returnData, bool IsError)
-        //{
-        //    if (!string.IsNullOrEmpty(returnData))
-        //    {
-        //        MsgRecordModel tempmodel = ExeingMsgRecordModels.Single(t => t.MsgID == returnData);
-        //        if (IsError)
-        //        {
-        //            GetUsingMsgRecordBuffer.Add(tempmodel);
-        //        }
-        //        ExeingMsgRecordModels.Remove(ExeingMsgRecordModels.Single(t => t.MsgID == returnData));
-        //    }
-
-        //    return string.Empty;
-        //}
     }
 
 }

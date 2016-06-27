@@ -16,8 +16,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
     class SocketService
     {
 
-        SocketListener socketListener;
-        //UDPSocketListener udpSocketListener;
+        UDPSocketListener socketListener;
 
         public void StartMMSService()
         {
@@ -38,11 +37,8 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                     CommonVariables.LogTool.Log("Wait Start Command");
                     CommonVariables.LogTool.Log("IP:" + CommonVariables.MMSIP + "    Port:" + CommonVariables.MMSPort.ToString());
 
-                    socketListener = new SocketListener();
+                    socketListener = new UDPSocketListener();
                     socketListener.BeginService();
-
-                    //udpSocketListener = new UDPSocketListener();
-                    //udpSocketListener.BeginService();
                     return;
                 }
                 CommonVariables.LogTool.Log("Post PS Failed");
@@ -64,7 +60,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
                 HttpWebRequest myRequest = (HttpWebRequest)WebRequest.Create("http://" + CommonVariables.PSIP
                     + ":" + CommonVariables.PSPort + "/AppServer/CollectMMS?ip=" + CommonVariables.MMSIP + "&&port=" + CommonVariables.MMSPort
-                    + "&&portudp=" + CommonVariables.MMSPortUDP + "&&arrangeStr=" + arrangeStr);
+                    + "&&arrangeStr=" + arrangeStr);
 
                 myRequest.Method = "Get";
 
@@ -96,25 +92,8 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
         public void StopMMSService()
         {
             CommonVariables.UAInfoContorl.StopMainThread();
-            //if (IsConnectGoOnRuning == true)
-            //{
-            //    IsConnectGoOnRuning = false;
-            //    try
-            //    {
-            //        byte[] bytesSent;
-            //        bytesSent = Encoding.UTF8.GetBytes("stop");
-            //        IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(CommonVariables.MMSIP), CommonVariables.MMSPort);
-            //        Socket tempSocket = new Socket(ipe.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
-            //        tempSocket.Connect(ipe);
-            //        tempSocket.Send(bytesSent, bytesSent.Length, 0);
-            //        tempSocket.Close();
-            //    }
-            //    catch (Exception ex)
-            //    {
-
-            //    }
-            //}
+            socketListener.CloseListener();
+            socketListener = null;
         }
     }
 }

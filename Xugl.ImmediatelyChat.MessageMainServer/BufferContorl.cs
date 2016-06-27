@@ -19,9 +19,6 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 {
     public class BufferContorl
     {
-        private int InputCount;
-        private int OutPutCount;
-
         private IList<ContactDataWithMCS> BufferUAModels1 = new List<ContactDataWithMCS>();
         private IList<ContactDataWithMCS> BufferUAModels2 = new List<ContactDataWithMCS>();
 
@@ -29,7 +26,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
         private bool UsingTagForUAMode = false;
 
-        private AsyncSocketClient asyncSocketClient;
+        private AsyncSocketClientUDP asyncSocketClient;
         private readonly IContactPersonService contactPersonService;
 
         private int _maxSize = 1024;
@@ -230,7 +227,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
         private void MainConnectMDSThreadAsync()
         {
-            asyncSocketClient = new AsyncSocketClient(_maxSize, _maxConnnections, CommonVariables.LogTool);
+            asyncSocketClient = new AsyncSocketClientUDP(_maxSize, _maxConnnections, CommonVariables.LogTool);
 
             CommonVariables.LogTool.Log("begin buffer contorl");
             try

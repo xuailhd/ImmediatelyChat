@@ -118,7 +118,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                                 clientStatusModel.MCS_Port = model.MCS_Port;
                                 clientStatusModel.ObjectID = model.ObjectID;
 
-                                string mcs_UpdateTime = CommonVariables.SyncSocketClientIntance.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port,
+                                string mcs_UpdateTime = CommonVariables.SyncSocketClientIntance.SendMsgWithReceive(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port,
                                     CommonFlag.F_MCSReceiveMMSUAUpdateTime + CommonVariables.serializer.Serialize(clientStatusModel));
 
                                 if (string.IsNullOrEmpty(mcs_UpdateTime))
@@ -345,6 +345,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 {
                     clientStatusModel.MCS_IP = CommonVariables.MCSServers[i].MCS_IP;
                     clientStatusModel.MCS_Port = CommonVariables.MCSServers[i].MCS_Port;
+;
 
                     tempContactPerson = token.ContactPersonService.FindContactPersonNoTracking(clientStatusModel.ObjectID);
                     if (tempContactPerson == null)
@@ -364,7 +365,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
                     clientStatusModel.UpdateTime = tempContactPerson.UpdateTime;
 
-                    string mcs_UpdateTime = CommonVariables.SyncSocketClientIntance.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port,
+                    string mcs_UpdateTime = CommonVariables.SyncSocketClientIntance.SendMsgWithReceive(CommonVariables.MCSServers[i].MCS_IP, CommonVariables.MCSServers[i].MCS_Port,
                         CommonFlag.F_MCSReceiveMMSUAUpdateTime + CommonVariables.serializer.Serialize(clientStatusModel));
 
                     //CommonVariables.LogTool.Log("mcs_UpdateTime:" + mcs_UpdateTime);
@@ -378,7 +379,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
                     foreach (ContactData contactData in contactDatas)
                     {
-                        CommonVariables.SyncSocketClientIntance.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port,
+                        CommonVariables.SyncSocketClientIntance.SendMsg(CommonVariables.MCSServers[i].MCS_IP, CommonVariables.MCSServers[i].MCS_Port,
                             CommonFlag.F_MCSReceiveUAInfo + CommonVariables.serializer.Serialize(contactData));
                     }
 
@@ -454,7 +455,8 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
         public void BeginService()
         {
-            base.BeginService(CommonVariables.MMSIP, CommonVariables.MMSPortUDP);
+            CommonVariables.UAInfoContorl.StartMainThread();
+            base.BeginService(CommonVariables.MMSIP, CommonVariables.MMSPort);
         }
     }
 }

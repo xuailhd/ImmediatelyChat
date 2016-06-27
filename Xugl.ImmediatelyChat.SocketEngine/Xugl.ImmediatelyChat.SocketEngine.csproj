@@ -40,7 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncSocketClientUDP.cs" />
     <Compile Include="AsyncSocketListenerUDP.cs" />
+    <Compile Include="IAsyncSocketListener.cs" />
     <Compile Include="SyncSocketClientUDP.cs" />
     <Compile Include="SyncSocketClient.cs" />
     <Compile Include="AsyncSocketClient.cs" />

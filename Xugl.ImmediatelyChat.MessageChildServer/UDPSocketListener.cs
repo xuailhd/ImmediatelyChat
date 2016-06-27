@@ -42,10 +42,10 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
 
             string data = inputMessage;
 
-            //if (data.StartsWith(CommonFlag.F_PSCallMCSStart))
-            //{
-            //    return HandlePSCallMCSStart(data, token);
-            //}
+            if (data.StartsWith(CommonFlag.F_PSCallMCSStart))
+            {
+                return HandlePSCallMCSStart(data, token);
+            }
 
             if (CommonVariables.IsBeginMessageService)
             {
@@ -60,10 +60,10 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     return HandleMCSVerifyUA(data, token);
                 }
 
-                //if (data.StartsWith(CommonFlag.F_MCSReceiveMMSUAUpdateTime))
-                //{
-                //    return HandleMCSReceiveMMSUAUpdateTime(data, token);
-                //}
+                if (data.StartsWith(CommonFlag.F_MCSReceiveMMSUAUpdateTime))
+                {
+                    return HandleMCSReceiveMMSUAUpdateTime(data, token);
+                }
 
                 if (data.StartsWith(CommonFlag.F_MCSReceiveUAInfo))
                 {
@@ -80,10 +80,10 @@ namespace Xugl.ImmediatelyChat.MessageChildServer
                     return HandleMCSVerifyUAGetMSG(data, token);
                 }
 
-                //if (data.StartsWith(CommonFlag.F_MCSVerfiyMDSMSG))
-                //{
-                //    return HandleMCSVerfiyMDSMSG(data, token);
-                //}
+                if (data.StartsWith(CommonFlag.F_MCSVerfiyMDSMSG))
+                {
+                    return HandleMCSVerfiyMDSMSG(data, token);
+                }
             }
 
             return string.Empty;

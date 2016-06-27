@@ -13,6 +13,7 @@ using System.Text;
 using Xugl.ImmediatelyChat.Common;
 using Xugl.ImmediatelyChat.IServices;
 using System.IO;
+using Xugl.ImmediatelyChat.SocketEngine;
 
 namespace Xugl.ImmediatelyChat.Site.Controllers
 {
@@ -35,13 +36,12 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
         //
         // GET: /AppServer/
 
-        public ActionResult CollectMMS(string ip,int port,int udpport, string arrangeStr)
+        public ActionResult CollectMMS(string ip,int port, string arrangeStr)
         {
             MMSServer mmsServer = new MMSServer();
             mmsServer.ArrangeStr = arrangeStr;
             mmsServer.MMS_IP = ip;
             mmsServer.MMS_Port = port;
-            mmsServer.MMS_PortUDP = udpport;
             mmsServer.MMS_IP = System.Configuration.ConfigurationManager.AppSettings["LocalIP"].ToString();
 
             lock (CommonFlag.lockobject)
@@ -74,13 +74,12 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
         }
 
 
-        public ActionResult CollectMCS(string ip, int port, int udpport, string arrangeStr)
+        public ActionResult CollectMCS(string ip, int port, string arrangeStr)
         {
             MCSServer mcsServer = new MCSServer();
             mcsServer.ArrangeStr = arrangeStr;
             mcsServer.MCS_IP = ip;
             mcsServer.MCS_Port = port;
-            mcsServer.MCS_PortUDP = udpport;
             mcsServer.MCS_IP = System.Configuration.ConfigurationManager.AppSettings["LocalIP"].ToString();
             lock (CommonFlag.lockobject)
             {
@@ -156,7 +155,7 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
                 ViewData["error"] = returnstr;
                 return View("StartFailed");
             }
-            returnstr=SendStartCommand();
+            returnstr = SendStartCommandUDP();
             if(!string.IsNullOrEmpty(returnstr))
             {
                 ViewData["error"] = returnstr;
@@ -234,6 +233,54 @@ namespace Xugl.ImmediatelyChat.Site.Controllers
                 return "save MMSs failed";
             }
             catch(Exception ex)
+            {
+                return ex.Message + ex.StackTrace;
+            }
+        }
+
+        private string SendStartCommandUDP()
+        {
+            string tempStr = "";
+            SyncSocketClientUDP syncSocketClientUDP = new SyncSocketClientUDP();
+            try
+            {
+                IList<MMSServer> mmsServers = cacheManage.GetCache<IList<MMSServer>>("MMSServers");
+                appServerService.Clean();
+                if (appServerService.BatchInsert(mmsServers) > 0)
+                {
+                    if (Singleton<JavaScriptSerializer>.Instance == null)
+                    {
+                        Singleton<JavaScriptSerializer>.Instance = new JavaScriptSerializer();
+                    }
+                    tempStr = Singleton<JavaScriptSerializer>.Instance.Serialize(cacheManage.GetCache<IList<MCSServer>>("MCSServers"));
+
+                    for (int i = 0; i < cacheManage.GetCache<IList<MMSServer>>("MMSServers").Count; i++)
+                    {
+                        syncSocketClientUDP.SendMsg(cacheManage.GetCache<IList<MMSServer>>("MMSServers")[i].MMS_IP,cacheManage.GetCache<IList<MMSServer>>("MMSServers")[i].MMS_Port,
+                            CommonFlag.F_PSCallMMSStart + tempStr);
+                    }
+
+                    tempStr = Singleton<JavaScriptSerializer>.Instance.Serialize(cacheManage.GetCache<IList<MDSServer>>("MDSServers"));
+                    for (int i = 0; i < cacheManage.GetCache<IList<MCSServer>>("MCSServers").Count; i++)
+                    {
+                        syncSocketClientUDP.SendMsg(cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].MCS_IP, cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i].MCS_Port,
+                            CommonFlag.F_PSCallMCSStart + tempStr + "&&"
+                              + Singleton<JavaScriptSerializer>.Instance.Serialize(cacheManage.GetCache<IList<MCSServer>>("MCSServers")[i]));
+                    }
+
+                    tempStr = Singleton<JavaScriptSerializer>.Instance.Serialize(cacheManage.GetCache<IList<MCSServer>>("MCSServers"));
+                    for (int i = 0; i < cacheManage.GetCache<IList<MDSServer>>("MDSServers").Count; i++)
+                    {
+                        syncSocketClientUDP.SendMsg(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].MDS_IP, cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i].MDS_Port,
+                            CommonFlag.F_PSCallMDSStart + tempStr + "&&"
+                            + Singleton<JavaScriptSerializer>.Instance.Serialize(cacheManage.GetCache<IList<MDSServer>>("MDSServers")[i]));
+                    }
+
+                    return string.Empty;
+                }
+                return "save MMSs failed";
+            }
+            catch (Exception ex)
             {
                 return ex.Message + ex.StackTrace;
             }
