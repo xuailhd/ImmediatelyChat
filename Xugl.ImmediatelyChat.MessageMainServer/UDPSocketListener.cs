@@ -32,55 +32,63 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                 return string.Empty;
             }
 
-            string data = inputMessage;
-
-            if (data.StartsWith(CommonFlag.F_PSSendMMSUser))
+            try
             {
-                return HandlePSSendMMSUser(data, token);
+                string data = inputMessage;
+
+                if (data.StartsWith(CommonFlag.F_PSSendMMSUser))
+                {
+                    return HandlePSSendMMSUser(data, token);
+                }
+
+                if (data.StartsWith(CommonFlag.F_PSCallMMSStart))
+                {
+                    return HandlePSCallMMSStart(data);
+                }
+
+                if (CommonVariables.IsBeginMessageService)
+                {
+                    CommonVariables.LogTool.Log("receive UA data:" + data);
+                    //UA
+                    if (data.StartsWith(CommonFlag.F_MMSVerifyUA))
+                    {
+                        return HandleMMSVerifyUA(data, token);
+                    }
+
+                    if (data.StartsWith(CommonFlag.F_MMSVerifyUAGetUAInfo))
+                    {
+                        return HandleMMSVerifyUAGetUAInfo(data, token);
+                    }
+
+                    if (data.StartsWith(CommonFlag.F_MMSVerifyFBUAGetUAInfo))
+                    {
+                        return HandleMMSVerifyFBUAGetUAInfo(data, token);
+                    }
+
+                    if (data.StartsWith(CommonFlag.F_MMSVerifyUASearch))
+                    {
+                        return HandleMMSVerifyUASearch(data, token);
+                    }
+
+                    if (data.StartsWith(CommonFlag.F_MMSVerifyUAFBSearch))
+                    {
+                        return HandleMMSVerifyUAFBSearch(data, token);
+                    }
+
+                    if (data.StartsWith(CommonFlag.F_MMSVerifyUAAddPerson))
+                    {
+                        return HandleMMSVerifyUAAddPerson(data, token);
+                    }
+
+                    if (data.StartsWith(CommonFlag.F_MMSVerifyUAAddGroup))
+                    {
+                        return HandleMMSVerifyUAAddGroup(data, token);
+                    }
+                }
             }
-
-            if (data.StartsWith(CommonFlag.F_PSCallMMSStart))
+            catch(Exception ex)
             {
-                return HandlePSCallMMSStart(data);
-            }
-
-            if (CommonVariables.IsBeginMessageService)
-            {
-                //UA
-                if (data.StartsWith(CommonFlag.F_MMSVerifyUA))
-                {
-                    return HandleMMSVerifyUA(data, token);
-                }
-
-                if (data.StartsWith(CommonFlag.F_MMSVerifyUAGetUAInfo))
-                {
-                    return HandleMMSVerifyUAGetUAInfo(data, token);
-                }
-
-                if (data.StartsWith(CommonFlag.F_MMSVerifyFBUAGetUAInfo))
-                {
-                    return HandleMMSVerifyFBUAGetUAInfo(data, token);
-                }
-
-                if (data.StartsWith(CommonFlag.F_MMSVerifyUASearch))
-                {
-                    return HandleMMSVerifyUASearch(data, token);
-                }
-
-                if (data.StartsWith(CommonFlag.F_MMSVerifyUAFBSearch))
-                {
-                    return HandleMMSVerifyUAFBSearch(data, token);
-                }
-
-                if (data.StartsWith(CommonFlag.F_MMSVerifyUAAddPerson))
-                {
-                    return HandleMMSVerifyUAAddPerson(data, token);
-                }
-
-                if (data.StartsWith(CommonFlag.F_MMSVerifyUAAddGroup))
-                {
-                    return HandleMMSVerifyUAAddGroup(data, token);
-                }
+                CommonVariables.LogTool.Log(ex.Message + ex.StackTrace);
             }
             return string.Empty;
         }
@@ -118,7 +126,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                                 clientStatusModel.MCS_Port = model.MCS_Port;
                                 clientStatusModel.ObjectID = model.ObjectID;
 
-                                string mcs_UpdateTime = CommonVariables.SyncSocketClientIntance.SendMsgWithReceive(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port,
+                                string mcs_UpdateTime = CommonVariables.SyncSocketClientIntance.SendMsg(clientStatusModel.MCS_IP, clientStatusModel.MCS_Port,
                                     CommonFlag.F_MCSReceiveMMSUAUpdateTime + CommonVariables.serializer.Serialize(clientStatusModel));
 
                                 if (string.IsNullOrEmpty(mcs_UpdateTime))
@@ -365,7 +373,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
                     clientStatusModel.UpdateTime = tempContactPerson.UpdateTime;
 
-                    string mcs_UpdateTime = CommonVariables.SyncSocketClientIntance.SendMsgWithReceive(CommonVariables.MCSServers[i].MCS_IP, CommonVariables.MCSServers[i].MCS_Port,
+                    string mcs_UpdateTime = CommonVariables.SyncSocketClientIntance.SendMsg(CommonVariables.MCSServers[i].MCS_IP, CommonVariables.MCSServers[i].MCS_Port,
                         CommonFlag.F_MCSReceiveMMSUAUpdateTime + CommonVariables.serializer.Serialize(clientStatusModel));
 
                     //CommonVariables.LogTool.Log("mcs_UpdateTime:" + mcs_UpdateTime);
@@ -455,7 +463,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
         public void BeginService()
         {
-            CommonVariables.UAInfoContorl.StartMainThread();
+            //CommonVariables.UAInfoContorl.StartMainThread();
             base.BeginService(CommonVariables.MMSIP, CommonVariables.MMSPort);
         }
     }

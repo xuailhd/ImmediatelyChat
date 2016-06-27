@@ -103,6 +103,8 @@ namespace Xugl.ImmediatelyChat.SocketEngine
             {
                 if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
                 {
+                    LogTool.Log("Ip:" + ((IPEndPoint)e.RemoteEndPoint).Address + " port:" + ((IPEndPoint)e.RemoteEndPoint).Port);
+
                     string data = Encoding.UTF8.GetString(e.Buffer, e.Offset, e.BytesTransferred);
                     string returndata = HandleRecivedMessage(data, token);
                     if (string.IsNullOrEmpty(returndata))
@@ -153,6 +155,7 @@ namespace Xugl.ImmediatelyChat.SocketEngine
                     {
                         ProcessReceive(e);
                     }
+                    //CloseClientSocket(e);
                 }
                 else
                 {

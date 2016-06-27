@@ -47,30 +47,36 @@ namespace Xugl.ImmediatelyChat.MessageDataServer
                 return string.Empty;
             }
 
-            if(data.StartsWith(CommonFlag.F_PSCallMDSStart))
+            try
             {
-                return HandlePSCallMDSStart(data, token);
-            }
+                if (data.StartsWith(CommonFlag.F_PSCallMDSStart))
+                {
+                    return HandlePSCallMDSStart(data, token);
+                }
 
-            if (CommonVariables.IsBeginMessageService)
+                if (CommonVariables.IsBeginMessageService)
+                {
+                    //handle UA feedback
+                    if (data.StartsWith(CommonFlag.F_MDSReciveMCSFBMSG))
+                    {
+                        return HandleMDSReciveMCSFBMSG(data, token);
+                    }
+
+                    if (data.StartsWith(CommonFlag.F_MDSVerifyMCSMSG))
+                    {
+                        return HandleMDSVerifyMCSMSG(data, token);
+                    }
+
+                    if (data.StartsWith(CommonFlag.F_MDSVerifyMCSGetMSG))
+                    {
+                        return HandleMDSVerifyMCSGetMSG(data, token);
+                    }
+                }
+            }
+            catch (Exception ex)
             {
-                //handle UA feedback
-                if (data.StartsWith(CommonFlag.F_MDSReciveMCSFBMSG))
-                {
-                    return HandleMDSReciveMCSFBMSG(data, token);
-                }
-
-                if (data.StartsWith(CommonFlag.F_MDSVerifyMCSMSG))
-                {
-                    return HandleMDSVerifyMCSMSG(data, token);
-                }
-
-                if (data.StartsWith(CommonFlag.F_MDSVerifyMCSGetMSG))
-                {
-                    return HandleMDSVerifyMCSGetMSG(data, token);
-                }
+                CommonVariables.LogTool.Log(ex.Message + ex.StackTrace);
             }
-
             return string.Empty;
         }
 

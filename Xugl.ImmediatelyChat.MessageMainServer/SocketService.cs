@@ -16,7 +16,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
     class SocketService
     {
 
-        UDPSocketListener socketListener;
+        SocketListener socketListener;
 
         public void StartMMSService()
         {
@@ -37,7 +37,7 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
                     CommonVariables.LogTool.Log("Wait Start Command");
                     CommonVariables.LogTool.Log("IP:" + CommonVariables.MMSIP + "    Port:" + CommonVariables.MMSPort.ToString());
 
-                    socketListener = new UDPSocketListener();
+                    socketListener = new SocketListener();
                     socketListener.BeginService();
                     return;
                 }
@@ -91,9 +91,9 @@ namespace Xugl.ImmediatelyChat.MessageMainServer
 
         public void StopMMSService()
         {
-            CommonVariables.UAInfoContorl.StopMainThread();
-            socketListener.CloseListener();
-            socketListener = null;
+            //CommonVariables.UAInfoContorl.StopMainThread();
+            //socketListener.CloseListener();
+            //socketListener = null;
         }
     }
 }
