@@ -299,7 +299,7 @@ namespace Xugl.ImmediatelyChat.Services
             }
         }
 
-        public int UpdateContactUpdateTimeByGroup(string groupID, string updateTime)
+        public IList<ContactPerson> UpdateContactUpdateTimeByGroup(string groupID, string updateTime)
         {
             int updateCount = 0;
 
@@ -318,9 +318,9 @@ namespace Xugl.ImmediatelyChat.Services
             ContactGroup contactGroup = contactGroupRepository.Table.Where(t => t.GroupObjectID == groupID).FirstOrDefault();
             contactGroup.UpdateTime = updateTime;
 
-            updateCount = updateCount + contactGroupRepository.Update(contactGroup);
+            contactGroupRepository.Update(contactGroup);
 
-            return updateCount;
+            return contactPersons;
         }
     }
 }
